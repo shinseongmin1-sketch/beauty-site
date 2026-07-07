@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>뷰티사랑 - 네일샵·뷰티샵 고객관리 프로그램</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="header" id="header">
+  <div class="container">
+    <div class="logo">
+      <span class="logo-icon">💅</span>
+      <span class="logo-text">뷰티<strong>사랑</strong></span>
+    </div>
+    <nav class="nav">
+      <a href="#features">기능소개</a>
+      <a href="#pricing">요금안내</a>
+      <a href="#review">후기</a>
+      <a href="#faq">자주묻는질문</a>
+      <a href="#contact" class="btn-nav">무료체험</a>
+    </nav>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#features">기능소개</a>
+    <a href="#pricing">요금안내</a>
+    <a href="#review">후기</a>
+    <a href="#faq">자주묻는질문</a>
+    <a href="#contact">무료체험</a>
+  </div>
+</header>
+
+<!-- 히어로 섹션 -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="badge">✨ 전국 5,000개 매장 사용 중</div>
+      <h1>네일샵·뷰티샵<br><span class="highlight">고객관리</span>의 모든 것</h1>
+      <p>예약부터 고객관리, 매출분석까지<br>뷰티사랑 하나로 완벽하게 해결하세요</p>
+      <div class="hero-buttons">
+        <a href="#contact" class="btn-primary">30일 무료체험 시작</a>
+        <a href="#features" class="btn-secondary">기능 살펴보기</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <strong>5,000+</strong>
+          <span>등록 매장</span>
+        </div>
+        <div class="stat">
+          <strong>98%</strong>
+          <span>고객 만족도</span>
+        </div>
+        <div class="stat">
+          <strong>4.9★</strong>
+          <span>앱스토어 평점</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="app-header">뷰티사랑 · 오늘의 예약</div>
+          <div class="booking-list">
+            <div class="booking-item">
+              <div class="booking-time">10:00</div>
+              <div class="booking-info">
+                <strong>김지영</strong>
+                <span>젤네일 풀세트</span>
+              </div>
+              <div class="booking-status confirmed">확정</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-time">11:30</div>
+              <div class="booking-info">
+                <strong>이수현</strong>
+                <span>속눈썹 연장</span>
+              </div>
+              <div class="booking-status confirmed">확정</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-time">13:00</div>
+              <div class="booking-info">
+                <strong>박민지</strong>
+                <span>네일 제거 + 케어</span>
+              </div>
+              <div class="booking-status pending">대기</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-time">14:30</div>
+              <div class="booking-info">
+                <strong>최하은</strong>
+                <span>젤네일 디자인</span>
+              </div>
+              <div class="booking-status confirmed">확정</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-time">16:00</div>
+              <div class="booking-info">
+                <strong>정다은</strong>
+                <span>속눈썹 펌</span>
+              </div>
+              <div class="booking-status confirmed">확정</div>
+            </div>
+          </div>
+          <div class="sales-bar">
+            <span>오늘 매출</span>
+            <strong>₩ 387,000</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 기능 소개 -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">기능소개</span>
+      <h2>매장 운영에 꼭 필요한<br>모든 기능을 담았습니다</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>스마트 예약관리</h3>
+        <p>카카오톡·문자·앱을 통한 온라인 예약과 노쇼 방지 자동 알림으로 예약률을 높이세요.</p>
+        <ul>
+          <li>실시간 예약 현황 확인</li>
+          <li>예약 확정·취소 자동 알림</li>
+          <li>노쇼 방지 리마인드 문자</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <h3>고객 데이터 관리</h3>
+        <p>고객별 시술 이력, 선호 디자인, 특이사항을 한눈에 확인하여 맞춤 서비스를 제공하세요.</p>
+        <ul>
+          <li>시술 이력 & 사진 기록</li>
+          <li>VIP 고객 자동 분류</li>
+          <li>재방문율 분석</li>
+        </ul>
+      </div>
+      <div class="feature-card featured">
+        <div class="feature-badge-card">인기</div>
+        <div class="feature-icon">💰</div>
+        <h3>매출·정산 관리</h3>
+        <p>일별·월별 매출 현황, 시술 항목별 분석으로 수익성을 높이는 경영 결정을 내리세요.</p>
+        <ul>
+          <li>실시간 매출 대시보드</li>
+          <li>직원별 실적 관리</li>
+          <li>세금계산서 자동 발행</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>마케팅 자동화</h3>
+        <p>생일 축하, 재방문 유도, 이벤트 안내를 자동으로 발송하여 충성 고객을 늘리세요.</p>
+        <ul>
+          <li>카카오 알림톡 발송</li>
+          <li>쿠폰·포인트 관리</li>
+          <li>맞춤 이벤트 알림</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>통계 & 분석</h3>
+        <p>인기 시술, 피크 시간대, 고객 유입 경로를 분석하여 매장 운영을 최적화하세요.</p>
+        <ul>
+          <li>시술별 인기도 분석</li>
+          <li>시간대별 예약 통계</li>
+          <li>월간 리포트 자동 생성</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>안전한 데이터 보관</h3>
+        <p>클라우드 기반 실시간 백업으로 소중한 고객 데이터를 안전하게 보관하세요.</p>
+        <ul>
+          <li>실시간 자동 백업</li>
+          <li>개인정보 암호화</li>
+          <li>다중 기기 동기화</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 어울리는 업종 -->
+<section class="business-types">
+  <div class="container">
+    <div class="section-header">
+      <h2>이런 매장에 딱 맞습니다</h2>
+    </div>
+    <div class="types-grid">
+      <div class="type-item">💅 네일샵</div>
+      <div class="type-item">💇 헤어살롱</div>
+      <div class="type-item">👁 속눈썹샵</div>
+      <div class="type-item">💆 피부관리샵</div>
+      <div class="type-item">💊 왁싱샵</div>
+      <div class="type-item">🧖 마사지샵</div>
+      <div class="type-item">💄 메이크업샵</div>
+      <div class="type-item">✨ 반영구샵</div>
+    </div>
+  </div>
+</section>
+
+<!-- 요금 안내 -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">요금안내</span>
+      <h2>합리적인 요금으로<br>프리미엄 서비스를</h2>
+      <p>30일 무료체험 후 결정하세요. 언제든 해지 가능합니다.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">스타터</div>
+        <div class="plan-price"><span>₩</span>29,000<small>/월</small></div>
+        <div class="plan-desc">1인 매장에 최적화</div>
+        <ul class="plan-features">
+          <li>✅ 예약 관리</li>
+          <li>✅ 고객 관리 (최대 500명)</li>
+          <li>✅ 매출 관리</li>
+          <li>✅ 알림톡 100건/월</li>
+          <li class="disabled">❌ 직원 관리</li>
+          <li class="disabled">❌ 통계 리포트</li>
+        </ul>
+        <a href="#contact" class="btn-plan">무료체험 시작</a>
+      </div>
+      <div class="pricing-card popular">
+        <div class="plan-badge">가장 인기</div>
+        <div class="plan-name">프로</div>
+        <div class="plan-price"><span>₩</span>59,000<small>/월</small></div>
+        <div class="plan-desc">성장하는 매장을 위해</div>
+        <ul class="plan-features">
+          <li>✅ 예약 관리</li>
+          <li>✅ 고객 관리 (무제한)</li>
+          <li>✅ 매출 관리</li>
+          <li>✅ 알림톡 500건/월</li>
+          <li>✅ 직원 3명 관리</li>
+          <li>✅ 통계 리포트</li>
+        </ul>
+        <a href="#contact" class="btn-plan popular">무료체험 시작</a>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">비즈니스</div>
+        <div class="plan-price"><span>₩</span>99,000<small>/월</small></div>
+        <div class="plan-desc">다점포·대형 매장</div>
+        <ul class="plan-features">
+          <li>✅ 예약 관리</li>
+          <li>✅ 고객 관리 (무제한)</li>
+          <li>✅ 매출 관리</li>
+          <li>✅ 알림톡 무제한</li>
+          <li>✅ 직원 무제한</li>
+          <li>✅ 전용 CS 매니저</li>
+        </ul>
+        <a href="#contact" class="btn-plan">무료체험 시작</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 고객 후기 -->
+<section class="review" id="review">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">고객 후기</span>
+      <h2>5,000개 매장의 선택</h2>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p>"예약 노쇼가 절반 이상 줄었어요. 자동 리마인드 문자가 정말 효과적입니다. 사용하기도 너무 쉬워서 직원들도 금방 익혔어요."</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar">김</div>
+          <div>
+            <strong>김미나</strong>
+            <span>서울 강남 네일샵 원장</span>
+          </div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p>"고객 관리가 이렇게 편할 수가 없어요. 단골 고객 생일에 자동으로 쿠폰이 발송되니 고객들 반응이 정말 좋아요!"</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar">이</div>
+          <div>
+            <strong>이수연</strong>
+            <span>부산 속눈썹 전문샵 대표</span>
+          </div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p>"매출 통계를 보니 어느 시술이 잘 되는지 한눈에 보이더라고요. 메뉴 구성을 바꾼 후 매출이 30% 올랐어요."</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar">박</div>
+          <div>
+            <strong>박지훈</strong>
+            <span>인천 헤어&네일 샵 원장</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">자주 묻는 질문</span>
+      <h2>궁금한 점이 있으신가요?</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span>무료체험은 어떻게 신청하나요?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">아래 무료체험 신청 버튼을 클릭하시면 30일간 모든 기능을 무료로 사용하실 수 있습니다. 신용카드 등록 없이 바로 시작 가능합니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span>기존 고객 데이터를 옮길 수 있나요?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">네, 엑셀 파일로 기존 고객 정보를 일괄 업로드할 수 있습니다. 전문 CS팀이 데이터 이관을 도와드립니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span>스마트폰으로도 사용할 수 있나요?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">iOS와 안드로이드 앱을 모두 제공합니다. PC, 태블릿, 스마트폰 어디서든 동일하게 사용 가능합니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          <span>언제든지 해지할 수 있나요?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">별도의 약정 없이 언제든지 해지 가능합니다. 해지 시 데이터는 30일간 보관 후 완전 삭제됩니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 상담 신청 -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="contact-inner">
+      <div class="contact-text">
+        <h2>지금 바로 시작하세요</h2>
+        <p>30일 무료체험 · 카드 등록 불필요 · 언제든 해지 가능</p>
+        <div class="contact-info">
+          <div>📞 고객센터: 1588-0000</div>
+          <div>⏰ 평일 09:00 ~ 18:00</div>
+          <div>💬 카카오톡 채널: @뷰티사랑</div>
+        </div>
+      </div>
+      <form class="contact-form" onsubmit="submitForm(event)">
+        <input type="text" placeholder="매장명" required>
+        <input type="text" placeholder="원장님 성함" required>
+        <input type="tel" placeholder="연락처 (010-0000-0000)" required>
+        <select>
+          <option value="">업종 선택</option>
+          <option>네일샵</option>
+          <option>헤어살롱</option>
+          <option>속눈썹샵</option>
+          <option>피부관리샵</option>
+          <option>기타</option>
+        </select>
+        <button type="submit" class="btn-submit">30일 무료체험 신청하기</button>
+        <p class="form-note">* 제출 후 영업일 기준 1일 내 연락드립니다.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- 푸터 -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-logo">
+        <span>💅 뷰티사랑</span>
+        <p>네일샵·뷰티샵 전문 고객관리 프로그램</p>
+      </div>
+      <div class="footer-links">
+        <div>
+          <strong>서비스</strong>
+          <a href="#">기능소개</a>
+          <a href="#">요금안내</a>
+          <a href="#">업데이트 노트</a>
+        </div>
+        <div>
+          <strong>지원</strong>
+          <a href="#">이용가이드</a>
+          <a href="#">고객센터</a>
+          <a href="#">1:1 문의</a>
+        </div>
+        <div>
+          <strong>회사</strong>
+          <a href="#">회사소개</a>
+          <a href="#">채용</a>
+          <a href="#">파트너십</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 뷰티사랑. All rights reserved.</p>
+      <div>
+        <a href="#">개인정보처리방침</a>
+        <a href="#">이용약관</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
