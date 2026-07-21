@@ -9,6 +9,9 @@
   --pink-dark: #e5538a;
   --pink-light: #fff0f6;
   --purple: #c44dff;
+  --purple-deep: #5b21b6;
+  --mint: #14b8a6;
+  --mint-light: #ccfbf1;
   --dark: #1a1a2e;
   --gray: #6b7280;
   --light-gray: #f9fafb;
@@ -69,7 +72,7 @@ body {
 .nav {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 24px;
 }
 
 .nav a {
@@ -82,18 +85,38 @@ body {
 
 .nav a:hover { color: var(--pink); }
 
+.btn-login {
+  color: var(--purple-deep) !important;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 700 !important;
+  border: 2px solid var(--purple-deep);
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-login:hover {
+  background: var(--purple-deep);
+  color: white !important;
+}
+
 .btn-nav {
-  background: var(--pink) !important;
+  background: linear-gradient(135deg, var(--pink), var(--purple)) !important;
   color: white !important;
   padding: 10px 22px;
   border-radius: 50px;
-  font-weight: 600 !important;
-  transition: background 0.2s, transform 0.2s !important;
+  font-weight: 700 !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+  animation: pulseGlow 2.2s ease-in-out infinite;
 }
 
 .btn-nav:hover {
-  background: var(--pink-dark) !important;
   transform: translateY(-1px);
+  animation-play-state: paused;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196,77,255,0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(196,77,255,0); }
 }
 
 .hamburger {
@@ -169,6 +192,25 @@ body {
   font-size: 18px;
   color: var(--gray);
   margin-bottom: 36px;
+}
+
+.price-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--mint), #5eead4);
+  color: var(--purple-deep);
+  padding: 10px 22px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 20px rgba(20,184,166,0.35);
+}
+
+.price-badge strong {
+  font-size: 20px;
+  font-weight: 900;
 }
 
 .hero-buttons {
@@ -389,15 +431,15 @@ body {
 }
 
 .feature-card.featured {
-  background: linear-gradient(135deg, #fff0f6, #f8f0ff);
-  border-color: #ffd6e7;
+  background: linear-gradient(135deg, #ecfdf9, #f8f0ff);
+  border-color: #99f6e4;
 }
 
 .feature-badge-card {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: var(--pink);
+  background: var(--mint);
   color: white;
   font-size: 11px;
   font-weight: 700;
@@ -465,6 +507,11 @@ body {
   background: rgba(255,107,157,0.3);
   border-color: var(--pink);
   transform: translateY(-2px);
+}
+
+.type-item:nth-child(even):hover {
+  background: rgba(20,184,166,0.25);
+  border-color: var(--mint);
 }
 
 /* 요금 */
