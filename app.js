@@ -25,12 +25,43 @@ function submitForm(e) {
 // 부드러운 스크롤
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
+    const href = a.getAttribute('href');
+    if (href.length <= 1) return;
     e.preventDefault();
-    const target = document.querySelector(a.getAttribute('href'));
+    const target = document.querySelector(href);
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     document.getElementById('mobileMenu').classList.remove('open');
   });
 });
+
+// 요금제 결제주기 토글
+const billingToggle = document.getElementById('billingToggle');
+if (billingToggle) {
+  const cycleLabel = { monthly: '/월', half: '/월 · 6개월권', year: '/월 · 1년권' };
+  const cycleTotalMonths = { monthly: 1, half: 6, year: 12 };
+
+  billingToggle.querySelectorAll('.billing-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cycle = btn.dataset.cycle;
+      billingToggle.querySelectorAll('.billing-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.pricing-card').forEach(card => {
+        const price = Number(card.dataset[cycle]);
+        card.querySelector('.price-amount').textContent = price.toLocaleString('ko-KR');
+        card.querySelector('.plan-price small').textContent = cycleLabel[cycle];
+
+        const note = card.querySelector('.plan-billing-note');
+        if (cycle === 'monthly') {
+          note.textContent = '';
+        } else {
+          const total = price * cycleTotalMonths[cycle];
+          note.textContent = `총 ${total.toLocaleString('ko-KR')}원 결제 (${cycleTotalMonths[cycle]}개월)`;
+        }
+      });
+    });
+  });
+}
 
 // 카드 스크롤 애니메이션
 const observer = new IntersectionObserver(entries => {

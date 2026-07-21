@@ -217,12 +217,18 @@
     <div class="section-header">
       <span class="section-badge">요금안내</span>
       <h2>합리적인 요금으로<br>프리미엄 서비스를</h2>
-      <p>30일 무료체험 후 결정하세요. 언제든 해지 가능합니다.</p>
+      <p>약정 없이 언제든 해지 가능. 장기 결제 시 더 저렴해집니다.</p>
+    </div>
+    <div class="billing-toggle" id="billingToggle">
+      <button class="billing-btn active" data-cycle="monthly">1개월</button>
+      <button class="billing-btn" data-cycle="half">6개월 <span class="discount-tag">10%↓</span></button>
+      <button class="billing-btn" data-cycle="year">1년 <span class="discount-tag">20%↓</span></button>
     </div>
     <div class="pricing-grid">
-      <div class="pricing-card">
+      <div class="pricing-card" data-monthly="29000" data-half="26100" data-year="23200">
         <div class="plan-name">스타터</div>
-        <div class="plan-price"><span>₩</span>29,000<small>/월</small></div>
+        <div class="plan-price"><span>₩</span><span class="price-amount">29,000</span><small>/월</small></div>
+        <div class="plan-billing-note"></div>
         <div class="plan-desc">1인 매장에 최적화</div>
         <ul class="plan-features">
           <li>✅ 고객 관리 (최대 500명)</li>
@@ -234,10 +240,11 @@
         </ul>
         <a href="#contact" class="btn-plan">무료체험 시작</a>
       </div>
-      <div class="pricing-card popular">
+      <div class="pricing-card popular" data-monthly="59000" data-half="53100" data-year="47200">
         <div class="plan-badge">가장 인기</div>
         <div class="plan-name">프로</div>
-        <div class="plan-price"><span>₩</span>59,000<small>/월</small></div>
+        <div class="plan-price"><span>₩</span><span class="price-amount">59,000</span><small>/월</small></div>
+        <div class="plan-billing-note"></div>
         <div class="plan-desc">성장하는 매장을 위해</div>
         <ul class="plan-features">
           <li>✅ 고객 관리 (무제한)</li>
@@ -249,9 +256,10 @@
         </ul>
         <a href="#contact" class="btn-plan popular">무료체험 시작</a>
       </div>
-      <div class="pricing-card">
+      <div class="pricing-card" data-monthly="99000" data-half="89100" data-year="79200">
         <div class="plan-name">비즈니스</div>
-        <div class="plan-price"><span>₩</span>99,000<small>/월</small></div>
+        <div class="plan-price"><span>₩</span><span class="price-amount">99,000</span><small>/월</small></div>
+        <div class="plan-billing-note"></div>
         <div class="plan-desc">다점포·대형 매장</div>
         <ul class="plan-features">
           <li>✅ 고객 관리 (무제한)</li>
