@@ -1,4 +1,9 @@
 const { app, BrowserWindow, shell } = require("electron");
+const { autoUpdater } = require("electron-updater");
+
+autoUpdater.logger = console;
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
 
 const APP_URL = "https://beauty-site-crm.vercel.app";
 
@@ -73,6 +78,22 @@ app.whenReady().then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+
+  // 앱 껍데기(아이콘/창 설정 등) 업데이트 확인. 웹 화면 내용은 이 업데이트와
+  // 무관하게 항상 최신(APP_URL을 그대로 불러오므로).
+  checkForUpdates();
+  setInterval(checkForUpdates, 4 * 60 * 60 * 1000); // 4시간마다 재확인
+});
+
+function checkForUpdates() {
+  autoUpdater.checkForUpdates().catch((err) => {
+    console.log("update check failed (offline이거나 아직 release가 없을 수 있음):", err.message);
+  });
+}
+
+autoUpdater.on("update-downloaded", () => {
+  // 다음에 프로그램을 완전히 종료했다가 다시 켤 때 자동으로 새 버전이 적용된다.
+  console.log("업데이트 다운로드 완료 - 다음 재시작 시 자동 적용");
 });
 
 app.on("window-all-closed", () => {

@@ -18,12 +18,38 @@ npm start
 npm run dist
 ```
 
-`dist/예약관리 Setup 1.0.0.exe`가 생성된다. 더블클릭하면 설치 마법사가
+`dist/yeyakgwanri-Setup-<버전>.exe`가 생성된다. 더블클릭하면 설치 마법사가
 뜨고, 설치가 끝나면 바탕화면/시작메뉴에 "예약관리" 아이콘이 생긴다.
 
 로컬에서 서명 없이 빌드한 설치파일이라 처음 실행할 때 Windows
 SmartScreen이 "PC를 보호했습니다" 경고를 띄울 수 있다 — "추가 정보" →
 "실행" 클릭하면 정상 설치된다.
+
+## 새 버전 배포하기 (자동 업데이트)
+
+앱 껍데기(main.js, 아이콘, 창 설정 등)를 고친 뒤 새 버전을 설치된 사용자
+전체에게 자동으로 내려보내려면:
+
+1. `package.json`의 `version`을 올린다 (예: 1.0.0 → 1.0.1)
+2. `npm run dist`로 다시 빌드 — `dist/`에 새 설치파일 + `latest.yml`이 생긴다
+3. GitHub Release로 올린다 (버전 태그는 `v` + package.json의 version과 동일해야 함):
+   ```bash
+   gh release create v1.0.1 \
+     "dist/yeyakgwanri-Setup-1.0.1.exe" \
+     "dist/yeyakgwanri-Setup-1.0.1.exe.blockmap" \
+     "dist/latest.yml" \
+     --repo shinseongmin1-sketch/beauty-site \
+     --title "예약관리 데스크톱 v1.0.1" \
+     --notes "변경 내용"
+   ```
+4. 이미 설치되어 있는 프로그램들은 실행 중 자동으로(최대 4시간 안에) 새
+   버전을 감지해서 백그라운드로 내려받고, 사용자가 프로그램을 재시작하면
+   자동 적용된다. 별도로 재설치를 안내할 필요 없음.
+
+주의: 예약/고객/결제 등 **웹 화면 자체의 기능/디자인 변경은 이 절차와
+무관하다** — `crm/`을 배포하기만 하면 웹이든 데스크톱이든 즉시 반영된다.
+이 배포 절차는 오직 Electron 껍데기(아이콘, 창 동작 등)를 바꿀 때만
+필요하다.
 
 ## 앱 아이콘 변경
 
