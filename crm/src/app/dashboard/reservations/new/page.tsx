@@ -32,13 +32,13 @@ export default async function NewReservationPage({
 
   return (
     <div className="max-w-xl space-y-6">
-      <h1 className="text-2xl font-bold">새 예약 등록</h1>
+      <h1 className="text-[26px] font-bold text-foreground">새 예약 등록</h1>
 
       {error && (
         <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
       )}
 
-      <form action={createReservation} className="space-y-5 rounded-xl border border-border bg-card p-6">
+      <form action={createReservation} className="space-y-5 rounded-2xl border border-border bg-card p-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-1 block text-sm font-medium">날짜</label>
@@ -115,7 +115,7 @@ export default async function NewReservationPage({
 
         <button
           type="submit"
-          className="w-full rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple py-2.5 font-semibold text-white transition hover:opacity-90"
+          className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
         >
           예약 등록
         </button>

@@ -1,17 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #faf9fb;
-  --foreground: #1a1a2e;
+  /* 전체 화면 */
+  --background: #f6f8fc;
+  --foreground: #17233a;
   --card: #ffffff;
-  --border: #e5e7eb;
-  --muted: #6b7280;
+  --border: #e8edf5;
+  --muted: #718096;
 
-  --brand-pink: #ff6b9d;
-  --brand-pink-dark: #e5538a;
-  --brand-purple: #c44dff;
-  --brand-mint: #14b8a6;
-  --brand-mint-light: #ccfbf1;
+  /* 사이드바 (짙은 네이비) */
+  --navy: #172a46;
+  --navy-soft: #22375c;
+  --navy-muted: #b9c4d6;
+
+  /* 포인트 컬러 */
+  --accent: #3b73e8;
+  --accent-hover: #2f5fc7;
+  --accent-soft: #eaf1fe;
+
+  /* 예약 상태 컬러 */
+  --status-blue-bg: #eaf1fe;
+  --status-blue-text: #3b73e8;
+  --status-mint-bg: #e3faf5;
+  --status-mint-text: #0f9488;
+  --status-orange-bg: #fff2e2;
+  --status-orange-text: #c2670c;
+  --status-gray-bg: #eef1f5;
+  --status-gray-text: #718096;
+
+  --positive: #16a34a;
+  --positive-soft: #eaf9ee;
 }
 
 @theme inline {
@@ -20,13 +38,28 @@
   --color-card: var(--card);
   --color-border: var(--border);
   --color-muted: var(--muted);
-  --color-brand-pink: var(--brand-pink);
-  --color-brand-pink-dark: var(--brand-pink-dark);
-  --color-brand-purple: var(--brand-purple);
-  --color-brand-mint: var(--brand-mint);
-  --color-brand-mint-light: var(--brand-mint-light);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-navy: var(--navy);
+  --color-navy-soft: var(--navy-soft);
+  --color-navy-muted: var(--navy-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-status-blue-bg: var(--status-blue-bg);
+  --color-status-blue-text: var(--status-blue-text);
+  --color-status-mint-bg: var(--status-mint-bg);
+  --color-status-mint-text: var(--status-mint-text);
+  --color-status-orange-bg: var(--status-orange-bg);
+  --color-status-orange-text: var(--status-orange-text);
+  --color-status-gray-bg: var(--status-gray-bg);
+  --color-status-gray-text: var(--status-gray-text);
+
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+
+  --font-sans: var(--font-noto-sans-kr);
 }
 
 body {

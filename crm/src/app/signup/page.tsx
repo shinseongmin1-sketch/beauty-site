@@ -29,7 +29,7 @@ export default async function SignupPage({
               type="text"
               name="full_name"
               required
-              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-brand-purple"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="홍길동"
             />
           </div>
@@ -39,7 +39,7 @@ export default async function SignupPage({
               type="email"
               name="email"
               required
-              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-brand-purple"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="owner@example.com"
             />
           </div>
@@ -50,13 +50,13 @@ export default async function SignupPage({
               name="password"
               required
               minLength={6}
-              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-brand-purple"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="6자 이상"
             />
           </div>
           <button
             type="submit"
-            className="w-full rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple py-2.5 font-semibold text-white transition hover:opacity-90"
+            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
           >
             무료체험 시작하기
           </button>
@@ -64,7 +64,7 @@ export default async function SignupPage({
 
         <p className="text-center text-sm text-muted">
           이미 계정이 있으신가요?{" "}
-          <Link href="/login" className="font-medium text-brand-purple hover:underline">
+          <Link href="/login" className="font-medium text-accent hover:underline">
             로그인
           </Link>
         </p>

@@ -71,7 +71,7 @@ export function PayWidget({
 
   if (alreadyPaid) {
     return (
-      <p className="rounded-lg bg-brand-mint-light px-4 py-3 text-sm text-teal-800">
+      <p className="rounded-lg bg-status-mint-bg px-4 py-3 text-sm text-status-mint-text">
         이미 결제가 완료된 예약입니다.
       </p>
     );
@@ -89,7 +89,7 @@ export function PayWidget({
         type="button"
         onClick={handlePay}
         disabled={!widget || submitting}
-        className="w-full rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple py-2.5 font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors disabled:opacity-50"
       >
         {widget ? "결제하기" : "결제 준비 중..."}
       </button>

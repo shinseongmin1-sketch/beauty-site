@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { requireBusinessContext } from "@/lib/business";
-import { RESERVATION_STATUS_LABEL, type ReservationWithRelations } from "@/lib/types";
+import type { ReservationWithRelations } from "@/lib/types";
+import { getStatusBadge } from "@/lib/status";
 import { deleteReservation, updateReservationStatus } from "../actions";
 
 export default async function ReservationDetailPage({
@@ -31,23 +32,24 @@ export default async function ReservationDetailPage({
     .maybeSingle();
 
   const statuses: Array<[typeof reservation.status, string]> = [
-    ["pending", "대기중"],
-    ["confirmed", "확정"],
+    ["pending", "예약대기"],
+    ["confirmed", "예약완료"],
     ["completed", "완료"],
     ["cancelled", "취소"],
     ["no_show", "노쇼"],
   ];
+  const badge = getStatusBadge(reservation.status);
 
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">예약 상세</h1>
-        <span className="rounded-full bg-black/5 px-3 py-1 text-sm font-medium">
-          {RESERVATION_STATUS_LABEL[reservation.status]}
+        <h1 className="text-[26px] font-bold text-foreground">예약 상세</h1>
+        <span className={`rounded-full px-3 py-1 text-sm font-semibold ${badge.bg} ${badge.text}`}>
+          {badge.label}
         </span>
       </div>
 
-      <div className="space-y-3 rounded-xl border border-border bg-card p-6 text-sm">
+      <div className="space-y-3 rounded-2xl border border-border bg-card p-6 text-sm">
         <Row label="일시">
           {format(new Date(reservation.start_time), "yyyy-MM-dd HH:mm")} ~{" "}
           {format(new Date(reservation.end_time), "HH:mm")}
@@ -63,7 +65,7 @@ export default async function ReservationDetailPage({
         <Row label="예약 경로">{reservation.source === "naver" ? "네이버예약" : "직접 등록"}</Row>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="rounded-2xl border border-border bg-card p-6">
         <h2 className="mb-3 font-semibold">상태 변경</h2>
         <div className="flex flex-wrap gap-2">
           {statuses.map(([value, label]) => (
@@ -73,8 +75,8 @@ export default async function ReservationDetailPage({
                 disabled={reservation.status === value}
                 className={`rounded-lg px-3 py-1.5 text-sm ${
                   reservation.status === value
-                    ? "bg-black/10 text-muted"
-                    : "border border-border hover:bg-black/5"
+                    ? "bg-background text-muted"
+                    : "border border-border hover:bg-background"
                 }`}
               >
                 {label}
@@ -84,7 +86,7 @@ export default async function ReservationDetailPage({
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="rounded-2xl border border-border bg-card p-6">
         <h2 className="mb-3 font-semibold">결제</h2>
         {payment ? (
           <p className="text-sm">
@@ -94,7 +96,7 @@ export default async function ReservationDetailPage({
         ) : (
           <Link
             href={`/dashboard/reservations/${reservation.id}/pay`}
-            className="inline-block rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple px-4 py-2 text-sm font-medium text-white"
+            className="inline-block rounded-lg bg-accent hover:bg-accent-hover px-4 py-2 text-sm font-medium text-white"
           >
             결제 요청하기
           </Link>

@@ -25,8 +25,8 @@ export default async function ReservationPayPage({
 
   return (
     <div className="max-w-md space-y-6">
-      <h1 className="text-2xl font-bold">결제하기</h1>
-      <div className="rounded-xl border border-border bg-card p-6">
+      <h1 className="text-[26px] font-bold text-foreground">결제하기</h1>
+      <div className="rounded-2xl border border-border bg-card p-6">
         <PayWidget reservationId={reservation.id} customerName={customer?.name} />
       </div>
     </div>

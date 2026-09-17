@@ -63,7 +63,7 @@ function ResultShell({
       <div className="w-full max-w-sm space-y-4 text-center">
         <div
           className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl ${
-            ok ? "bg-brand-mint-light text-teal-700" : "bg-red-50 text-red-500"
+            ok ? "bg-status-mint-bg text-status-mint-text" : "bg-red-50 text-red-500"
           }`}
         >
           {ok ? "✓" : "✕"}
@@ -72,7 +72,7 @@ function ResultShell({
         {description && <p className="text-sm text-muted">{description}</p>}
         <Link
           href="/dashboard/reservations"
-          className="inline-block rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple px-4 py-2 text-sm font-medium text-white"
+          className="inline-block rounded-lg bg-accent hover:bg-accent-hover px-4 py-2 text-sm font-medium text-white"
         >
           예약 목록으로 돌아가기
         </Link>

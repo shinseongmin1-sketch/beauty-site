@@ -19,7 +19,7 @@ export default async function PaymentFailPage({
         </p>
         <Link
           href="/dashboard/reservations"
-          className="inline-block rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple px-4 py-2 text-sm font-medium text-white"
+          className="inline-block rounded-lg bg-accent hover:bg-accent-hover px-4 py-2 text-sm font-medium text-white"
         >
           예약 목록으로 돌아가기
         </Link>

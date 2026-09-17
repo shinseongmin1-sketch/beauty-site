@@ -13,7 +13,7 @@ export default async function LoginPage({
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold">
-            <span className="bg-gradient-to-r from-brand-pink to-brand-purple bg-clip-text text-transparent">
+            <span className="text-navy">
               예약관리
             </span>{" "}
             로그인
@@ -22,7 +22,7 @@ export default async function LoginPage({
         </div>
 
         {message && (
-          <p className="rounded-lg bg-brand-mint-light px-4 py-3 text-sm text-teal-800">
+          <p className="rounded-lg bg-status-mint-bg px-4 py-3 text-sm text-status-mint-text">
             {message}
           </p>
         )}
@@ -38,7 +38,7 @@ export default async function LoginPage({
               type="email"
               name="email"
               required
-              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-brand-purple"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="owner@example.com"
             />
           </div>
@@ -48,13 +48,13 @@ export default async function LoginPage({
               type="password"
               name="password"
               required
-              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-brand-purple"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="••••••••"
             />
           </div>
           <button
             type="submit"
-            className="w-full rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple py-2.5 font-semibold text-white transition hover:opacity-90"
+            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
           >
             로그인
           </button>
@@ -62,7 +62,7 @@ export default async function LoginPage({
 
         <p className="text-center text-sm text-muted">
           계정이 없으신가요?{" "}
-          <Link href="/signup" className="font-medium text-brand-purple hover:underline">
+          <Link href="/signup" className="font-medium text-accent hover:underline">
             30일 무료체험 시작
           </Link>
         </p>

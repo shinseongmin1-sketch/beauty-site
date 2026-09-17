@@ -48,7 +48,7 @@ export default async function OnboardingPage({
               type="text"
               name="name"
               required
-              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-brand-purple"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="예: 뷰티살롱 강남점"
             />
           </div>
@@ -57,7 +57,7 @@ export default async function OnboardingPage({
             <input
               type="tel"
               name="phone"
-              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-brand-purple"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="02-1234-5678"
             />
           </div>
@@ -66,13 +66,13 @@ export default async function OnboardingPage({
             <input
               type="text"
               name="address"
-              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-brand-purple"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="서울특별시 강남구 ..."
             />
           </div>
           <button
             type="submit"
-            className="w-full rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple py-2.5 font-semibold text-white transition hover:opacity-90"
+            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
           >
             시작하기
           </button>

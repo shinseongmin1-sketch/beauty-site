@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { endOfDay, format, startOfDay } from "date-fns";
 import { requireBusinessContext } from "@/lib/business";
-import { RESERVATION_STATUS_LABEL, type ReservationWithRelations } from "@/lib/types";
+import type { ReservationWithRelations } from "@/lib/types";
+import { getStatusBadge } from "@/lib/status";
 import { updateReservationStatus } from "./actions";
 
 export default async function ReservationsPage({
@@ -33,10 +34,13 @@ export default async function ReservationsPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">예약 관리</h1>
+        <div>
+          <h1 className="text-[26px] font-bold text-foreground">예약 관리</h1>
+          <p className="mt-1.5 text-[15px] text-muted">날짜별 예약 현황을 확인하고 관리하세요.</p>
+        </div>
         <Link
           href="/dashboard/reservations/new"
-          className="rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple px-4 py-2 text-sm font-medium text-white"
+          className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
         >
           + 새 예약
         </Link>
@@ -47,73 +51,76 @@ export default async function ReservationsPage({
           type="date"
           name="date"
           defaultValue={dateParam}
-          className="rounded-lg border border-border px-3 py-2 text-sm"
+          className="rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-accent"
         />
         <button
           type="submit"
-          className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-black/5"
+          className="rounded-2xl border border-border bg-card px-3 py-2 text-sm text-foreground transition-colors hover:bg-background"
         >
           조회
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
         <table className="w-full text-left text-sm">
-          <thead className="bg-black/5 text-muted">
+          <thead className="bg-background text-muted">
             <tr>
-              <th className="p-3">시간</th>
-              <th className="p-3">고객</th>
-              <th className="p-3">메뉴</th>
-              <th className="p-3">담당자</th>
-              <th className="p-3">상태</th>
-              <th className="p-3">액션</th>
+              <th className="p-4 font-medium">시간</th>
+              <th className="p-4 font-medium">고객</th>
+              <th className="p-4 font-medium">메뉴</th>
+              <th className="p-4 font-medium">담당자</th>
+              <th className="p-4 font-medium">상태</th>
+              <th className="p-4 font-medium">액션</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {reservations.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-muted">
+                <td colSpan={6} className="p-8 text-center text-muted">
                   해당 날짜에 예약이 없습니다.
                 </td>
               </tr>
             )}
-            {reservations.map((r) => (
-              <tr key={r.id}>
-                <td className="p-3">
-                  <Link href={`/dashboard/reservations/${r.id}`} className="hover:underline">
-                    {format(new Date(r.start_time), "HH:mm")} ~{" "}
-                    {format(new Date(r.end_time), "HH:mm")}
-                  </Link>
-                </td>
-                <td className="p-3">{r.customer?.name ?? "미지정"}</td>
-                <td className="p-3">{r.service?.name ?? "-"}</td>
-                <td className="p-3">{r.staff?.name ?? "-"}</td>
-                <td className="p-3">
-                  <span className="rounded-full bg-black/5 px-2.5 py-1 text-xs font-medium">
-                    {RESERVATION_STATUS_LABEL[r.status]}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <div className="flex gap-2">
-                    {r.status !== "confirmed" && r.status !== "completed" && (
-                      <form action={updateReservationStatus.bind(null, r.id, "confirmed")}>
-                        <button className="text-brand-purple hover:underline">확정</button>
-                      </form>
-                    )}
-                    {r.status !== "completed" && (
-                      <form action={updateReservationStatus.bind(null, r.id, "completed")}>
-                        <button className="text-brand-mint hover:underline">완료</button>
-                      </form>
-                    )}
-                    {r.status !== "cancelled" && (
-                      <form action={updateReservationStatus.bind(null, r.id, "cancelled")}>
-                        <button className="text-red-500 hover:underline">취소</button>
-                      </form>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {reservations.map((r) => {
+              const badge = getStatusBadge(r.status);
+              return (
+                <tr key={r.id}>
+                  <td className="p-4">
+                    <Link href={`/dashboard/reservations/${r.id}`} className="font-medium text-foreground hover:underline">
+                      {format(new Date(r.start_time), "HH:mm")} ~{" "}
+                      {format(new Date(r.end_time), "HH:mm")}
+                    </Link>
+                  </td>
+                  <td className="p-4 text-foreground">{r.customer?.name ?? "미지정"}</td>
+                  <td className="p-4 text-muted">{r.service?.name ?? "-"}</td>
+                  <td className="p-4 text-muted">{r.staff?.name ?? "-"}</td>
+                  <td className="p-4">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${badge.bg} ${badge.text}`}>
+                      {badge.label}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex gap-3">
+                      {r.status !== "confirmed" && r.status !== "completed" && (
+                        <form action={updateReservationStatus.bind(null, r.id, "confirmed")}>
+                          <button className="text-accent hover:underline">확정</button>
+                        </form>
+                      )}
+                      {r.status !== "completed" && (
+                        <form action={updateReservationStatus.bind(null, r.id, "completed")}>
+                          <button className="text-status-mint-text hover:underline">완료</button>
+                        </form>
+                      )}
+                      {r.status !== "cancelled" && (
+                        <form action={updateReservationStatus.bind(null, r.id, "cancelled")}>
+                          <button className="text-red-500 hover:underline">취소</button>
+                        </form>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -6,9 +6,9 @@ export default async function SettingsPage() {
 
   return (
     <div className="max-w-xl space-y-8">
-      <h1 className="text-2xl font-bold">매장 설정</h1>
+      <h1 className="text-[26px] font-bold text-foreground">매장 설정</h1>
 
-      <form action={updateBusiness} className="space-y-4 rounded-xl border border-border bg-card p-6">
+      <form action={updateBusiness} className="space-y-4 rounded-2xl border border-border bg-card p-6">
         <h2 className="font-semibold">기본 정보</h2>
         <div>
           <label className="mb-1 block text-sm font-medium">매장 이름</label>
@@ -68,7 +68,7 @@ export default async function SettingsPage() {
 
         <button
           type="submit"
-          className="rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple px-4 py-2 text-sm font-medium text-white"
+          className="rounded-lg bg-accent hover:bg-accent-hover px-4 py-2 text-sm font-medium text-white"
         >
           저장
         </button>

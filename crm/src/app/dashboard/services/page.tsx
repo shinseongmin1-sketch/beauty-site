@@ -16,11 +16,11 @@ export default async function ServicesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">시술/메뉴 관리</h1>
+      <h1 className="text-[26px] font-bold text-foreground">시술/메뉴 관리</h1>
 
       <form
         action={addService}
-        className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-4"
+        className="grid grid-cols-1 gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-4"
       >
         <input name="name" required placeholder="메뉴 이름" className="rounded-lg border border-border px-3 py-2 text-sm" />
         <input
@@ -43,15 +43,15 @@ export default async function ServicesPage() {
         />
         <button
           type="submit"
-          className="rounded-lg bg-gradient-to-r from-brand-pink to-brand-purple px-3 py-2 text-sm font-medium text-white"
+          className="rounded-lg bg-accent hover:bg-accent-hover px-3 py-2 text-sm font-medium text-white"
         >
           + 메뉴 추가
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
         <table className="w-full text-left text-sm">
-          <thead className="bg-black/5 text-muted">
+          <thead className="bg-background text-muted">
             <tr>
               <th className="p-3">메뉴</th>
               <th className="p-3">소요시간</th>
@@ -77,7 +77,7 @@ export default async function ServicesPage() {
                 <td className="p-3">
                   <div className="flex gap-3">
                     <form action={toggleServiceActive.bind(null, s.id, !s.active)}>
-                      <button className="text-brand-purple hover:underline">
+                      <button className="text-accent hover:underline">
                         {s.active ? "숨기기" : "판매 재개"}
                       </button>
                     </form>
