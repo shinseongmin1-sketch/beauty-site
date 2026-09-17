@@ -1,0 +1,35 @@
+{
+  "name": "beauty-site-crm-desktop",
+  "version": "1.0.0",
+  "description": "예약관리 CRM 데스크톱 앱 (beauty-site-crm.vercel.app을 감싼 Electron 클라이언트)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "build": {
+    "appId": "com.beautysite.crm",
+    "productName": "예약관리",
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.4.1",
+    "electron-builder": "^26.15.3"
+  }
+}
