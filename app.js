@@ -1,3 +1,11 @@
+// 예약관리 CRM 앱 주소 (crm/ 폴더, 별도 Vercel 프로젝트로 배포).
+// 배포 후 실제 도메인으로 이 값만 바꿔주면 아래 로그인 버튼들이 CRM으로 연결됩니다.
+const CRM_APP_URL = 'https://YOUR-CRM-DOMAIN.vercel.app';
+
+document.querySelectorAll('[data-crm-link="login"]').forEach(a => {
+  a.href = `${CRM_APP_URL}/login`;
+});
+
 // 스크롤 시 헤더 그림자
 window.addEventListener('scroll', () => {
   document.getElementById('header').classList.toggle('scrolled', window.scrollY > 10);
