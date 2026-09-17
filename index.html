@@ -3,115 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>뷰티사랑 - 바디샵·화장품 매장 고객관리 프로그램</title>
+  <title>매니온 - 예약과 고객관리를 한곳에서</title>
+  <meta name="description" content="애견샵, 미용실, 네일샵, 피부샵 등 예약을 받는 모든 매장을 위한 예약·고객관리 프로그램. 3개월 무료체험.">
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 </head>
 <body>
+
+<!-- 아이콘 스프라이트 (화면에는 안 보이고 <use>로 재사용) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.3a3 3 0 0 1 0 5.8"/><path d="M18.5 14.3c1.8.7 3 2.4 3 5.7"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7"/><path d="M3 20h18"/></symbol>
+    <symbol id="i-team" viewBox="0 0 24 24"><circle cx="8.5" cy="8" r="2.7"/><circle cx="16" cy="9" r="2.2"/><path d="M3 20c0-3 2.5-5.3 5.5-5.3S14 17 14 20"/><path d="M14.5 15.2c2.6.2 4.5 2.2 4.5 4.8"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 0 0 4v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-4V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/><path d="M14 5.5v13" stroke-dasharray="2 2"/></symbol>
+    <symbol id="i-notebook" viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.2h2"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16" rx="2"/><rect x="9" y="2.5" width="6" height="3.5" rx="1"/><path d="M8.5 12l2 2 4.5-4.5"/></symbol>
+    <symbol id="i-headset" viewBox="0 0 24 24"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/><path d="M19 19v1a2 2 0 0 1-2 2h-3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-phone-call" viewBox="0 0 24 24"><path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v11M8 11l4 4 4-4"/><path d="M4.5 17v2.5A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V17"/></symbol>
+    <!-- 업종 아이콘 -->
+    <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="7" cy="9" r="1.6"/><circle cx="12" cy="6.5" r="1.6"/><circle cx="17" cy="9" r="1.6"/><path d="M8 15.5c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 3.5-4 3.5-4-1.3-4-3.5z"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.2"/><circle cx="6" cy="17.5" r="2.2"/><path d="M7.6 8L19 19M7.6 16L19 5"/></symbol>
+    <symbol id="i-nail" viewBox="0 0 24 24"><path d="M8 20c-.5-5 .5-9 4-15 3.5 6 4.5 10 4 15a4 4 0 0 1-8 0z"/></symbol>
+    <symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 3.5s6 6.8 6 11a6 6 0 0 1-12 0c0-4.2 6-11 6-11z"/></symbol>
+    <symbol id="i-massage" viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><path d="M6 20c0-4 2.5-6.5 6-6.5s6 2.5 6 6.5"/><path d="M8 13.5l-3-3M16 13.5l3-3"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M3 10v4M6 8v8M18 8v8M21 10v4"/><path d="M6 12h12"/></symbol>
+    <symbol id="i-razor" viewBox="0 0 24 24"><rect x="4" y="10" width="12" height="5" rx="1.5"/><path d="M16 12.5H21M8 15v4M12 15v4"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></symbol>
+  </defs>
+</svg>
 
 <!-- 헤더 -->
 <header class="header" id="header">
   <div class="container">
-    <div class="logo">
-      <span class="logo-icon">🧴</span>
-      <span class="logo-text">뷰티<strong>사랑</strong></span>
-    </div>
+    <a href="#top" class="logo">
+      <span class="logo-mark"><svg class="icon"><use href="#i-calendar"/></svg></span>
+      <span class="logo-text">매니온</span>
+    </a>
     <nav class="nav">
       <a href="#features">기능소개</a>
       <a href="#pricing">요금안내</a>
-      <a href="#review">후기</a>
+      <a href="#review">이용후기</a>
       <a href="#faq">자주묻는질문</a>
-      <a href="#" class="btn-login" data-crm-link="login">로그인</a>
-      <a href="#contact" class="btn-nav">무료체험 시작</a>
+      <a href="#support">고객센터</a>
+      <a href="#remote">원격지원</a>
     </nav>
-    <button class="hamburger" onclick="toggleMenu()">☰</button>
+    <div class="nav-actions">
+      <a href="#" class="btn-text" data-crm-link="login">로그인</a>
+      <a href="#" class="btn-outline" data-crm-link="signup">회원가입</a>
+      <a href="#" class="btn-primary-sm" data-crm-link="signup">3개월 무료체험</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="메뉴 열기">
+      <svg class="icon"><use href="#i-menu"/></svg>
+    </button>
   </div>
   <div class="mobile-menu" id="mobileMenu">
     <a href="#features">기능소개</a>
     <a href="#pricing">요금안내</a>
-    <a href="#review">후기</a>
+    <a href="#review">이용후기</a>
     <a href="#faq">자주묻는질문</a>
-    <a href="#" data-crm-link="login">로그인</a>
-    <a href="#contact">무료체험</a>
+    <a href="#support">고객센터</a>
+    <a href="#remote">원격지원</a>
+    <div class="mobile-menu-actions">
+      <a href="#" class="btn-outline" data-crm-link="login">로그인</a>
+      <a href="#" class="btn-primary-sm" data-crm-link="signup">3개월 무료체험</a>
+    </div>
   </div>
 </header>
 
-<!-- 히어로 섹션 -->
+<main id="top">
+<!-- 메인 배너 -->
 <section class="hero">
-  <div class="container">
+  <div class="container hero-inner">
     <div class="hero-content">
-      <div class="badge">✨ 전국 5,000개 바디샵·화장품 매장 사용 중</div>
-      <h1>바디샵·화장품 매장<br><span class="highlight">고객관리</span>의 모든 것</h1>
-      <p>고객 정보부터 구매·시술 이력, 정기결제까지<br>뷰티사랑 하나로 완벽하게 해결하세요</p>
-      <div class="price-badge">월 <strong>29,000원</strong>부터 시작</div>
+      <div class="badge">예약을 받는 모든 매장을 위한 프로그램</div>
+      <h1>예약과 고객관리를<br>한곳에서</h1>
+      <p class="hero-sub">대표님의 매장 운영을 더 편리하게</p>
+      <p class="hero-desc">예약 접수부터 고객관리, 매출 확인까지<br>매장 운영에 필요한 모든 것을 간편하게 관리하세요.</p>
       <div class="hero-buttons">
-        <a href="#contact" class="btn-primary">30일 무료체험 시작</a>
-        <a href="#features" class="btn-secondary">기능 살펴보기</a>
+        <a href="#pricing" class="btn-primary">3개월 무료로 시작하기</a>
+        <a href="#features" class="btn-secondary">프로그램 둘러보기</a>
       </div>
-      <div class="hero-stats">
-        <div class="stat">
-          <strong>5,000+</strong>
-          <span>등록 매장</span>
-        </div>
-        <div class="stat">
-          <strong>98%</strong>
-          <span>고객 만족도</span>
-        </div>
-        <div class="stat">
-          <strong>4.9★</strong>
-          <span>앱스토어 평점</span>
-        </div>
-      </div>
+      <ul class="hero-checklist">
+        <li><svg class="icon"><use href="#i-check"/></svg>카드 등록 없이 바로 시작</li>
+        <li><svg class="icon"><use href="#i-check"/></svg>언제든 해지 가능</li>
+      </ul>
     </div>
-    <div class="hero-image">
-      <div class="phone-mockup">
-        <div class="phone-screen">
-          <div class="app-header">뷰티사랑 · 오늘의 고객관리</div>
-          <div class="booking-list">
-            <div class="booking-item">
-              <div class="booking-time">10:00</div>
-              <div class="booking-info">
-                <strong>김지영</strong>
-                <span>바디스크럽 케어</span>
+
+    <div class="hero-visual">
+      <div class="app-window">
+        <div class="app-window-bar">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+        <div class="app-window-body">
+          <aside class="app-sidebar">
+            <div class="app-sidebar-logo"><svg class="icon"><use href="#i-calendar"/></svg></div>
+            <div class="app-sidebar-item active"><svg class="icon"><use href="#i-calendar"/></svg></div>
+            <div class="app-sidebar-item"><svg class="icon"><use href="#i-users"/></svg></div>
+            <div class="app-sidebar-item"><svg class="icon"><use href="#i-team"/></svg></div>
+            <div class="app-sidebar-item"><svg class="icon"><use href="#i-chart"/></svg></div>
+          </aside>
+          <div class="app-main">
+            <p class="app-greet">대표님, 오늘도 좋은 하루 되세요!</p>
+            <div class="app-stats">
+              <div class="app-stat">
+                <span class="app-stat-label">오늘 예약</span>
+                <strong>12건</strong>
+                <span class="app-stat-hint up">▲ 2건</span>
               </div>
-              <div class="booking-status confirmed">확정</div>
-            </div>
-            <div class="booking-item">
-              <div class="booking-time">11:30</div>
-              <div class="booking-info">
-                <strong>이수현</strong>
-                <span>맞춤 화장품 상담</span>
+              <div class="app-stat">
+                <span class="app-stat-label">전체 고객</span>
+                <strong>248명</strong>
+                <span class="app-stat-hint up">▲ 5명</span>
               </div>
-              <div class="booking-status confirmed">확정</div>
-            </div>
-            <div class="booking-item">
-              <div class="booking-time">13:00</div>
-              <div class="booking-info">
-                <strong>박민지</strong>
-                <span>바디 회원권 결제</span>
+              <div class="app-stat">
+                <span class="app-stat-label">오늘 매출</span>
+                <strong>1,240,000원</strong>
+                <span class="app-stat-hint up">▲ 12%</span>
               </div>
-              <div class="booking-status pending">대기</div>
-            </div>
-            <div class="booking-item">
-              <div class="booking-time">14:30</div>
-              <div class="booking-info">
-                <strong>최하은</strong>
-                <span>스킨케어 제품 재구매</span>
+              <div class="app-stat">
+                <span class="app-stat-label">예약 대기</span>
+                <strong>3건</strong>
+                <span class="app-stat-hint warn">확인 필요</span>
               </div>
-              <div class="booking-status confirmed">확정</div>
             </div>
-            <div class="booking-item">
-              <div class="booking-time">16:00</div>
-              <div class="booking-info">
-                <strong>정다은</strong>
-                <span>아로마 테라피 관리</span>
+            <div class="app-schedule">
+              <div class="app-schedule-row">
+                <span class="app-time">09:00</span>
+                <span class="app-name">김지훈 · 일반 예약</span>
+                <span class="chip chip-blue">예약완료</span>
               </div>
-              <div class="booking-status confirmed">확정</div>
+              <div class="app-schedule-row">
+                <span class="app-time">10:30</span>
+                <span class="app-name">이서연 · 프리미엄 케어</span>
+                <span class="chip chip-mint">진행중</span>
+              </div>
+              <div class="app-schedule-row">
+                <span class="app-time">13:30</span>
+                <span class="app-name">최지은 · VIP 케어</span>
+                <span class="chip chip-orange">예약대기</span>
+              </div>
             </div>
-          </div>
-          <div class="sales-bar">
-            <span>오늘 매출</span>
-            <strong>₩ 387,000</strong>
+            <div class="app-cta">+ 새 예약하기</div>
           </div>
         </div>
       </div>
@@ -119,94 +164,229 @@
   </div>
 </section>
 
-<!-- 기능 소개 -->
-<section class="features" id="features">
+<!-- 주요 기능 타일 -->
+<section class="tiles" id="features">
   <div class="container">
     <div class="section-header">
       <span class="section-badge">기능소개</span>
-      <h2>매장 운영에 꼭 필요한<br>모든 기능을 담았습니다</h2>
+      <h2>매장 운영에 필요한 기능을 한곳에</h2>
+      <p>예약부터 고객관리, 매출 확인까지<br>대표님의 매장 운영을 편리하게 도와드립니다.</p>
     </div>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">👥</div>
-        <h3>고객 데이터 관리</h3>
-        <p>고객별 구매·시술 이력, 피부 타입, 특이사항을 한눈에 확인하여 맞춤 응대를 제공하세요.</p>
-        <ul>
-          <li>구매·시술 이력 & 사진 기록</li>
-          <li>VIP 고객 자동 분류</li>
-          <li>재구매율·재방문율 분석</li>
+
+    <div class="tiles-grid">
+      <a href="#feat-reservation" class="tile tile-blue">
+        <span class="tile-icon"><svg class="icon"><use href="#i-calendar"/></svg></span>
+        <h3>예약관리</h3>
+        <p>예약 현황을 한눈에 확인하고<br>예약 등록과 변경을 편리하게 관리하세요.</p>
+        <span class="tile-more">자세히 보기 <svg class="icon"><use href="#i-arrow"/></svg></span>
+      </a>
+      <a href="#feat-customer" class="tile tile-rose">
+        <span class="tile-icon"><svg class="icon"><use href="#i-users"/></svg></span>
+        <h3>고객관리</h3>
+        <p>고객 정보와 방문 이력을<br>체계적으로 관리하세요.</p>
+        <span class="tile-more">자세히 보기 <svg class="icon"><use href="#i-arrow"/></svg></span>
+      </a>
+      <a href="#feat-sales" class="tile tile-teal">
+        <span class="tile-icon"><svg class="icon"><use href="#i-chart"/></svg></span>
+        <h3>매출·통계</h3>
+        <p>매출과 예약 현황을<br>한눈에 확인하세요.</p>
+        <span class="tile-more">자세히 보기 <svg class="icon"><use href="#i-arrow"/></svg></span>
+      </a>
+      <a href="#feat-staff" class="tile tile-green">
+        <span class="tile-icon"><svg class="icon"><use href="#i-team"/></svg></span>
+        <h3>직원관리</h3>
+        <p>직원별 일정과 예약 현황을<br>편리하게 관리하세요.</p>
+        <span class="tile-more">자세히 보기 <svg class="icon"><use href="#i-arrow"/></svg></span>
+      </a>
+      <div class="tile tile-amber">
+        <span class="tile-icon"><svg class="icon"><use href="#i-message"/></svg></span>
+        <h3>문자·알림</h3>
+        <p>예약 안내와 고객 알림을<br>간편하게 관리하세요.</p>
+      </div>
+      <div class="tile tile-purple">
+        <span class="tile-icon"><svg class="icon"><use href="#i-ticket"/></svg></span>
+        <h3>회원권·이용권 관리</h3>
+        <p>회원권과 이용권을<br>체계적으로 관리하세요.</p>
+      </div>
+      <div class="tile tile-indigo">
+        <span class="tile-icon"><svg class="icon"><use href="#i-notebook"/></svg></span>
+        <h3>고객 차트 관리</h3>
+        <p>고객별 메모와 이용 내역을<br>편리하게 확인하세요.</p>
+      </div>
+      <div class="tile tile-lime">
+        <span class="tile-icon"><svg class="icon"><use href="#i-phone"/></svg></span>
+        <h3>스마트폰 관리</h3>
+        <p>스마트폰에서도 매장 운영을<br>편리하게 관리하세요.</p>
+      </div>
+      <div class="tile tile-sky">
+        <span class="tile-icon"><svg class="icon"><use href="#i-clipboard"/></svg></span>
+        <h3>예약 현황</h3>
+        <p>오늘과 앞으로의 예약을<br>한눈에 확인하세요.</p>
+      </div>
+      <a href="#remote" class="tile tile-navy">
+        <span class="tile-icon"><svg class="icon"><use href="#i-headset"/></svg></span>
+        <h3>원격지원</h3>
+        <p>사용 중 문제가 생기면<br>원격으로 도움을 받을 수 있습니다.</p>
+        <span class="tile-more">자세히 보기 <svg class="icon"><use href="#i-arrow"/></svg></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 업종 소개 -->
+<section class="industries">
+  <div class="container">
+    <div class="section-header">
+      <h2>예약을 받는 모든 매장을 위한 프로그램</h2>
+      <p>애견샵부터 미용실, 네일샵, 피부샵까지<br>다양한 매장에서 편리하게 사용할 수 있습니다.</p>
+    </div>
+    <div class="industries-grid">
+      <div class="industry-item"><svg class="icon"><use href="#i-paw"/></svg><span>애견샵</span></div>
+      <div class="industry-item"><svg class="icon"><use href="#i-scissors"/></svg><span>미용실</span></div>
+      <div class="industry-item"><svg class="icon"><use href="#i-nail"/></svg><span>네일샵</span></div>
+      <div class="industry-item"><svg class="icon"><use href="#i-droplet"/></svg><span>피부샵</span></div>
+      <div class="industry-item"><svg class="icon"><use href="#i-massage"/></svg><span>마사지샵</span></div>
+      <div class="industry-item"><svg class="icon"><use href="#i-eye"/></svg><span>속눈썹샵</span></div>
+      <div class="industry-item"><svg class="icon"><use href="#i-dumbbell"/></svg><span>PT샵</span></div>
+      <div class="industry-item"><svg class="icon"><use href="#i-razor"/></svg><span>왁싱샵</span></div>
+      <div class="industry-item"><svg class="icon"><use href="#i-dots"/></svg><span>기타 예약 매장</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 주요 기능 상세 소개 -->
+<section class="feature-details">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">기능 자세히 보기</span>
+      <h2>대표님의 매장 운영을 더 편리하게</h2>
+    </div>
+
+    <div class="feature-detail" id="feat-reservation">
+      <div class="feature-detail-text">
+        <span class="feature-detail-tag tile-blue">예약관리</span>
+        <h3>예약 현황을 한눈에 확인하세요</h3>
+        <p>일간, 주간, 월간 일정부터 예약 등록과 변경까지<br>매장의 모든 예약을 편리하게 관리할 수 있습니다.</p>
+        <ul class="feature-detail-list">
+          <li><svg class="icon"><use href="#i-check"/></svg>일간 / 주간 / 월간 일정</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>예약 등록 및 변경</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>예약 상태 관리</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>고객별 예약 내역</li>
         </ul>
       </div>
-      <div class="feature-card featured">
-        <div class="feature-badge-card">인기</div>
-        <div class="feature-icon">💳</div>
-        <h3>정기결제 & 회원권 관리</h3>
-        <p>바디 회원권, 화장품 정기배송 등 정기결제 고객을 자동으로 관리하고 만료를 놓치지 마세요.</p>
-        <ul>
-          <li>회원권·정기결제 잔여 횟수 관리</li>
-          <li>결제 만료 자동 알림</li>
-          <li>결제 내역 자동 정산</li>
+      <div class="feature-detail-visual">
+        <div class="mini-app mini-calendar">
+          <div class="mini-app-head">📅 9월 2026 <span>예약 캘린더</span></div>
+          <div class="mini-cal-grid">
+            <span></span><span></span><span></span><span class="today">17</span><span class="dot-day">18</span><span class="dot-day">19</span><span></span>
+          </div>
+          <div class="mini-list">
+            <div><b>09:00</b> 김지훈 <em class="chip chip-blue">완료</em></div>
+            <div><b>10:30</b> 이서연 <em class="chip chip-mint">진행중</em></div>
+            <div><b>13:30</b> 최지은 <em class="chip chip-orange">대기</em></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-detail reverse" id="feat-customer">
+      <div class="feature-detail-text">
+        <span class="feature-detail-tag tile-rose">고객관리</span>
+        <h3>고객 정보를 체계적으로 관리하세요</h3>
+        <p>고객 정보와 방문 이력을 한곳에서 확인하고<br>더 편리하게 고객을 관리할 수 있습니다.</p>
+        <ul class="feature-detail-list">
+          <li><svg class="icon"><use href="#i-check"/></svg>고객 정보 등록</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>방문 및 예약 이력</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>고객 메모</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>고객별 이용 내역</li>
         </ul>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">📅</div>
-        <h3>예약·방문 관리</h3>
-        <p>카카오톡·문자·앱을 통한 온라인 예약과 노쇼 방지 자동 알림으로 방문율을 높이세요.</p>
-        <ul>
-          <li>실시간 예약 현황 확인</li>
-          <li>예약 확정·취소 자동 알림</li>
-          <li>노쇼 방지 리마인드 문자</li>
+      <div class="feature-detail-visual">
+        <div class="mini-app mini-customer">
+          <div class="mini-app-head">👤 고객관리</div>
+          <div class="mini-customer-row"><span class="avatar">김</span><div><b>김지훈</b><small>010-1234-5678 · 방문 8회</small></div></div>
+          <div class="mini-customer-row"><span class="avatar">이</span><div><b>이서연</b><small>010-2222-3333 · 방문 3회</small></div></div>
+          <div class="mini-customer-row"><span class="avatar">박</span><div><b>박민수</b><small>010-4444-5555 · 방문 12회</small></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-detail" id="feat-sales">
+      <div class="feature-detail-text">
+        <span class="feature-detail-tag tile-teal">매출·통계</span>
+        <h3>매장 운영 현황을 데이터로 확인하세요</h3>
+        <p>매출과 예약 현황을 한눈에 확인하고<br>매장 운영에 필요한 정보를 편리하게 관리하세요.</p>
+        <ul class="feature-detail-list">
+          <li><svg class="icon"><use href="#i-check"/></svg>일 / 월 / 년 매출</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>예약 현황</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>고객 통계</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>매출 분석</li>
         </ul>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">📱</div>
-        <h3>마케팅 자동화</h3>
-        <p>생일 축하, 재구매 유도, 신제품 안내를 자동으로 발송하여 충성 고객을 늘리세요.</p>
-        <ul>
-          <li>카카오 알림톡 발송</li>
-          <li>쿠폰·포인트 관리</li>
-          <li>맞춤 이벤트 알림</li>
+      <div class="feature-detail-visual">
+        <div class="mini-app mini-stats">
+          <div class="mini-app-head">📊 매출·통계</div>
+          <div class="mini-stat-row"><span>오늘 매출</span><b>1,240,000원</b></div>
+          <div class="mini-stat-row"><span>이번 달 매출</span><b>28,400,000원</b></div>
+          <div class="mini-bars">
+            <span style="height:40%"></span><span style="height:65%"></span><span style="height:50%"></span>
+            <span style="height:80%"></span><span style="height:60%"></span><span style="height:90%"></span><span style="height:70%"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-detail reverse" id="feat-staff">
+      <div class="feature-detail-text">
+        <span class="feature-detail-tag tile-green">직원관리</span>
+        <h3>직원 일정과 예약을 편리하게 관리하세요</h3>
+        <p>직원별 일정과 예약 현황을 한곳에서 관리하고<br>매장 운영을 더 체계적으로 정리할 수 있습니다.</p>
+        <ul class="feature-detail-list">
+          <li><svg class="icon"><use href="#i-check"/></svg>직원별 예약 배정</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>근무 일정 관리</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>직원별 매출 현황</li>
         </ul>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>통계 & 분석</h3>
-        <p>인기 제품·시술, 재구매 주기, 고객 유입 경로를 분석하여 매장 운영을 최적화하세요.</p>
-        <ul>
-          <li>제품·시술별 인기도 분석</li>
-          <li>고객별 구매 주기 통계</li>
-          <li>월간 리포트 자동 생성</li>
-        </ul>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h3>안전한 데이터 보관</h3>
-        <p>클라우드 기반 실시간 백업으로 소중한 고객 데이터를 안전하게 보관하세요.</p>
-        <ul>
-          <li>실시간 자동 백업</li>
-          <li>개인정보 암호화</li>
-          <li>다중 기기 동기화</li>
-        </ul>
+      <div class="feature-detail-visual">
+        <div class="mini-app mini-staff">
+          <div class="mini-app-head">🧑‍💼 직원관리</div>
+          <div class="mini-customer-row"><span class="avatar" style="background:#3B73E8">대</span><div><b>대표</b><small>오늘 예약 5건</small></div></div>
+          <div class="mini-customer-row"><span class="avatar" style="background:#0D9488">박</span><div><b>박수진 디자이너</b><small>오늘 예약 4건</small></div></div>
+          <div class="mini-customer-row"><span class="avatar" style="background:#8B5CF6">최</span><div><b>최유진 디자이너</b><small>오늘 예약 3건</small></div></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 어울리는 업종 -->
-<section class="business-types">
+<!-- 이용 방법 -->
+<section class="how-it-works">
   <div class="container">
     <div class="section-header">
-      <h2>이런 매장에 딱 맞습니다</h2>
+      <span class="section-badge">이용 방법</span>
+      <h2>가입부터 예약 관리까지, 간편하게</h2>
     </div>
-    <div class="types-grid">
-      <div class="type-item">🧴 바디샵</div>
-      <div class="type-item">💄 화장품 매장</div>
-      <div class="type-item">🧖 스파&마사지샵</div>
-      <div class="type-item">💆 피부관리샵</div>
-      <div class="type-item">🌿 아로마테라피</div>
-      <div class="type-item">⚖️ 다이어트&바디케어</div>
-      <div class="type-item">🛁 왁싱샵</div>
-      <div class="type-item">✨ 편집숍</div>
+    <div class="steps">
+      <div class="step">
+        <span class="step-no">01</span>
+        <h3>회원가입</h3>
+        <p>간단한 정보로<br>계정을 만들어보세요.</p>
+      </div>
+      <div class="step">
+        <span class="step-no">02</span>
+        <h3>3개월 무료체험</h3>
+        <p>부담 없이 프로그램을<br>직접 사용해보세요.</p>
+      </div>
+      <div class="step">
+        <span class="step-no">03</span>
+        <h3>매장 설정</h3>
+        <p>매장 정보와<br>예약 서비스를 설정하세요.</p>
+      </div>
+      <div class="step">
+        <span class="step-no">04</span>
+        <h3>예약 관리 시작</h3>
+        <p>고객 예약을 받고<br>매장 운영을 시작하세요.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -216,106 +396,64 @@
   <div class="container">
     <div class="section-header">
       <span class="section-badge">요금안내</span>
-      <h2>합리적인 요금으로<br>프리미엄 서비스를</h2>
-      <p>약정 없이 언제든 해지 가능. 장기 결제 시 더 저렴해집니다.</p>
+      <h2>매장에 맞는 요금제로 시작하세요</h2>
+      <p>월간 결제와 연간 결제 중 매장에 맞는 요금제를 선택할 수 있습니다.</p>
     </div>
+
+    <div class="trial-banner">모든 요금제 <strong>3개월 무료체험</strong></div>
+
     <div class="billing-toggle" id="billingToggle">
-      <button class="billing-btn active" data-cycle="monthly">1개월</button>
-      <button class="billing-btn" data-cycle="half">6개월 <span class="discount-tag">10%↓</span></button>
-      <button class="billing-btn" data-cycle="year">1년 <span class="discount-tag">20%↓</span></button>
+      <button class="billing-btn active" data-cycle="monthly">월간 결제</button>
+      <button class="billing-btn" data-cycle="year">연간 결제 <span class="discount-tag">20%↓</span></button>
     </div>
+
     <div class="pricing-grid">
-      <div class="pricing-card" data-monthly="29000" data-half="26100" data-year="23200">
-        <div class="plan-name">스타터</div>
+      <div class="pricing-card" data-monthly="29000" data-year="23200">
+        <div class="plan-name">베이직</div>
+        <p class="plan-target">1인 매장이나 소규모 매장을 위한 요금제</p>
         <div class="plan-price"><span>₩</span><span class="price-amount">29,000</span><small>/월</small></div>
         <div class="plan-billing-note"></div>
-        <div class="plan-desc">1인 매장에 최적화</div>
         <ul class="plan-features">
-          <li>✅ 고객 관리 (최대 500명)</li>
-          <li>✅ 예약·구매 이력 관리</li>
-          <li>✅ 매출 관리</li>
-          <li>✅ 알림톡 100건/월</li>
-          <li class="disabled">❌ 정기결제·회원권 관리</li>
-          <li class="disabled">❌ 통계 리포트</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>고객 관리 (최대 500명)</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>예약·방문 이력 관리</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>매출 확인</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>알림 문자 100건/월</li>
+          <li class="disabled">직원 관리</li>
+          <li class="disabled">회원권·이용권 관리</li>
         </ul>
-        <a href="#contact" class="btn-plan">무료체험 시작</a>
+        <a href="#" class="btn-plan" data-crm-link="signup">3개월 무료로 시작하기</a>
       </div>
-      <div class="pricing-card popular" data-monthly="59000" data-half="53100" data-year="47200">
+      <div class="pricing-card popular" data-monthly="59000" data-year="47200">
         <div class="plan-badge">가장 인기</div>
         <div class="plan-name">프로</div>
+        <p class="plan-target">직원과 함께 운영하는 매장을 위한 요금제</p>
         <div class="plan-price"><span>₩</span><span class="price-amount">59,000</span><small>/월</small></div>
         <div class="plan-billing-note"></div>
-        <div class="plan-desc">성장하는 매장을 위해</div>
         <ul class="plan-features">
-          <li>✅ 고객 관리 (무제한)</li>
-          <li>✅ 예약·구매 이력 관리</li>
-          <li>✅ 정기결제·회원권 관리</li>
-          <li>✅ 매출 관리</li>
-          <li>✅ 알림톡 500건/월</li>
-          <li>✅ 통계 리포트</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>고객 관리 (무제한)</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>예약·방문 이력 관리</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>매출·통계 확인</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>직원 관리</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>회원권·이용권 관리</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>알림 문자 500건/월</li>
         </ul>
-        <a href="#contact" class="btn-plan popular">무료체험 시작</a>
-      </div>
-      <div class="pricing-card" data-monthly="99000" data-half="89100" data-year="79200">
-        <div class="plan-name">비즈니스</div>
-        <div class="plan-price"><span>₩</span><span class="price-amount">99,000</span><small>/월</small></div>
-        <div class="plan-billing-note"></div>
-        <div class="plan-desc">다점포·대형 매장</div>
-        <ul class="plan-features">
-          <li>✅ 고객 관리 (무제한)</li>
-          <li>✅ 예약·구매 이력 관리</li>
-          <li>✅ 정기결제·회원권 관리</li>
-          <li>✅ 매출 관리</li>
-          <li>✅ 알림톡 무제한</li>
-          <li>✅ 전용 CS 매니저</li>
-        </ul>
-        <a href="#contact" class="btn-plan">무료체험 시작</a>
+        <a href="#" class="btn-plan popular" data-crm-link="signup">3개월 무료로 시작하기</a>
       </div>
     </div>
+    <p class="pricing-note">* 표시된 금액은 부가세 별도이며, 무료체험 기간 중에는 결제되지 않습니다. 체험 종료 전 별도 안내 없이 자동결제되지 않으니 안심하고 이용하세요.</p>
   </div>
 </section>
 
-<!-- 고객 후기 -->
+<!-- 이용 후기 -->
 <section class="review" id="review">
   <div class="container">
     <div class="section-header">
-      <span class="section-badge">고객 후기</span>
-      <h2>5,000개 매장의 선택</h2>
+      <span class="section-badge">이용 후기</span>
+      <h2>대표님들의 실제 이용 후기</h2>
     </div>
-    <div class="reviews-grid">
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p>"회원권 잔여 횟수랑 만료일을 일일이 수기로 관리하다가 이제는 자동 알림으로 놓치는 고객이 없어요. 재결제율이 눈에 띄게 올랐습니다."</p>
-        <div class="reviewer">
-          <div class="reviewer-avatar">김</div>
-          <div>
-            <strong>김미나</strong>
-            <span>서울 강남 바디샵 대표</span>
-          </div>
-        </div>
-      </div>
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p>"고객 관리가 이렇게 편할 수가 없어요. 구매 이력 기반으로 재구매 시기에 맞춰 문자를 보내니 화장품 재구매율이 정말 좋아졌어요!"</p>
-        <div class="reviewer">
-          <div class="reviewer-avatar">이</div>
-          <div>
-            <strong>이수연</strong>
-            <span>부산 화장품 편집숍 대표</span>
-          </div>
-        </div>
-      </div>
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p>"매출 통계를 보니 어떤 제품·시술이 잘 되는지 한눈에 보이더라고요. 구성을 바꾼 후 매출이 30% 올랐어요."</p>
-        <div class="reviewer">
-          <div class="reviewer-avatar">박</div>
-          <div>
-            <strong>박지훈</strong>
-            <span>인천 스킨케어 전문점 원장</span>
-          </div>
-        </div>
-      </div>
+    <div class="review-placeholder">
+      <svg class="icon"><use href="#i-message"/></svg>
+      <p>매니온은 아직 서비스 초기 단계로, 실제 이용 후기를 준비하고 있습니다.<br>대표님들의 후기가 모이는 대로 이 자리에서 진솔하게 전해드릴게요.</p>
     </div>
   </div>
 </section>
@@ -329,100 +467,126 @@
     </div>
     <div class="faq-list">
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          <span>무료체험은 어떻게 신청하나요?</span>
-          <span class="faq-arrow">▼</span>
-        </div>
-        <div class="faq-a">아래 무료체험 신청 버튼을 클릭하시면 30일간 모든 기능을 무료로 사용하실 수 있습니다. 신용카드 등록 없이 바로 시작 가능합니다.</div>
+        <div class="faq-q"><span>무료체험은 어떻게 시작하나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">홈페이지에서 회원가입 후 매장 정보를 입력하시면 바로 3개월 무료체험이 시작됩니다. 카드 등록 없이 바로 시작할 수 있습니다.</div>
       </div>
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          <span>기존 고객 데이터를 옮길 수 있나요?</span>
-          <span class="faq-arrow">▼</span>
-        </div>
-        <div class="faq-a">네, 엑셀 파일로 기존 고객 정보를 일괄 업로드할 수 있습니다. 전문 CS팀이 데이터 이관을 도와드립니다.</div>
+        <div class="faq-q"><span>무료체험 기간은 얼마인가요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">가입일로부터 3개월간 모든 기능을 무료로 이용하실 수 있습니다.</div>
       </div>
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          <span>스마트폰으로도 사용할 수 있나요?</span>
-          <span class="faq-arrow">▼</span>
-        </div>
-        <div class="faq-a">iOS와 안드로이드 앱을 모두 제공합니다. PC, 태블릿, 스마트폰 어디서든 동일하게 사용 가능합니다.</div>
+        <div class="faq-q"><span>월간 결제와 연간 결제의 차이는 무엇인가요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">연간 결제를 선택하시면 월간 결제 대비 약 20% 할인된 금액으로 이용하실 수 있습니다. 결제 주기만 다를 뿐 이용 가능한 기능은 동일합니다.</div>
       </div>
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          <span>언제든지 해지할 수 있나요?</span>
-          <span class="faq-arrow">▼</span>
-        </div>
-        <div class="faq-a">별도의 약정 없이 언제든지 해지 가능합니다. 해지 시 데이터는 30일간 보관 후 완전 삭제됩니다.</div>
+        <div class="faq-q"><span>무료체험이 끝나면 자동으로 결제되나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">체험 종료 전 별도 안내 없이 자동으로 결제되지 않습니다. 계속 이용을 원하시면 요금제를 선택해 직접 결제를 진행하시면 됩니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>예약프로그램은 어떤 업종에서 사용할 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">애견샵, 미용실, 네일샵, 피부샵, 마사지샵, 속눈썹샵, PT샵, 왁싱샵 등 예약을 받는 모든 매장에서 사용하실 수 있습니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>여러 명의 직원이 함께 사용할 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">네, 프로 요금제에서는 직원 계정을 등록해 직원별 예약과 일정을 함께 관리하실 수 있습니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>기존 고객 정보를 옮길 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">고객센터로 문의해주시면 기존 고객 정보 이관을 도와드립니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>프로그램 사용 중 문제가 생기면 어떻게 하나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">고객센터 문의 또는 원격지원 신청을 통해 도움을 받으실 수 있습니다. 아래 원격지원 안내를 참고해주세요.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>원격지원은 어떻게 받을 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">아래 원격지원 섹션에서 신청하시면 담당자 안내에 따라 원격지원 프로그램으로 빠르게 문제를 해결해드립니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>결제 후 해지는 어떻게 하나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">별도의 약정 없이 언제든지 해지 가능합니다. 매장 설정 메뉴 또는 고객센터를 통해 해지를 요청하실 수 있습니다.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 상담 신청 -->
-<section class="contact" id="contact">
-  <div class="container">
-    <div class="contact-inner">
-      <div class="contact-text">
-        <h2>지금 바로 시작하세요</h2>
-        <p>30일 무료체험 · 카드 등록 불필요 · 언제든 해지 가능</p>
-        <div class="contact-info">
-          <div>📞 고객센터: 1588-0000</div>
-          <div>⏰ 평일 09:00 ~ 18:00</div>
-          <div>💬 카카오톡 채널: @뷰티사랑</div>
-        </div>
+<!-- 원격지원 / 고객센터 -->
+<section class="support" id="remote">
+  <div class="container support-inner">
+    <div class="support-text">
+      <span class="section-badge">원격지원</span>
+      <h2>사용 중 어려움이 생기셨나요?</h2>
+      <p>프로그램 사용 방법이 궁금하거나 시스템 오류로 도움이 필요할 때<br>원격지원으로 도와드립니다.</p>
+
+      <ol class="support-steps">
+        <li><b>고객센터 또는 원격지원 신청</b><span>아래 버튼으로 문제 내용을 남겨주세요.</span></li>
+        <li><b>지원 담당자 안내 확인</b><span>안내받은 원격지원 프로그램 설치 방법을 확인하세요.</span></li>
+        <li><b>원격지원 프로그램 실행</b><span>AnyDesk 등 무료 원격지원 프로그램을 실행합니다.</span></li>
+        <li><b>원격 연결 후 문제 해결</b><span>담당자가 원격으로 접속해 문제를 해결해드립니다.</span></li>
+      </ol>
+
+      <div class="support-buttons">
+        <a href="#support" class="btn-primary">원격지원 신청하기</a>
+        <a href="https://anydesk.com/ko" target="_blank" rel="noopener" class="btn-secondary">
+          <svg class="icon"><use href="#i-download"/></svg>AnyDesk 다운로드
+        </a>
       </div>
-      <form class="contact-form" onsubmit="submitForm(event)">
-        <input type="text" placeholder="매장명" required>
-        <input type="text" placeholder="원장님 성함" required>
-        <input type="tel" placeholder="연락처 (010-0000-0000)" required>
-        <select>
-          <option value="">업종 선택</option>
-          <option>바디샵</option>
-          <option>화장품 매장</option>
-          <option>스파&마사지샵</option>
-          <option>피부관리샵</option>
-          <option>기타</option>
-        </select>
-        <button type="submit" class="btn-submit">30일 무료체험 신청하기</button>
-        <p class="form-note">* 제출 후 영업일 기준 1일 내 연락드립니다.</p>
-      </form>
+      <p class="support-security">원격지원은 고객님의 동의 하에만 진행되며, 접속 종료 시 연결은 즉시 해제됩니다. 개인정보는 원격지원 목적 외에는 사용되지 않습니다.</p>
+    </div>
+
+    <div class="support-card" id="support">
+      <h3>고객센터</h3>
+      <div class="support-info-row"><svg class="icon"><use href="#i-phone-call"/></svg><div><b>고객센터 문의</b><span>1588-0000</span></div></div>
+      <div class="support-info-row"><svg class="icon"><use href="#i-clock"/></svg><div><b>운영시간</b><span>평일 09:00 ~ 18:00 (주말·공휴일 휴무)</span></div></div>
+      <div class="support-info-row"><svg class="icon"><use href="#i-message"/></svg><div><b>카카오톡 채널</b><span>@매니온</span></div></div>
+      <a href="#" class="btn-plan popular" data-crm-link="signup">문의하기</a>
     </div>
   </div>
 </section>
+
+<!-- 마지막 CTA -->
+<section class="final-cta">
+  <div class="container">
+    <h2>대표님의 매장 운영, 이제 더 편리하게 시작해보세요</h2>
+    <p>예약과 고객관리를 한곳에서 관리하고 매장 운영에 더 집중해보세요.</p>
+    <div class="hero-buttons final-cta-buttons">
+      <a href="#" class="btn-primary" data-crm-link="signup">3개월 무료로 시작하기</a>
+      <a href="#pricing" class="btn-secondary btn-secondary-dark">요금제 확인하기</a>
+    </div>
+  </div>
+</section>
+</main>
 
 <!-- 푸터 -->
 <footer class="footer">
   <div class="container">
     <div class="footer-top">
       <div class="footer-logo">
-        <span>🧴 뷰티사랑</span>
-        <p>바디샵·화장품 매장 전문 고객관리 프로그램</p>
+        <span class="logo"><span class="logo-mark"><svg class="icon"><use href="#i-calendar"/></svg></span><span class="logo-text">매니온</span></span>
+        <p>예약과 고객관리를 한곳에서</p>
       </div>
       <div class="footer-links">
         <div>
           <strong>서비스</strong>
-          <a href="#">기능소개</a>
-          <a href="#">요금안내</a>
-          <a href="#">업데이트 노트</a>
+          <a href="#features">기능소개</a>
+          <a href="#pricing">요금안내</a>
+          <a href="#review">이용후기</a>
+          <a href="#faq">자주 묻는 질문</a>
         </div>
         <div>
           <strong>지원</strong>
-          <a href="#">이용가이드</a>
-          <a href="#">고객센터</a>
-          <a href="#">1:1 문의</a>
+          <a href="#remote">원격지원</a>
+          <a href="#support">고객센터</a>
         </div>
         <div>
-          <strong>회사</strong>
-          <a href="#">회사소개</a>
-          <a href="#">채용</a>
-          <a href="#">파트너십</a>
+          <strong>정책</strong>
+          <a href="#">이용약관</a>
+          <a href="#">개인정보처리방침</a>
         </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 뷰티사랑. All rights reserved.</p>
+      <p>© 2026 매니온. All rights reserved.</p>
       <div>
         <a href="#">개인정보처리방침</a>
         <a href="#">이용약관</a>
