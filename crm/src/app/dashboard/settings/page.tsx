@@ -1,8 +1,10 @@
 import { requireBusinessContext } from "@/lib/business";
+import { requireAccess } from "@/lib/permissions";
 import { updateBusiness } from "./actions";
 
 export default async function SettingsPage() {
-  const { business } = await requireBusinessContext();
+  const { business, profile } = await requireBusinessContext();
+  requireAccess(profile.role, "settings");
 
   return (
     <div className="max-w-xl space-y-8">

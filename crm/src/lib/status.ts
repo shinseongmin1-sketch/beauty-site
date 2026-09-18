@@ -50,7 +50,7 @@ export function getScheduleBadge(
     return { label: "취소", ...GRAY };
   }
   if (status === "pending") {
-    return { label: "예약대기", ...ORANGE };
+    return { label: "대기", ...ORANGE };
   }
 
   const start = new Date(startTime);
@@ -66,15 +66,22 @@ export function getScheduleBadge(
 export function getStatusBadge(status: ReservationStatus): StatusBadge {
   switch (status) {
     case "pending":
-      return { label: "예약대기", ...ORANGE };
+      return { label: "대기", ...ORANGE };
     case "confirmed":
       return { label: "예약완료", ...BLUE };
     case "completed":
-      return { label: "완료", ...BLUE };
+      return { label: "방문완료", ...MINT };
     case "cancelled":
-    case "no_show":
       return { label: "취소", ...GRAY };
+    case "no_show":
+      return { label: "노쇼", ...GRAY };
   }
+}
+
+export function getConsultationResultBadge(result: string): StatusBadge {
+  if (result === "상담완료") return { label: result, ...BLUE };
+  if (result === "보류") return { label: result, ...ORANGE };
+  return { label: result || "상담중", ...MINT };
 }
 
 export function getPaymentBadge(status: PaymentStatus): StatusBadge {

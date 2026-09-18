@@ -52,5 +52,19 @@ export async function createBusiness(formData: FormData) {
     role: "owner",
   });
 
+  // 예약그룹/예약타입/고객등급/고객태그/상담유형처럼 매장마다 다른 분류는
+  // 기본값을 강제로 넣지 않는다. 대표님이 직접 필요한 항목을 추가해서 쓴다.
+  // (전체/미지정은 화면에서 항상 보여주는 시스템 옵션이라 실제 데이터로 만들지 않는다.)
+
+  // 시스템 동작에 필요한 최소 데이터만 채워둔다.
+  await Promise.all([
+    supabase.from("notification_settings").insert({ business_id: business!.id }),
+    supabase.from("payment_methods").insert([
+      { business_id: business!.id, name: "카드" },
+      { business_id: business!.id, name: "현금" },
+      { business_id: business!.id, name: "계좌이체" },
+    ]),
+  ]);
+
   redirect("/dashboard");
 }

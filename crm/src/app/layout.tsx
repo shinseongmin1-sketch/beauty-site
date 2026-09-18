@@ -9,7 +9,7 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "예약관리 | beauty-site",
+  title: "매니온 | 예약관리프로그램",
   description: "매장 직원 · 고객 · 예약 · 결제를 한 곳에서 관리하는 예약 프로그램",
 };
 

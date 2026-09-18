@@ -1,23 +1,42 @@
 import Link from "next/link";
 import { requireBusinessContext } from "@/lib/business";
-import type { Customer } from "@/lib/types";
+import type { CustomerGrade, CustomerTag, CustomerWithMeta } from "@/lib/types";
 import { addCustomer } from "./actions";
+import { CustomerListClient } from "./list-client";
 
 export default async function CustomersPage() {
   const { supabase, business } = await requireBusinessContext();
 
-  const { data } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("business_id", business.id)
-    .order("created_at", { ascending: false })
-    .returns<Customer[]>();
+  const [{ data: customersRaw }, { data: grades }, { data: tags }] = await Promise.all([
+    supabase
+      .from("customers")
+      .select("*, grade:customer_grades(id,name), customer_tag_links(tag:customer_tags(id,name))")
+      .eq("business_id", business.id)
+      .order("created_at", { ascending: false }),
+    supabase.from("customer_grades").select("*").eq("business_id", business.id).order("created_at").returns<CustomerGrade[]>(),
+    supabase.from("customer_tags").select("*").eq("business_id", business.id).order("created_at").returns<CustomerTag[]>(),
+  ]);
 
-  const customers = data ?? [];
+  const customers: CustomerWithMeta[] = (customersRaw ?? []).map((c: Record<string, unknown>) => ({
+    ...(c as object),
+    tags: ((c.customer_tag_links as { tag: { id: string; name: string } | null }[] | null) ?? [])
+      .map((l) => l.tag)
+      .filter((t): t is { id: string; name: string } => Boolean(t)),
+  })) as CustomerWithMeta[];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-[26px] font-bold text-foreground">고객 관리</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-[26px] font-bold text-foreground">고객 관리</h1>
+        <div className="flex gap-2 text-sm">
+          <Link href="/dashboard/customers/grades" className="rounded-xl border border-border bg-card px-3 py-2 font-medium hover:bg-background">
+            등급 관리
+          </Link>
+          <Link href="/dashboard/customers/tags" className="rounded-xl border border-border bg-card px-3 py-2 font-medium hover:bg-background">
+            태그 관리
+          </Link>
+        </div>
+      </div>
 
       <form
         action={addCustomer}
@@ -34,37 +53,7 @@ export default async function CustomersPage() {
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-background text-muted">
-            <tr>
-              <th className="p-3">이름</th>
-              <th className="p-3">연락처</th>
-              <th className="p-3">메모</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {customers.length === 0 && (
-              <tr>
-                <td colSpan={3} className="p-6 text-center text-muted">
-                  등록된 고객이 없습니다.
-                </td>
-              </tr>
-            )}
-            {customers.map((c) => (
-              <tr key={c.id}>
-                <td className="p-3">
-                  <Link href={`/dashboard/customers/${c.id}`} className="font-medium hover:underline">
-                    {c.name}
-                  </Link>
-                </td>
-                <td className="p-3">{c.phone ?? "-"}</td>
-                <td className="p-3 text-muted">{c.memo ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <CustomerListClient customers={customers} grades={grades ?? []} tags={tags ?? []} />
     </div>
   );
 }

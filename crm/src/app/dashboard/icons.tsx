@@ -140,6 +140,44 @@ export function IconArrowRight({ className }: IconProps) {
   );
 }
 
+export function IconSearch({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m20 20-4.8-4.8" />
+    </svg>
+  );
+}
+
+export function IconMessage({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 5.5h16v11H9l-4 3.5v-3.5H4Z" />
+      <path d="M8 9.5h8M8 12.8h5" />
+    </svg>
+  );
+}
+
+export function IconLayers({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="m12 3 8.5 4.5L12 12 3.5 7.5Z" />
+      <path d="m3.5 12 8.5 4.5 8.5-4.5" />
+      <path d="m3.5 16.5 8.5 4.5 8.5-4.5" />
+    </svg>
+  );
+}
+
+export function IconHistory({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3.5 12a8.5 8.5 0 1 0 2.7-6.2" />
+      <path d="M3.5 4.5v4h4" />
+      <path d="M12 8v4.5l3 2" />
+    </svg>
+  );
+}
+
 export function IconSmile({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

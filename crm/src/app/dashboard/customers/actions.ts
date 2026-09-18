@@ -29,6 +29,29 @@ export async function updateCustomerMemo(customerId: string, formData: FormData)
   revalidatePath(`/dashboard/customers/${customerId}`);
 }
 
+export async function updateCustomerMeta(customerId: string, formData: FormData) {
+  const { supabase, business } = await requireBusinessContext();
+  const gradeId = String(formData.get("grade_id") ?? "") || null;
+  const tagIds = formData.getAll("tag_ids").map(String);
+
+  await supabase
+    .from("customers")
+    .update({ grade_id: gradeId })
+    .eq("id", customerId)
+    .eq("business_id", business.id);
+
+  await supabase.from("customer_tag_links").delete().eq("customer_id", customerId);
+
+  if (tagIds.length > 0) {
+    await supabase
+      .from("customer_tag_links")
+      .insert(tagIds.map((tagId) => ({ business_id: business.id, customer_id: customerId, tag_id: tagId })));
+  }
+
+  revalidatePath(`/dashboard/customers/${customerId}`);
+  revalidatePath("/dashboard/customers");
+}
+
 export async function deleteCustomer(customerId: string) {
   const { supabase, business } = await requireBusinessContext();
 

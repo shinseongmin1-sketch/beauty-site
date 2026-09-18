@@ -45,6 +45,7 @@ export async function createPaymentIntent(reservationId: string) {
     business_id: business.id,
     reservation_id: reservationId,
     amount,
+    gross_amount: amount,
     status: "ready",
     toss_order_id: orderId,
   });
