@@ -1,10 +1,14 @@
 "use server";
 
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
+import { requireAccess } from "@/lib/permissions";
 import { getTossClientKey } from "@/lib/toss";
 
 export async function createPaymentIntent(reservationId: string) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "payments");
+  requireWritable(subscription);
 
   const { data: reservation } = await supabase
     .from("reservations")

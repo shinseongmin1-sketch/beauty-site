@@ -1,0 +1,46 @@
+{
+  "001_schema.sql": {
+    "sha256": "d5df35904f018498913a8cf26ca9d2a3426d825e1bc94402fe7c927a0314e372",
+    "verifiedAt": "2026-09-22T01:24:54.318Z"
+  },
+  "002_crm_extensions.sql": {
+    "sha256": "f2b52ab669df711a99d45705e2a6358321d649d3376c1c19d7ccca377c167c8d",
+    "verifiedAt": "2026-09-22T01:24:54.324Z"
+  },
+  "003_customer_grade_tags_sales.sql": {
+    "sha256": "8c0c286bf0f51527cf032fedc1131c83a7e5850a79efb86bd3efa4cd44b01ddd",
+    "verifiedAt": "2026-09-22T01:24:54.325Z"
+  },
+  "004_user_defined_items.sql": {
+    "sha256": "87cf681034aa094d87f385201e7a32dd94945c72fc59b70b4abff246748dae3b",
+    "verifiedAt": "2026-09-22T01:24:54.325Z"
+  },
+  "005_privilege_escalation_expand.sql": {
+    "sha256": "b3ed5bff1960a2eeb68919b54e79fb47c22d3c1f8a4f8a4ec5c9b78148bf1346",
+    "verifiedAt": "2026-09-22T01:24:54.326Z"
+  },
+  "006_privilege_escalation_lockdown.sql": {
+    "sha256": "4d01b4e0b7f74360a7516eccceca560c2754fcbd3c3b4c0b0ea5ebe0a00b19ac",
+    "verifiedAt": "2026-09-22T01:24:54.327Z"
+  },
+  "007_role_based_access.sql": {
+    "sha256": "df1c482b73daa65c4ba14880060c3ee8ad490d74246cdae97ee0f4db85c75262",
+    "verifiedAt": "2026-09-22T01:24:54.328Z"
+  },
+  "008_staff_invitations.sql": {
+    "sha256": "f64a88544231a6ccd57ab7aea9728601303be7e8c152705b7a344b881221034d",
+    "verifiedAt": "2026-09-22T01:24:54.330Z"
+  },
+  "009_subscriptions_trials.sql": {
+    "sha256": "0a1b298f1cd879d8a02dc412e82d7be473ad21e057042f5c26de3064b6e3ccb4",
+    "verifiedAt": "2026-09-22T01:24:54.331Z"
+  },
+  "010_platform_admin_audit.sql": {
+    "sha256": "7e51efa008fb3db9b8748eb72901cd1b0b1f3db52a8981898b56cef55a053143",
+    "verifiedAt": "2026-09-22T01:24:54.332Z"
+  },
+  "011_customer_import_export.sql": {
+    "sha256": "16d7e97cab4ffe8215a8bd0dfbdc37492c8f69a364bbd3c5629e3c389fcfcfb0",
+    "verifiedAt": "2026-09-22T01:24:54.333Z"
+  }
+}

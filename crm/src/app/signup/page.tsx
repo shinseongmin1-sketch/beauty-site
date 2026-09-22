@@ -12,9 +12,9 @@ export default async function SignupPage({
     <div className="flex min-h-full flex-1 items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">30일 무료체험 시작</h1>
+          <h1 className="text-2xl font-bold">3개월 무료체험 시작</h1>
           <p className="mt-2 text-sm text-muted">
-            카드 등록 없이 바로 예약관리 프로그램을 사용해보세요.
+            카드 등록 없이 바로 시작하세요. 무료체험은 사업장(사업자등록번호)당 최초 1회 제공돼요.
           </p>
         </div>
 

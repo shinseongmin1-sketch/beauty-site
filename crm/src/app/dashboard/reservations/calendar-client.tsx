@@ -32,6 +32,7 @@ export function ReservationCalendarClient({
   initialStatusFilter,
   noShowCounts,
   error,
+  canManageCatalogs,
 }: {
   reservations: ReservationWithRelations[];
   selectedDate: string;
@@ -42,6 +43,7 @@ export function ReservationCalendarClient({
   initialStatusFilter?: string;
   noShowCounts?: Record<string, number>;
   error?: string;
+  canManageCatalogs: boolean;
 }) {
   const router = useRouter();
 
@@ -148,6 +150,7 @@ export function ReservationCalendarClient({
             addAction={addReservationGroup}
             updateAction={updateReservationGroup}
             deleteAction={deleteReservationGroup}
+            readOnly={!canManageCatalogs}
           />
           <QuickCategoryPanel
             title="예약타입"
@@ -159,6 +162,7 @@ export function ReservationCalendarClient({
             addAction={addReservationType}
             updateAction={updateReservationType}
             deleteAction={deleteReservationType}
+            readOnly={!canManageCatalogs}
           />
         </div>
 

@@ -1,10 +1,12 @@
 import { requireBusinessContext } from "@/lib/business";
+import { requireAccess } from "@/lib/permissions";
 import type { CustomerTag } from "@/lib/types";
 import { EntityManagerClient } from "../../entity-manager-client";
 import { addCustomerTag, deleteCustomerTag, updateCustomerTag } from "./actions";
 
 export default async function CustomerTagsPage() {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
 
   const { data } = await supabase
     .from("customer_tags")

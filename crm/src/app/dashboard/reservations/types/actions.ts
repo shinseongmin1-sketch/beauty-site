@@ -2,9 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
+import { requireAccess } from "@/lib/permissions";
 
 export async function addReservationType(formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
+  requireWritable(subscription);
 
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
@@ -17,7 +21,9 @@ export async function addReservationType(formData: FormData) {
 }
 
 export async function updateReservationType(typeId: string, formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
+  requireWritable(subscription);
 
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
@@ -34,7 +40,9 @@ export async function updateReservationType(typeId: string, formData: FormData) 
 }
 
 export async function deleteReservationType(typeId: string) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
+  requireWritable(subscription);
 
   await supabase.from("reservation_types").delete().eq("id", typeId).eq("business_id", business.id);
   revalidatePath("/dashboard/reservations/types");
@@ -42,7 +50,9 @@ export async function deleteReservationType(typeId: string) {
 }
 
 export async function toggleReservationTypeActive(typeId: string, active: boolean) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
+  requireWritable(subscription);
 
   await supabase
     .from("reservation_types")

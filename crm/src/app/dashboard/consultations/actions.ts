@@ -3,9 +3,12 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
+import { requireAccess } from "@/lib/permissions";
 
 export async function createConsultation(formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, subscription } = await requireBusinessContext();
+  requireWritable(subscription);
 
   let customerId = String(formData.get("customer_id") ?? "") || null;
   const newCustomerName = String(formData.get("new_customer_name") ?? "").trim();
@@ -61,7 +64,8 @@ export async function createConsultation(formData: FormData) {
 }
 
 export async function updateConsultationResult(consultationId: string, result: string) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, subscription } = await requireBusinessContext();
+  requireWritable(subscription);
 
   await supabase
     .from("consultations")
@@ -73,7 +77,9 @@ export async function updateConsultationResult(consultationId: string, result: s
 }
 
 export async function deleteConsultation(consultationId: string) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "deleteRecords");
+  requireWritable(subscription);
 
   await supabase.from("consultations").delete().eq("id", consultationId).eq("business_id", business.id);
   revalidatePath("/dashboard/consultations");

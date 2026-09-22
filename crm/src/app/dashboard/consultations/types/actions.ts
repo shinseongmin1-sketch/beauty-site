@@ -2,9 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
+import { requireAccess } from "@/lib/permissions";
 
 export async function addConsultationType(formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
+  requireWritable(subscription);
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   if (!name) return;
@@ -15,7 +19,9 @@ export async function addConsultationType(formData: FormData) {
 }
 
 export async function updateConsultationType(typeId: string, formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
+  requireWritable(subscription);
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   if (!name) return;
@@ -30,14 +36,18 @@ export async function updateConsultationType(typeId: string, formData: FormData)
 }
 
 export async function deleteConsultationType(typeId: string) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
+  requireWritable(subscription);
   await supabase.from("consultation_types").delete().eq("id", typeId).eq("business_id", business.id);
   revalidatePath("/dashboard/consultations/types");
   revalidatePath("/dashboard/consultations");
 }
 
 export async function toggleConsultationTypeActive(typeId: string, active: boolean) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
+  requireWritable(subscription);
   await supabase
     .from("consultation_types")
     .update({ active })

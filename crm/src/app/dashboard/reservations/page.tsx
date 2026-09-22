@@ -1,6 +1,7 @@
 import { endOfDay, format, startOfDay, subMonths } from "date-fns";
 import { NO_SHOW_WARNING_MONTHS } from "@/lib/customer-stats";
 import { requireBusinessContext } from "@/lib/business";
+import { canAccess } from "@/lib/permissions";
 import type { ReservationWithRelations } from "@/lib/types";
 import { ReservationCalendarClient } from "./calendar-client";
 
@@ -20,7 +21,7 @@ export default async function ReservationsPage({
   }>;
 }) {
   const { date, new: newParam, customerId, edit, status, error } = await searchParams;
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile } = await requireBusinessContext();
 
   const targetDate = date ? new Date(`${date}T00:00:00`) : new Date();
   const dateParam = format(targetDate, "yyyy-MM-dd");
@@ -98,6 +99,7 @@ export default async function ReservationsPage({
       initialEditId={edit}
       initialStatusFilter={status}
       noShowCounts={noShowCounts}
+      canManageCatalogs={canAccess(profile.role, "catalogs")}
       error={error}
     />
   );

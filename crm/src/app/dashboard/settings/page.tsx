@@ -2,13 +2,20 @@ import { requireBusinessContext } from "@/lib/business";
 import { requireAccess } from "@/lib/permissions";
 import { updateBusiness } from "./actions";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   const { business, profile } = await requireBusinessContext();
   requireAccess(profile.role, "settings");
 
   return (
     <div className="max-w-xl space-y-8">
       <h1 className="text-[26px] font-bold text-foreground">매장 설정</h1>
+
+      {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
 
       <form action={updateBusiness} className="space-y-4 rounded-2xl border border-border bg-card p-6">
         <h2 className="font-semibold">기본 정보</h2>
@@ -20,6 +27,35 @@ export default async function SettingsPage() {
             defaultValue={business.name}
             className="w-full rounded-lg border border-border px-3 py-2"
           />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">대표자명</label>
+          <input
+            name="representative_name"
+            defaultValue={business.representative_name ?? ""}
+            className="w-full rounded-lg border border-border px-3 py-2"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">사업자등록번호</label>
+          {business.business_number_masked ? (
+            <p className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm text-muted">
+              {business.business_number_masked} (등록됨 · 변경할 수 없습니다)
+            </p>
+          ) : (
+            <>
+              <input
+                name="business_number"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="123-45-67890"
+                className="w-full rounded-lg border border-border px-3 py-2"
+              />
+              <p className="mt-1 text-xs text-muted">
+                아직 등록되지 않았습니다. 한 번 등록하면 변경할 수 없고, 번호 원문은 저장하지 않습니다.
+              </p>
+            </>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">전화번호</label>

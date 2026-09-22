@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { endOfDay, startOfDay } from "date-fns";
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
+import { requireAccess } from "@/lib/permissions";
 import { reservationCode } from "@/lib/phone";
 import type { ReservationStatus, ReservationWithRelations } from "@/lib/types";
 
@@ -26,7 +28,8 @@ function readReservationFields(formData: FormData) {
 }
 
 export async function createReservation(formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, subscription } = await requireBusinessContext();
+  requireWritable(subscription);
 
   const { date, startTimeStr, endTimeStr, staffId, serviceId, groupId, typeId, status, memo, content } =
     readReservationFields(formData);
@@ -94,7 +97,8 @@ export async function createReservation(formData: FormData) {
 }
 
 export async function updateReservation(reservationId: string, formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, subscription } = await requireBusinessContext();
+  requireWritable(subscription);
 
   const { date, startTimeStr, endTimeStr, staffId, serviceId, groupId, typeId, status, memo, content } =
     readReservationFields(formData);
@@ -133,7 +137,8 @@ export async function updateReservation(reservationId: string, formData: FormDat
 }
 
 export async function updateReservationStatus(reservationId: string, status: ReservationStatus) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, subscription } = await requireBusinessContext();
+  requireWritable(subscription);
 
   await supabase
     .from("reservations")
@@ -146,7 +151,9 @@ export async function updateReservationStatus(reservationId: string, status: Res
 }
 
 export async function deleteReservation(reservationId: string) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "deleteRecords");
+  requireWritable(subscription);
 
   await supabase
     .from("reservations")

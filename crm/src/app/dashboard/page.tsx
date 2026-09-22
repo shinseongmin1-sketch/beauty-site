@@ -7,6 +7,7 @@ import {
   subMonths,
 } from "date-fns";
 import { requireBusinessContext } from "@/lib/business";
+import { canAccess } from "@/lib/permissions";
 import type { ReservationWithRelations } from "@/lib/types";
 import { getScheduleBadge } from "@/lib/status";
 import { NO_SHOW_WARNING_MONTHS, NO_SHOW_WARNING_THRESHOLD } from "@/lib/customer-stats";
@@ -37,6 +38,8 @@ export default async function DashboardHomePage({
 
   const selectedDate = date ? new Date(`${date}T00:00:00`) : new Date();
   const now = new Date();
+  // 직원은 매출 데이터에 접근할 수 없다 (DB 도 차단). 조회 자체를 하지 않고 화면에서도 숨긴다.
+  const canSeeSales = canAccess(profile.role, "sales");
 
   const todayStart = startOfDay(now);
   const todayEnd = endOfDay(now);
@@ -69,20 +72,24 @@ export default async function DashboardHomePage({
       .eq("business_id", business.id)
       .gte("start_time", yesterdayStart.toISOString())
       .lte("start_time", yesterdayEnd.toISOString()),
-    supabase
-      .from("payments")
-      .select("amount")
-      .eq("business_id", business.id)
-      .eq("status", "paid")
-      .gte("paid_at", todayStart.toISOString())
-      .lte("paid_at", todayEnd.toISOString()),
-    supabase
-      .from("payments")
-      .select("amount")
-      .eq("business_id", business.id)
-      .eq("status", "paid")
-      .gte("paid_at", yesterdayStart.toISOString())
-      .lte("paid_at", yesterdayEnd.toISOString()),
+    canSeeSales
+      ? supabase
+          .from("payments")
+          .select("amount")
+          .eq("business_id", business.id)
+          .eq("status", "paid")
+          .gte("paid_at", todayStart.toISOString())
+          .lte("paid_at", todayEnd.toISOString())
+      : Promise.resolve({ data: [] as { amount: number }[] }),
+    canSeeSales
+      ? supabase
+          .from("payments")
+          .select("amount")
+          .eq("business_id", business.id)
+          .eq("status", "paid")
+          .gte("paid_at", yesterdayStart.toISOString())
+          .lte("paid_at", yesterdayEnd.toISOString())
+      : Promise.resolve({ data: [] as { amount: number }[] }),
     supabase
       .from("reservations")
       .select("customer_id, customer:customers(id,name)")
@@ -254,18 +261,20 @@ export default async function DashboardHomePage({
             hint="오늘 기준"
           />
         </Link>
-        <Link href="/dashboard/sales">
-          <StatCard
-            icon={<IconWallet className="h-5 w-5" />}
-            iconBg="bg-positive-soft text-positive"
-            label="오늘 예상매출"
-            value={`${todayRevenue.toLocaleString()}원`}
-            hint={
-              revenueDelta === 0 ? "어제와 동일" : `${revenueDelta > 0 ? "▲" : "▼"} ${Math.abs(revenueDelta)}%`
-            }
-            positive={revenueDelta >= 0}
-          />
-        </Link>
+        {canSeeSales && (
+          <Link href="/dashboard/sales">
+            <StatCard
+              icon={<IconWallet className="h-5 w-5" />}
+              iconBg="bg-positive-soft text-positive"
+              label="오늘 예상매출"
+              value={`${todayRevenue.toLocaleString()}원`}
+              hint={
+                revenueDelta === 0 ? "어제와 동일" : `${revenueDelta > 0 ? "▲" : "▼"} ${Math.abs(revenueDelta)}%`
+              }
+              positive={revenueDelta >= 0}
+            />
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
@@ -351,8 +360,10 @@ export default async function DashboardHomePage({
           <div className="grid grid-cols-2 gap-3">
             <QuickMenu href="/dashboard/reservations" icon={<IconCalendar className="h-5 w-5" />} label="예약 조회" />
             <QuickMenu href="/dashboard/customers" icon={<IconUsers className="h-5 w-5" />} label="고객 등록" />
-            <QuickMenu href="/dashboard/customers/revisit" icon={<IconClock className="h-5 w-5" />} label="재방문 관리" />
-            <QuickMenu href="/dashboard/sales" icon={<IconWallet className="h-5 w-5" />} label="매출 확인" />
+            {canAccess(profile.role, "revisit") && (
+              <QuickMenu href="/dashboard/customers/revisit" icon={<IconClock className="h-5 w-5" />} label="재방문 관리" />
+            )}
+            {canSeeSales && <QuickMenu href="/dashboard/sales" icon={<IconWallet className="h-5 w-5" />} label="매출 확인" />}
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-5">

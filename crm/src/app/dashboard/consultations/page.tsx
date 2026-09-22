@@ -1,9 +1,10 @@
 import { requireBusinessContext } from "@/lib/business";
+import { canAccess } from "@/lib/permissions";
 import type { ConsultationType, ConsultationWithRelations } from "@/lib/types";
 import { ConsultationListClient } from "./list-client";
 
 export default async function ConsultationsPage() {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile } = await requireBusinessContext();
 
   const [{ data: consultations }, { data: staff }, { data: types }] = await Promise.all([
     supabase
@@ -17,5 +18,5 @@ export default async function ConsultationsPage() {
     supabase.from("consultation_types").select("*").eq("business_id", business.id).order("created_at").returns<ConsultationType[]>(),
   ]);
 
-  return <ConsultationListClient consultations={consultations ?? []} staff={staff ?? []} types={types ?? []} />;
+  return <ConsultationListClient consultations={consultations ?? []} staff={staff ?? []} types={types ?? []} canManageCatalogs={canAccess(profile.role, "catalogs")} />;
 }

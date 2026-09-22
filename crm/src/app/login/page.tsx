@@ -63,7 +63,7 @@ export default async function LoginPage({
         <p className="text-center text-sm text-muted">
           계정이 없으신가요?{" "}
           <Link href="/signup" className="font-medium text-accent hover:underline">
-            30일 무료체험 시작
+            3개월 무료체험 시작
           </Link>
         </p>
       </div>

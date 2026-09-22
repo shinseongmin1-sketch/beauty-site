@@ -2,7 +2,7 @@ import { requireBusinessContext } from "@/lib/business";
 import { requireAccess } from "@/lib/permissions";
 import type { Staff } from "@/lib/types";
 import { addStaff } from "./actions";
-import { StaffTableClient } from "./table-client";
+import { StaffTableClient, type PendingInvite } from "./table-client";
 
 export default async function StaffPage() {
   const { supabase, business, profile } = await requireBusinessContext();
@@ -16,6 +16,17 @@ export default async function StaffPage() {
     .returns<Staff[]>();
 
   const staff = data ?? [];
+
+  // 대기 중인 초대(수락/취소/만료 전). token_hash 는 DB 권한으로 조회 자체가 막혀 있다.
+  const { data: invites } = await supabase
+    .from("staff_invitations")
+    .select("staff_id,email,expires_at")
+    .eq("business_id", business.id)
+    .is("accepted_at", null)
+    .is("revoked_at", null)
+    .gt("expires_at", new Date().toISOString());
+  const pendingInvites: Record<string, PendingInvite> = {};
+  for (const i of invites ?? []) pendingInvites[i.staff_id] = { email: i.email, expiresAt: i.expires_at };
 
   return (
     <div className="space-y-6">
@@ -46,7 +57,7 @@ export default async function StaffPage() {
         </button>
       </form>
 
-      <StaffTableClient staff={staff} />
+      <StaffTableClient staff={staff} pendingInvites={pendingInvites} viewerRole={profile.role} />
     </div>
   );
 }

@@ -25,6 +25,8 @@ export interface Business {
   business_hours: Record<string, unknown> | null;
   naver_booking_id: string | null;
   toss_client_key: string | null;
+  representative_name: string | null;
+  business_number_masked: string | null; // 원문은 저장하지 않는다 (해시 + 마스킹 표기만)
   created_at: string;
 }
 

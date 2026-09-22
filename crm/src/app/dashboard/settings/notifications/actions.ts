@@ -2,11 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
 import { requireAccess } from "@/lib/permissions";
 
 export async function updateNotificationSettings(formData: FormData) {
-  const { supabase, business, profile } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
   requireAccess(profile.role, "settings");
+  requireWritable(subscription);
 
   const reservationCreated = formData.get("reservation_created") === "on";
   const reservationUpdated = formData.get("reservation_updated") === "on";

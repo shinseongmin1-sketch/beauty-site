@@ -5,7 +5,7 @@ import { addCustomer } from "./actions";
 import { CustomerListClient } from "./list-client";
 
 export default async function CustomersPage() {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile } = await requireBusinessContext();
 
   const [{ data: customersRaw }, { data: grades }, { data: tags }] = await Promise.all([
     supabase
@@ -53,7 +53,7 @@ export default async function CustomersPage() {
         </button>
       </form>
 
-      <CustomerListClient customers={customers} grades={grades ?? []} tags={tags ?? []} />
+      <CustomerListClient customers={customers} grades={grades ?? []} tags={tags ?? []} role={profile.role} />
     </div>
   );
 }

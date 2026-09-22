@@ -2,6 +2,7 @@ import { requireBusinessContext } from "@/lib/business";
 import { canAccess } from "@/lib/permissions";
 import { NavLink, NavGroup, SubNavLink } from "./nav-link";
 import { DashboardHeader } from "./header";
+import { SubscriptionBanner, subscriptionLabel } from "./subscription-banner";
 import { signOut } from "./actions";
 import {
   IconHome,
@@ -19,7 +20,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { business, profile } = await requireBusinessContext();
+  const { business, profile, subscription } = await requireBusinessContext();
   const displayName = profile.full_name || "관리자";
   const initial = displayName.trim().charAt(0) || "관";
   const role = profile.role;
@@ -46,8 +47,8 @@ export default async function DashboardLayout({
             <NavGroup href="/dashboard/reservations" icon={<IconCalendar />} label="예약관리">
               <SubNavLink href="/dashboard/reservations">예약관리</SubNavLink>
               <SubNavLink href="/dashboard/reservations/search">예약고객 검색</SubNavLink>
-              <SubNavLink href="/dashboard/reservations/groups">예약그룹</SubNavLink>
-              <SubNavLink href="/dashboard/reservations/types">예약타입</SubNavLink>
+              {canAccess(role, "catalogs") && <SubNavLink href="/dashboard/reservations/groups">예약그룹</SubNavLink>}
+              {canAccess(role, "catalogs") && <SubNavLink href="/dashboard/reservations/types">예약타입</SubNavLink>}
               {canAccess(role, "staffAdmin") && <SubNavLink href="/dashboard/staff">담당자</SubNavLink>}
             </NavGroup>
           )}
@@ -65,9 +66,11 @@ export default async function DashboardLayout({
             </NavGroup>
           )}
 
-          <NavLink href="/dashboard/services" icon={<IconTag />}>
-            시술/메뉴
-          </NavLink>
+          {canAccess(role, "catalogs") && (
+            <NavLink href="/dashboard/services" icon={<IconTag />}>
+              시술/메뉴
+            </NavLink>
+          )}
 
           {canAccess(role, "sales") && (
             <NavGroup href="/dashboard/sales" icon={<IconChart />} label="매출관리">
@@ -116,8 +119,11 @@ export default async function DashboardLayout({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <DashboardHeader businessName={business.name} />
-        <main className="flex-1 overflow-y-auto bg-background p-8">{children}</main>
+        <DashboardHeader businessName={business.name} subscriptionLabel={subscriptionLabel(subscription)} />
+        <main className="flex-1 overflow-y-auto bg-background p-8">
+          <SubscriptionBanner state={subscription} />
+          {children}
+        </main>
       </div>
     </div>
   );

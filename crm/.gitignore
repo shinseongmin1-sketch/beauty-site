@@ -33,6 +33,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.local.example
+!.env.test.example
 
 # vercel
 .vercel
@@ -43,3 +44,11 @@ supabase/.temp/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# DB 백업 산출물 (암호화되어 있어도 Git 에 올리지 않는다)
+/backups/
+/supabase/prod-apply/*.sql
+
+# 화면 검증 스크린샷
+/.e2e-shots/
+/.e2e-downloads/

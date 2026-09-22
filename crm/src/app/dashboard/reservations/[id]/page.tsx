@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { requireBusinessContext } from "@/lib/business";
+import { canAccess } from "@/lib/permissions";
 import type { ReservationWithRelations } from "@/lib/types";
 import { getStatusBadge } from "@/lib/status";
 import { reservationCode } from "@/lib/phone";
@@ -13,7 +14,8 @@ export default async function ReservationDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile } = await requireBusinessContext();
+  const canPay = canAccess(profile.role, "payments");
 
   const { data: reservation } = await supabase
     .from("reservations")
@@ -26,11 +28,9 @@ export default async function ReservationDetailPage({
 
   if (!reservation) notFound();
 
-  const { data: payment } = await supabase
-    .from("payments")
-    .select("*")
-    .eq("reservation_id", id)
-    .maybeSingle();
+  const { data: payment } = canPay
+    ? await supabase.from("payments").select("*").eq("reservation_id", id).maybeSingle()
+    : { data: null };
 
   const statuses: Array<[typeof reservation.status, string]> = [
     ["pending", "예약대기"],
@@ -121,6 +121,7 @@ export default async function ReservationDetailPage({
         </div>
       </div>
 
+      {canPay && (
       <div className="rounded-2xl border border-border bg-card p-6">
         <h2 className="mb-3 font-semibold">결제</h2>
         {payment ? (
@@ -137,12 +138,15 @@ export default async function ReservationDetailPage({
           </Link>
         )}
       </div>
+      )}
 
-      <form action={deleteReservation.bind(null, reservation.id)}>
-        <button type="submit" className="text-sm text-red-500 hover:underline">
-          예약 삭제
-        </button>
-      </form>
+      {canAccess(profile.role, "deleteRecords") && (
+        <form action={deleteReservation.bind(null, reservation.id)}>
+          <button type="submit" className="text-sm text-red-500 hover:underline">
+            예약 삭제
+          </button>
+        </form>
+      )}
     </div>
   );
 }

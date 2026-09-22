@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { signUpErrorMessage } from "@/lib/auth-errors";
+import { logAudit, safeErrorCode } from "@/lib/audit";
 
 export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -22,8 +24,25 @@ export async function signUp(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+    // 영문 원문은 서버 로그에만 남기고, 화면에는 한국어 안내만 보여준다.
+    console.error("[signup] failed", { code: error.code, status: error.status, message: error.message });
+    await logAudit({
+      actorType: "system",
+      action: "auth.signup",
+      resourceType: "auth",
+      result: "failure",
+      metadata: { error_code: safeErrorCode(error.code) },
+    });
+    redirect(`/signup?error=${encodeURIComponent(signUpErrorMessage(error))}`);
   }
+
+  await logAudit({
+    actorUserId: data.user?.id ?? null,
+    actorType: "owner",
+    action: "auth.signup",
+    resourceType: "auth",
+    result: "success",
+  });
 
   // Supabase 프로젝트에서 이메일 확인(email confirmation)을 켜둔 경우
   // 세션이 바로 생기지 않는다. 그 경우 안내 후 로그인 페이지로 보낸다.

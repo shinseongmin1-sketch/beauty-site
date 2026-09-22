@@ -3,11 +3,13 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
 import { requireAccess } from "@/lib/permissions";
 
 export async function createMarketingDraft(formData: FormData) {
-  const { supabase, business, profile } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
   requireAccess(profile.role, "marketing");
+  requireWritable(subscription);
 
   const targetDescription = String(formData.get("target_description") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();

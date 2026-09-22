@@ -1,9 +1,11 @@
 import { requireBusinessContext } from "@/lib/business";
+import { requireAccess } from "@/lib/permissions";
 import type { Service } from "@/lib/types";
 import { addService, deleteService, toggleServiceActive } from "./actions";
 
 export default async function ServicesPage() {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
 
   const { data } = await supabase
     .from("services")

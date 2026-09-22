@@ -1,4 +1,5 @@
 import { requireBusinessContext } from "@/lib/business";
+import { requireAccess } from "@/lib/permissions";
 import type { ReservationType } from "@/lib/types";
 import { EntityManagerClient } from "../../entity-manager-client";
 import {
@@ -9,7 +10,8 @@ import {
 } from "./actions";
 
 export default async function ReservationTypesPage() {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile } = await requireBusinessContext();
+  requireAccess(profile.role, "catalogs");
 
   const { data } = await supabase
     .from("reservation_types")

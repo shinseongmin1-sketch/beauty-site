@@ -6,7 +6,27 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:local-test": "node scripts/db-local-test.mjs",
+    "db:migrate:test": "node scripts/migrate.mjs --target=test",
+    "db:plan": "node scripts/migrate.mjs --target=prod --plan",
+    "db:verify": "node scripts/verify.mjs",
+    "db:migrate:prod": "node scripts/migrate.mjs --target=prod",
+    "db:backup:prod": "node scripts/backup.mjs --target=prod",
+    "db:backup:test": "node scripts/backup.mjs --target=test",
+    "db:restore:test": "node scripts/restore.mjs --target=test",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "db:reset:test": "node scripts/reset-test.mjs",
+    "dev:test": "node scripts/dev-test.mjs",
+    "test:e2e": "node tests/e2e/manual-flow.mjs",
+    "test:e2e:attack": "node tests/e2e/staff-attack.mjs",
+    "test:e2e:invite": "node tests/e2e/staff-invite.mjs",
+    "test:e2e:signup": "node tests/e2e/signup-messages.mjs",
+    "test:e2e:trial": "node tests/e2e/trial-flow.mjs",
+    "admin:test": "node scripts/platform-admin.mjs --target=test",
+    "test:e2e:admin": "node tests/e2e/platform-admin.mjs",
+    "test:e2e:import": "node tests/e2e/customer-import-export.mjs",
+    "build:test": "node scripts/build-test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -19,12 +39,14 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "playwright-core": "^1.63.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

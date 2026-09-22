@@ -1,21 +1,52 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { maskPhone } from "@/lib/phone";
-import type { CustomerGrade, CustomerTag, CustomerWithMeta } from "@/lib/types";
+import { canAccess } from "@/lib/permissions";
+import type { CustomerGrade, CustomerTag, CustomerWithMeta, StaffRole } from "@/lib/types";
+import { exportCustomersCsv } from "./export-actions";
+import { ImportCustomersModal } from "./import-modal";
+
+function downloadCsv(csv: string, filename: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 export function CustomerListClient({
   customers,
   grades,
   tags,
+  role,
 }: {
   customers: CustomerWithMeta[];
   grades: CustomerGrade[];
   tags: CustomerTag[];
+  role: StaffRole;
 }) {
   const [gradeFilter, setGradeFilter] = useState("");
   const [tagFilter, setTagFilter] = useState("");
+  const [exportPending, startExport] = useTransition();
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const canExport = canAccess(role, "dataExport");
+  const canImport = canAccess(role, "dataImport");
+
+  function handleExport() {
+    setExportError(null);
+    startExport(async () => {
+      const result = await exportCustomersCsv({ gradeId: gradeFilter || null, tagId: tagFilter || null });
+      if (result.ok) downloadCsv(result.csv, result.filename);
+      else setExportError(result.error);
+    });
+  }
 
   const filtered = useMemo(() => {
     return customers.filter((c) => {
@@ -45,7 +76,29 @@ export function CustomerListClient({
           ))}
         </select>
         <span className="ml-auto text-sm text-muted">총 {filtered.length}명</span>
+        {canExport && (
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exportPending}
+            className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-background disabled:opacity-60"
+          >
+            {exportPending ? "내보내는 중…" : "CSV 내보내기"}
+          </button>
+        )}
+        {canImport && (
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className="rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-background"
+          >
+            CSV 가져오기
+          </button>
+        )}
       </div>
+
+      {exportError && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{exportError}</p>}
+      {canImport && <ImportCustomersModal open={importOpen} onClose={() => setImportOpen(false)} />}
 
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
         <table className="w-full text-left text-sm">

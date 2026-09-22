@@ -28,6 +28,7 @@ export function QuickCategoryPanel({
   addAction,
   updateAction,
   deleteAction,
+  readOnly,
 }: {
   title: string;
   entityLabel: string;
@@ -38,6 +39,8 @@ export function QuickCategoryPanel({
   addAction: (formData: FormData) => Promise<void>;
   updateAction: (id: string, formData: FormData) => Promise<void>;
   deleteAction: (id: string) => Promise<void>;
+  /** 직원 등 분류 관리 권한이 없는 경우: 조회/필터만 가능하고 추가·수정·삭제 버튼은 숨김 */
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -118,14 +121,16 @@ export function QuickCategoryPanel({
           >
             <IconSearch className="h-4 w-4" />
           </button>
-          <button
-            type="button"
-            onClick={openAdd}
-            aria-label={`${title} 추가`}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-accent transition-colors hover:bg-accent-soft"
-          >
-            <IconPlusCircle className="h-4 w-4" />
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={openAdd}
+              aria-label={`${title} 추가`}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-accent transition-colors hover:bg-accent-soft"
+            >
+              <IconPlusCircle className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -165,7 +170,7 @@ export function QuickCategoryPanel({
                 {item.active === false ? " (사용 안 함)" : ""}
               </span>
             </button>
-            {hoveredId === item.id && (
+            {!readOnly && hoveredId === item.id && (
               <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1.5 text-xs">
                 <button
                   type="button"

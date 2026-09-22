@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { requireBusinessContext } from "@/lib/business";
+import { requireAccess } from "@/lib/permissions";
+import { requireWritable } from "@/lib/subscription";
 import { confirmTossPayment } from "@/lib/toss";
 
 export default async function PaymentSuccessPage({
@@ -8,6 +11,11 @@ export default async function PaymentSuccessPage({
   searchParams: Promise<{ paymentKey?: string; orderId?: string; amount?: string }>;
 }) {
   const { paymentKey, orderId, amount } = await searchParams;
+
+  // 결제 승인/저장은 대표·관리자만. 직원이 이 주소를 직접 열어도 토스 승인 호출 전에 차단된다.
+  const { profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "payments");
+  requireWritable(subscription);
 
   if (!paymentKey || !orderId || !amount) {
     return <ResultShell ok={false} title="잘못된 접근입니다." />;

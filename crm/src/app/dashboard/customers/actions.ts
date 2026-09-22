@@ -2,9 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
+import { requireAccess } from "@/lib/permissions";
 
 export async function addCustomer(formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, subscription } = await requireBusinessContext();
+  requireWritable(subscription);
 
   const name = String(formData.get("name") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim() || null;
@@ -17,7 +20,8 @@ export async function addCustomer(formData: FormData) {
 }
 
 export async function updateCustomerMemo(customerId: string, formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, subscription } = await requireBusinessContext();
+  requireWritable(subscription);
   const memo = String(formData.get("memo") ?? "").trim() || null;
 
   await supabase
@@ -30,7 +34,8 @@ export async function updateCustomerMemo(customerId: string, formData: FormData)
 }
 
 export async function updateCustomerMeta(customerId: string, formData: FormData) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, subscription } = await requireBusinessContext();
+  requireWritable(subscription);
   const gradeId = String(formData.get("grade_id") ?? "") || null;
   const tagIds = formData.getAll("tag_ids").map(String);
 
@@ -53,7 +58,9 @@ export async function updateCustomerMeta(customerId: string, formData: FormData)
 }
 
 export async function deleteCustomer(customerId: string) {
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
+  requireAccess(profile.role, "deleteRecords");
+  requireWritable(subscription);
 
   await supabase.from("customers").delete().eq("id", customerId).eq("business_id", business.id);
   revalidatePath("/dashboard/customers");

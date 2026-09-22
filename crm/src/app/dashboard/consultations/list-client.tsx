@@ -14,10 +14,12 @@ export function ConsultationListClient({
   consultations,
   staff,
   types,
+  canManageCatalogs,
 }: {
   consultations: ConsultationWithRelations[];
   staff: { id: string; name: string }[];
   types: ConsultationType[];
+  canManageCatalogs: boolean;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -74,6 +76,7 @@ export function ConsultationListClient({
           addAction={addConsultationType}
           updateAction={updateConsultationType}
           deleteAction={deleteConsultationType}
+          readOnly={!canManageCatalogs}
         />
 
         <div className="space-y-5">

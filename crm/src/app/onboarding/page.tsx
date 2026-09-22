@@ -53,6 +53,32 @@ export default async function OnboardingPage({
             />
           </div>
           <div>
+            <label className="mb-1 block text-sm font-medium">대표자명</label>
+            <input
+              type="text"
+              name="representative_name"
+              required
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+              placeholder="홍길동"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">사업자등록번호</label>
+            <input
+              type="text"
+              name="business_number"
+              required
+              inputMode="numeric"
+              autoComplete="off"
+              className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+              placeholder="123-45-67890"
+            />
+            <p className="mt-1 text-xs text-muted">
+              사업장당 최초 1회 제공되는 3개월 무료체험 확인에 사용돼요. 이미 무료체험을 이용한 사업자번호는 무료체험 없이
+              시작되며(조회·내보내기만 가능), 번호 원문은 저장하지 않고 암호화된 확인값만 보관합니다.
+            </p>
+          </div>
+          <div>
             <label className="mb-1 block text-sm font-medium">전화번호</label>
             <input
               type="tel"

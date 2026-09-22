@@ -3,11 +3,13 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
+import { requireWritable } from "@/lib/subscription";
 import { requireAccess } from "@/lib/permissions";
 
 export async function createSale(formData: FormData) {
-  const { supabase, business, profile } = await requireBusinessContext();
+  const { supabase, business, profile, subscription } = await requireBusinessContext();
   requireAccess(profile.role, "sales");
+  requireWritable(subscription);
 
   let customerId = String(formData.get("customer_id") ?? "") || null;
   const newCustomerName = String(formData.get("new_customer_name") ?? "").trim();

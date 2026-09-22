@@ -2,6 +2,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Business, Profile } from "@/lib/types";
+import { computeSubscriptionState, type SubscriptionRow } from "@/lib/subscription";
 
 /**
  * dashboard 하위 서버 컴포넌트/액션에서 공통으로 쓰는 컨텍스트.
@@ -25,15 +26,23 @@ export const requireBusinessContext = cache(async () => {
   // profile과 business를 한 번의 조회로 합쳐서 왕복 횟수를 줄인다.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*, business:businesses(*)")
+    .select("*, business:businesses(*, subscription:subscriptions(*))")
     .eq("id", user.id)
-    .maybeSingle<Profile & { business: Business | null }>();
+    .maybeSingle<Profile & { business: (Business & { subscription: SubscriptionRow | SubscriptionRow[] | null }) | null }>();
 
   if (!profile?.business_id || !profile.business) {
     redirect("/onboarding");
   }
 
-  const { business, ...profileFields } = profile;
+  const { business: businessWithSub, ...profileFields } = profile;
+  const { subscription: rawSubscription, ...business } = businessWithSub;
+  const subscriptionRow = Array.isArray(rawSubscription) ? (rawSubscription[0] ?? null) : rawSubscription;
 
-  return { supabase, user, profile: profileFields as Profile, business: business as Business };
+  // 무료체험이 끝났으면 저장된 상태(trial → expired)를 맞춘다. 쓰기 차단 자체는 DB 가 시각으로 판단하므로 이 호출이 실패해도 안전하다.
+  const subscription = computeSubscriptionState(subscriptionRow);
+  if (subscription.stored === "trial" && subscription.status === "expired") {
+    await supabase.rpc("sync_my_subscription");
+  }
+
+  return { supabase, user, profile: profileFields as Profile, business: business as Business, subscription };
 });

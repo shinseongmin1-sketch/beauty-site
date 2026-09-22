@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { requireBusinessContext } from "@/lib/business";
+import { canAccess } from "@/lib/permissions";
 import type {
   ConsultationWithRelations,
   Customer,
@@ -29,7 +30,8 @@ export default async function CustomerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { supabase, business } = await requireBusinessContext();
+  const { supabase, business, profile } = await requireBusinessContext();
+  const canSeeSales = canAccess(profile.role, "sales");
 
   const { data: customerRaw } = await supabase
     .from("customers")
@@ -62,15 +64,17 @@ export default async function CustomerDetailPage({
         .eq("customer_id", id)
         .order("consult_date", { ascending: false })
         .returns<ConsultationWithRelations[]>(),
-      supabase
-        .from("payments")
-        .select(
-          "*, customer:customers(id,name,phone), staff:staff(id,name), service:services(id,name), payment_method:payment_methods(id,name)"
-        )
-        .eq("business_id", business.id)
-        .eq("customer_id", id)
-        .order("created_at", { ascending: false })
-        .returns<PaymentWithRelations[]>(),
+      canSeeSales
+        ? supabase
+            .from("payments")
+            .select(
+              "*, customer:customers(id,name,phone), staff:staff(id,name), service:services(id,name), payment_method:payment_methods(id,name)"
+            )
+            .eq("business_id", business.id)
+            .eq("customer_id", id)
+            .order("created_at", { ascending: false })
+            .returns<PaymentWithRelations[]>()
+        : Promise.resolve({ data: [] as PaymentWithRelations[] }),
       supabase.from("customer_grades").select("*").eq("business_id", business.id).order("created_at").returns<CustomerGrade[]>(),
       supabase.from("customer_tags").select("*").eq("business_id", business.id).order("created_at").returns<CustomerTag[]>(),
     ]);
@@ -112,11 +116,13 @@ export default async function CustomerDetailPage({
           </div>
           <p className="mt-1.5 text-sm text-muted">{maskPhone(customer.phone)}</p>
         </div>
-        <form action={deleteCustomer.bind(null, customer.id)}>
-          <button type="submit" className="text-sm text-red-500 hover:underline">
-            고객 삭제
-          </button>
-        </form>
+        {canAccess(profile.role, "deleteRecords") && (
+          <form action={deleteCustomer.bind(null, customer.id)}>
+            <button type="submit" className="text-sm text-red-500 hover:underline">
+              고객 삭제
+            </button>
+          </form>
+        )}
       </div>
 
       {noShowWarning && (
@@ -130,7 +136,7 @@ export default async function CustomerDetailPage({
         <SummaryStat label="방문완료" value={`${stats.completed}회`} />
         <SummaryStat label="취소" value={`${stats.cancelled}회`} />
         <SummaryStat label="노쇼" value={`${stats.noShow}회`} />
-        <SummaryStat label="총 결제금액" value={`${totalPaid.toLocaleString()}원`} />
+        {canSeeSales && <SummaryStat label="총 결제금액" value={`${totalPaid.toLocaleString()}원`} />}
       </div>
 
       <div className="flex flex-wrap gap-3 text-sm text-muted">
@@ -151,18 +157,22 @@ export default async function CustomerDetailPage({
         >
           + 상담등록
         </Link>
-        <Link
-          href={`/dashboard/sales/new?customerId=${customer.id}`}
-          className="rounded-xl border border-border py-2.5 text-center text-sm font-medium hover:bg-background"
-        >
-          + 매출등록
-        </Link>
-        <Link
-          href={`/dashboard/marketing?customerId=${customer.id}&customerName=${encodeURIComponent(customer.name)}`}
-          className="rounded-xl border border-border py-2.5 text-center text-sm font-medium hover:bg-background"
-        >
-          문자보내기
-        </Link>
+        {canSeeSales && (
+          <Link
+            href={`/dashboard/sales/new?customerId=${customer.id}`}
+            className="rounded-xl border border-border py-2.5 text-center text-sm font-medium hover:bg-background"
+          >
+            + 매출등록
+          </Link>
+        )}
+        {canAccess(profile.role, "marketing") && (
+          <Link
+            href={`/dashboard/marketing?customerId=${customer.id}&customerName=${encodeURIComponent(customer.name)}`}
+            className="rounded-xl border border-border py-2.5 text-center text-sm font-medium hover:bg-background"
+          >
+            문자보내기
+          </Link>
+        )}
       </div>
 
       <div className="rounded-2xl border border-border bg-card">
@@ -286,6 +296,8 @@ export default async function CustomerDetailPage({
                 </div>
               ),
             },
+            ...(canSeeSales
+              ? [
             {
               key: "payments",
               label: "매출이력",
@@ -322,6 +334,8 @@ export default async function CustomerDetailPage({
                 </div>
               ),
             },
+              ]
+              : []),
             {
               key: "memo",
               label: "메모",
