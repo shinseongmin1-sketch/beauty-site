@@ -31,6 +31,12 @@ export const requireBusinessContext = cache(async () => {
     .maybeSingle<Profile & { business: (Business & { subscription: SubscriptionRow | SubscriptionRow[] | null }) | null }>();
 
   if (!profile?.business_id || !profile.business) {
+    // 플랫폼 관리자는 매장이 없는 게 정상이다 (별도 platform_admins 테이블 소속).
+    // 세션이 남아있는 상태로 /dashboard 로 직접 들어오는 모든 경로가 이 함수를 거치므로,
+    // 로그인 직후 1회성 분기(login/actions.ts)와 별개로 여기서도 다시 확인해야 한다.
+    const { data: isPlatformAdmin, error: adminCheckError } = await supabase.rpc("is_platform_admin");
+    if (adminCheckError) console.error("[business] is_platform_admin check failed", adminCheckError.code);
+    if (isPlatformAdmin === true) redirect("/admin");
     redirect("/onboarding");
   }
 

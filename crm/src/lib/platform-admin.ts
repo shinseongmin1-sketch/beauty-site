@@ -18,7 +18,8 @@ export const requirePlatformAdmin = cache(async () => {
 
   if (!user) redirect("/login?next=/admin");
 
-  const { data: isAdmin } = await supabase.rpc("is_platform_admin");
+  const { data: isAdmin, error: adminCheckError } = await supabase.rpc("is_platform_admin");
+  if (adminCheckError) console.error("[platform-admin] is_platform_admin check failed", adminCheckError.code);
   if (isAdmin !== true) notFound();
 
   return { supabase, user };

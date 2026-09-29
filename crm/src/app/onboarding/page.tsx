@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createBusiness } from "./actions";
@@ -17,11 +18,35 @@ export default async function OnboardingPage({
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
+  // 플랫폼 관리자는 매장 온보딩 대상이 아니다 (platform_admins 소속, 매장이 없는 게 정상).
+  const { data: isPlatformAdmin, error: adminCheckError } = await supabase.rpc("is_platform_admin");
+  if (adminCheckError) console.error("[onboarding] is_platform_admin check failed", adminCheckError.code);
+  if (isPlatformAdmin === true) {
+    redirect("/admin");
+  }
+
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("business_id")
     .eq("id", user.id)
     .maybeSingle();
+
+  // 조회 실패를 "매장 없음" 으로 취급하면 이미 매장이 있는 계정에 새 매장 등록 폼을 보여주게 되므로 폼을 막는다.
+  if (profileError) {
+    console.error("[onboarding] profile lookup failed", profileError.code);
+    return (
+      <div className="flex min-h-full flex-1 items-center justify-center p-6">
+        <div className="w-full max-w-md space-y-4 text-center">
+          <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+            계정 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+          </p>
+          <Link href="/login" className="text-sm font-medium text-accent hover:underline">
+            로그인으로 돌아가기
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (profile?.business_id) {
     redirect("/dashboard");

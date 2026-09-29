@@ -60,6 +60,12 @@ export default async function LoginPage({
           </button>
         </form>
 
+        <p className="text-center text-sm">
+          <Link href="/forgot-password" className="font-medium text-accent hover:underline">
+            비밀번호를 잊으셨나요?
+          </Link>
+        </p>
+
         <p className="text-center text-sm text-muted">
           계정이 없으신가요?{" "}
           <Link href="/signup" className="font-medium text-accent hover:underline">

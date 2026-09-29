@@ -3,7 +3,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/auth/callback"];
+const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password"];
+// /auth/callback, /auth/confirm 도 일부러 PUBLIC_PATHS 에 넣지 않는다: 이미 로그인된 브라우저에서 재설정 링크를 누르면
+// "로그인 상태면 /dashboard 로 보냄" 규칙에 걸려 code/token_hash 를 처리하기 전에 튕겨나가기 때문이다.
+// 두 경로는 보호 구간(/dashboard, /admin)이 아니므로 목록에서 빼두면 로그인 여부와 무관하게 route handler 까지 도달한다.
+// /reset-password 는 일부러 PUBLIC_PATHS 에 넣지 않는다: recovery 링크로 들어오면 user 가 존재하므로
+// PUBLIC_PATHS 에 넣으면 아래 "로그인 상태면 /dashboard 로 보냄" 규칙에 걸려 튕겨나간다.
+// /dashboard, /admin 로 시작하지 않아 위 로그인 필요 규칙에도 안 걸리므로, 목록에서 빼두면
+// 로그인 여부와 무관하게 그대로 통과한다. 대신 페이지/서버 액션이 "세션 + recovery 표시 쿠키"를 직접 검사해,
+// 재설정 링크를 거치지 않은 일반 로그인 세션은 /forgot-password 로 돌려보낸다 (src/lib/recovery.ts).
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

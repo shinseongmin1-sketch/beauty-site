@@ -28,12 +28,14 @@ export async function signIn(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent("이메일 또는 비밀번호가 올바르지 않습니다.")}`);
   }
 
-  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
-  const { data: profile } = await supabase
+  const { data: isPlatformAdmin, error: adminCheckError } = await supabase.rpc("is_platform_admin");
+  if (adminCheckError) console.error("[login] is_platform_admin check failed", adminCheckError.code);
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role, business_id")
     .eq("id", data.user.id)
     .maybeSingle();
+  if (profileError) console.error("[login] profile lookup failed", profileError.code);
 
   await logAudit({
     businessId: profile?.business_id ?? null,
