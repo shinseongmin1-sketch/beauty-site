@@ -711,40 +711,6 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 }
 .trial-banner strong { font-weight: 800; }
 
-.billing-toggle {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 50px;
-  padding: 6px;
-  width: fit-content;
-  margin: 0 auto 48px;
-}
-
-.billing-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  padding: 10px 22px;
-  border-radius: 50px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--muted);
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-.billing-btn.active { background: var(--navy); color: white; }
-.billing-btn .discount-tag { font-size: 11px; font-weight: 800; color: var(--green); }
-.billing-btn.active .discount-tag { color: #8AF0C5; }
-
-.plan-billing-note { font-size: 13px; color: var(--green); font-weight: 600; margin-bottom: 8px; min-height: 18px; }
-
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 380px));
@@ -780,8 +746,22 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 .plan-target { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; min-height: 40px; }
 
 .plan-price { font-size: 38px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
-.plan-price span { font-size: 20px; }
-.plan-price small { font-size: 15px; color: var(--muted); font-weight: 600; }
+.plan-price .price-unit { font-size: 22px; margin-left: 2px; }
+.plan-price small { font-size: 15px; color: var(--muted); font-weight: 600; margin-left: 6px; }
+
+.plan-vat { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+/* 연간: 월 환산·절약 강조 (월간 카드는 같은 높이의 빈 칸으로 카드 높이를 맞춘다) */
+.plan-highlight {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-top: 14px; padding: 12px 14px;
+  background: var(--green-soft); border-radius: 12px;
+  min-height: 62px;
+}
+.plan-highlight-empty { background: none; }
+.plan-monthly-equiv { font-size: 14px; font-weight: 700; color: var(--navy); }
+.plan-saving { font-size: 13px; color: var(--green); font-weight: 600; }
+.plan-saving b { font-weight: 800; }
 
 .plan-features { list-style: none; margin: 20px 0 28px; padding-top: 20px; border-top: 1px solid var(--border); }
 
@@ -816,6 +796,24 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 .btn-plan.popular:hover { background: var(--blue-dark); color: white; }
 
 .pricing-note { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 28px; }
+
+.pricing-checklist {
+  max-width: 784px;
+  margin: 40px auto 0;
+  padding: 28px 32px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+.pricing-checklist h3 { font-size: 17px; font-weight: 800; color: var(--navy); margin-bottom: 14px; }
+.pricing-checklist dl > div {
+  display: grid; grid-template-columns: 120px 1fr; gap: 16px;
+  padding: 10px 0; border-top: 1px solid var(--border);
+  font-size: 14px;
+}
+.pricing-checklist dl > div:first-child { border-top: none; }
+.pricing-checklist dt { font-weight: 700; color: var(--navy); }
+.pricing-checklist dd { color: var(--text); line-height: 1.6; }
 
 /* 후기 (플레이스홀더) */
 .review { background: var(--bg); }
@@ -999,6 +997,7 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
   .tiles-grid { grid-template-columns: repeat(2, 1fr); }
   .steps { grid-template-columns: repeat(2, 1fr); }
   .pricing-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
+  .plan-highlight-empty { display: none; }
 
   .feature-detail { grid-template-columns: 1fr; gap: 28px; }
   .feature-detail.reverse .feature-detail-text,
@@ -1022,4 +1021,6 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
   .footer-bottom a { margin: 0 8px; }
   .hero-buttons, .support-buttons { flex-direction: column; align-items: stretch; }
   .hero-buttons a, .support-buttons a { text-align: center; justify-content: center; }
+  .pricing-checklist { padding: 22px 20px; }
+  .pricing-checklist dl > div { grid-template-columns: 1fr; gap: 4px; }
 }
