@@ -100,8 +100,8 @@ export function CustomerListClient({
       {exportError && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{exportError}</p>}
       {canImport && <ImportCustomersModal open={importOpen} onClose={() => setImportOpen(false)} />}
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="bg-background text-muted">
             <tr>
               <th className="p-3">이름</th>

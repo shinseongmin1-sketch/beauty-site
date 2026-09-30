@@ -36,6 +36,7 @@ export async function updatePassword(formData: FormData) {
   }
 
   await clearRecoveryCookie();
-  await supabase.auth.signOut();
+  // 비밀번호가 바뀌었으므로 모든 기기의 세션을 끝낸다 (일반 로그아웃과 달리 global).
+  await supabase.auth.signOut({ scope: "global" });
   redirect(`/login?message=${encodeURIComponent("비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.")}`);
 }

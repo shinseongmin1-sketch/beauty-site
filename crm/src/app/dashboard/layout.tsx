@@ -4,6 +4,7 @@ import { NavLink, NavGroup, SubNavLink } from "./nav-link";
 import { DashboardHeader } from "./header";
 import { SubscriptionBanner, subscriptionLabel } from "./subscription-banner";
 import { signOut } from "./actions";
+import { MobileNavProvider, SidebarShell } from "./mobile-nav";
 import {
   IconHome,
   IconCalendar,
@@ -26,8 +27,9 @@ export default async function DashboardLayout({
   const role = profile.role;
 
   return (
+    <MobileNavProvider>
     <div className="flex min-h-full flex-1">
-      <aside className="flex w-60 shrink-0 flex-col bg-navy text-white">
+      <SidebarShell>
         <div className="flex items-center gap-2.5 px-6 pb-5 pt-7">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent">
             <IconCalendar className="h-5 w-5 text-white" />
@@ -116,15 +118,16 @@ export default async function DashboardLayout({
             </button>
           </form>
         </div>
-      </aside>
+      </SidebarShell>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader businessName={business.name} subscriptionLabel={subscriptionLabel(subscription)} />
-        <main className="flex-1 overflow-y-auto bg-background p-8">
+        <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 md:p-8">
           <SubscriptionBanner state={subscription} />
           {children}
         </main>
       </div>
     </div>
+    </MobileNavProvider>
   );
 }

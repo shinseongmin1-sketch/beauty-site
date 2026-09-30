@@ -45,7 +45,7 @@ export function ReservationFormFields({
         <CustomerCombobox customers={options.customers} initial={initialCustomer} noShowCounts={noShowCounts} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm font-medium">예약 시작시간</label>
           <input
@@ -68,7 +68,7 @@ export function ReservationFormFields({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm font-medium">예약그룹</label>
           <select
@@ -101,7 +101,7 @@ export function ReservationFormFields({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm font-medium">담당자</label>
           <select

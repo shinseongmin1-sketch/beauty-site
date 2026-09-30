@@ -71,15 +71,15 @@ export default async function CustomerHistoryPage({
           name="q"
           defaultValue={q ?? ""}
           placeholder="고객명 또는 연락처 검색"
-          className="w-72 rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-accent"
+          className="w-full min-w-0 rounded-2xl border border-border bg-card px-3 py-2 text-sm sm:w-72 outline-none focus:border-accent"
         />
         <button type="submit" className="rounded-2xl border border-border bg-card px-3 py-2 text-sm hover:bg-background">
           검색
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="bg-background text-muted">
             <tr>
               <th className="p-4 font-medium">이름</th>

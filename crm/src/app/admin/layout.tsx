@@ -10,24 +10,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex min-h-full flex-1 flex-col bg-background">
       <header className="bg-navy text-white">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-8">
-          <div className="flex items-center gap-6">
-            <Link href="/admin" className="flex items-center gap-2 text-[15px] font-bold">
-              매니온 운영자
-              <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold text-white">PLATFORM ADMIN</span>
-            </Link>
-            <nav className="flex items-center gap-4 text-sm text-navy-muted">
-              <Link href="/admin" className="hover:text-white">대시보드</Link>
-              <Link href="/admin/businesses" className="hover:text-white">사업장</Link>
-              <Link href="/admin/audit" className="hover:text-white">감사 로그</Link>
-            </nav>
-          </div>
-          <form action={signOut}>
+        {/* 모바일에서는 1줄: 로고 + 로그아웃, 2줄: 메뉴. md 이상은 기존처럼 한 줄 */}
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-3 sm:px-8 md:h-14 md:flex-nowrap md:py-0">
+          <Link href="/admin" className="order-1 flex items-center gap-2 text-[15px] font-bold">
+            매니온 운영자
+            <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold text-white">PLATFORM ADMIN</span>
+          </Link>
+          <nav className="order-3 flex w-full items-center gap-4 text-sm text-navy-muted md:order-2 md:w-auto md:flex-1">
+            <Link href="/admin" className="hover:text-white">대시보드</Link>
+            <Link href="/admin/businesses" className="hover:text-white">사업장</Link>
+            <Link href="/admin/audit" className="hover:text-white">감사 로그</Link>
+          </nav>
+          <form action={signOut} className="order-2 md:order-3">
             <button type="submit" className="text-sm text-navy-muted hover:text-white">로그아웃</button>
           </form>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 p-8">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 p-4 sm:p-6 md:p-8">{children}</main>
     </div>
   );
 }

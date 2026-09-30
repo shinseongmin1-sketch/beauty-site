@@ -699,6 +699,30 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 .step h3 { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
 .step p { font-size: 13.5px; color: var(--muted); }
 
+/* 이용 환경 */
+.devices { background: var(--card); }
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 380px));
+  gap: 24px;
+  justify-content: center;
+}
+.device-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  text-align: center;
+}
+.device-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--blue-soft); color: var(--blue);
+  font-size: 26px; margin-bottom: 16px;
+}
+.device-card h3 { font-size: 18px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+.device-card p { font-size: 14px; color: var(--muted); }
+
 /* 요금 */
 .pricing { background: var(--card); }
 
@@ -997,6 +1021,7 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
   .tiles-grid { grid-template-columns: repeat(2, 1fr); }
   .steps { grid-template-columns: repeat(2, 1fr); }
   .pricing-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
+  .devices-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
   .plan-highlight-empty { display: none; }
 
   .feature-detail { grid-template-columns: 1fr; gap: 28px; }

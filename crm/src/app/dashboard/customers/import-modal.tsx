@@ -113,8 +113,8 @@ export function ImportCustomersModal({ open, onClose }: { open: boolean; onClose
             </div>
 
             {errorRows.length > 0 && (
-              <div className="max-h-56 overflow-y-auto rounded-xl border border-red-200">
-                <table className="w-full text-left text-sm">
+              <div className="max-h-56 overflow-auto rounded-xl border border-red-200">
+                <table className="w-full min-w-[480px] text-left text-sm">
                   <thead className="bg-red-50 text-red-700">
                     <tr>
                       <th className="p-2">행</th>
@@ -136,8 +136,8 @@ export function ImportCustomersModal({ open, onClose }: { open: boolean; onClose
             )}
 
             {preview.errorCount === 0 && sampleRows.length > 0 && (
-              <div className="max-h-56 overflow-y-auto rounded-xl border border-border">
-                <table className="w-full text-left text-sm">
+              <div className="max-h-56 overflow-auto rounded-xl border border-border">
+                <table className="w-full min-w-[480px] text-left text-sm">
                   <thead className="bg-background text-muted">
                     <tr>
                       <th className="p-2">행</th>

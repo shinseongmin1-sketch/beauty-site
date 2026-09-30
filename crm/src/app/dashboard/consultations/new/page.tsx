@@ -43,7 +43,7 @@ export default async function NewConsultationPage({
           <CustomerCombobox customers={customers ?? []} initial={prefillCustomer ?? null} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium">상담일</label>
             <input
@@ -98,7 +98,7 @@ export default async function NewConsultationPage({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium">상담결과</label>
             <select name="result" className="w-full rounded-lg border border-border px-3 py-2 text-sm">

@@ -8,7 +8,7 @@ export function SaleAmountFields() {
   const final = Math.max(gross - discount, 0);
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div>
         <label className="mb-1 block text-sm font-medium">결제금액</label>
         <input
@@ -34,7 +34,7 @@ export function SaleAmountFields() {
           className="w-full rounded-lg border border-border px-3 py-2 text-sm"
         />
       </div>
-      <div className="col-span-2 rounded-lg bg-background p-3">
+      <div className="rounded-lg bg-background p-3 sm:col-span-2">
         <p className="text-sm text-muted">
           최종결제금액 <span className="ml-2 text-base font-bold text-foreground">{final.toLocaleString()}원</span>
         </p>

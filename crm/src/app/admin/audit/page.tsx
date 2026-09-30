@@ -44,7 +44,7 @@ export default async function AdminAuditPage({
       </form>
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="bg-background text-muted">
             <tr>
               <th className="p-3">시각</th>

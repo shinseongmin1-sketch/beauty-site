@@ -71,8 +71,8 @@ export default async function AdminBusinessesPage({
       </form>
       <p className="-mt-3 text-xs text-muted">사업자등록번호는 검색할 수 없습니다.</p>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="bg-background text-muted">
             <tr>
               <th className="p-3">사업장명</th>
