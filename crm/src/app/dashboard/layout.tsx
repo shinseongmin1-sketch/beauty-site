@@ -95,6 +95,7 @@ export default async function DashboardLayout({
               <SubNavLink href="/dashboard/staff">직원/권한 관리</SubNavLink>
               <SubNavLink href="/dashboard/settings">기본 설정</SubNavLink>
               <SubNavLink href="/dashboard/settings/items">항목 관리</SubNavLink>
+              {role === "owner" && <SubNavLink href="/dashboard/billing">구독·결제</SubNavLink>}
             </NavGroup>
           )}
         </nav>
@@ -123,7 +124,7 @@ export default async function DashboardLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader businessName={business.name} subscriptionLabel={subscriptionLabel(subscription)} />
         <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 md:p-8">
-          <SubscriptionBanner state={subscription} />
+          <SubscriptionBanner state={subscription} canManageBilling={role === "owner"} />
           {children}
         </main>
       </div>
