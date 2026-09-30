@@ -63,6 +63,9 @@ export function computeSubscriptionState(row: SubscriptionRow | null | undefined
   const awaitingPayment =
     !writable && hasPaymentMethod && ((row.status === "trial" && status === "expired") || row.status === "active");
   if (row.status === "active" && !activeInPeriod) status = "expired";
+  // 해지(canceled)는 이용기간 종료 시각까지만 이용. 종료 후에는 expired(cancelled) 로 본다 (저장 상태는 sync/스케줄러가 맞춘다)
+  const canceledEnded = row.status === "canceled" && !writable;
+  if (canceledEnded) status = "expired";
 
   return {
     status,
@@ -71,7 +74,7 @@ export function computeSubscriptionState(row: SubscriptionRow | null | undefined
     trialEndsAt: row.trial_ends_at,
     daysLeft: status === "trial" && trialEnds ? Math.max(Math.ceil((trialEnds.getTime() - now.getTime()) / DAY_MS), 0) : null,
     deniedReason: row.trial_denied_reason,
-    expiredReason: row.status === "expired" ? (row.expired_reason ?? "trial_expired") : null,
+    expiredReason: row.status === "expired" ? (row.expired_reason ?? "trial_expired") : canceledEnded ? "cancelled" : null,
     hasPaymentMethod,
     periodEnd: row.current_period_end,
     awaitingPayment,

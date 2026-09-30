@@ -46,7 +46,7 @@ export const requireBusinessContext = cache(async () => {
 
   // 무료체험이 끝났으면 저장된 상태(trial → expired)를 맞춘다. 쓰기 차단 자체는 DB 가 시각으로 판단하므로 이 호출이 실패해도 안전하다.
   const subscription = computeSubscriptionState(subscriptionRow);
-  if (subscription.stored === "trial" && subscription.status === "expired") {
+  if ((subscription.stored === "trial" || subscription.stored === "canceled") && subscription.status === "expired") {
     await supabase.rpc("sync_my_subscription");
   }
 

@@ -3,6 +3,7 @@ import { requireBusinessContext } from "@/lib/business";
 import { BILLING_PLANS, formatWon, isBillingCycle, type BillingCycle } from "@/lib/billing/plans";
 import { CardRegisterForm } from "./card-form";
 import { PayNowForm } from "./pay-now-form";
+import { CancelAutoRenewalButton } from "./cancel-button";
 
 const fmt = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy.MM.dd HH:mm") : "-");
 const fmtDate = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy.MM.dd") : "-");
@@ -20,6 +21,10 @@ const MESSAGES: Record<string, { ok: boolean; text: string }> = {
   card_register_canceled: { ok: false, text: "카드 등록이 취소되었습니다." },
   customer_mismatch: { ok: false, text: "잘못된 결제 요청입니다. 다시 시도해주세요." },
   forbidden: { ok: false, text: "대표 계정만 결제를 관리할 수 있습니다." },
+  canceled: { ok: true, text: "자동결제가 해지되었습니다." },
+  already_canceled: { ok: false, text: "이미 자동결제가 해지된 상태입니다." },
+  not_cancellable: { ok: false, text: "해지할 자동결제가 없습니다." },
+  cancel_failed: { ok: false, text: "자동결제 해지에 실패했습니다. 잠시 후 다시 시도해주세요." },
 };
 
 function labelOf(status: string, reason: string | null, awaiting: boolean) {
@@ -58,7 +63,11 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const cardLabel = card ? `${card.card_company ?? "카드"} ${card.card_number_masked ?? ""}`.trim() : null;
   const nextCharge =
     card && row?.status === "trial" ? row.trial_ends_at : card && row?.status === "active" ? row.current_period_end : null;
-  const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.error;
+  const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.canceled ? "canceled" : q.error;
+  // 자동결제 해지: 이용 중(active 기간 안) 또는 카드를 등록한 체험 중일 때만 가능. 해지해도 이 종료 시각까지 이용한다.
+  const usableUntil = row?.status === "trial" ? row.trial_ends_at : row?.current_period_end ?? null;
+  const cancellable = subscription.writable && ((row?.status === "active") || (row?.status === "trial" && !!card));
+  const canceledActive = row?.status === "canceled" && subscription.writable;
   const msg = msgKey ? (MESSAGES[msgKey] ?? { ok: false, text: "요청을 처리하지 못했습니다." }) : null;
 
   return (
@@ -97,11 +106,37 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             </>
           )}
           <dt className="text-muted">다음 결제 예정</dt>
-          <dd className="text-foreground">{nextCharge ? `${fmtDate(nextCharge)} · ${formatWon(BILLING_PLANS[cycle].amount)}` : "-"}</dd>
+          <dd className="text-foreground" data-next-charge>
+            {nextCharge ? `${fmtDate(nextCharge)} · ${formatWon(BILLING_PLANS[cycle].amount)}` : row?.status === "canceled" ? "없음 (자동결제 해지됨)" : "-"}
+          </dd>
           <dt className="text-muted">결제수단</dt>
           <dd className="text-foreground">{cardLabel ?? "등록된 카드 없음"}</dd>
         </dl>
       </section>
+
+      {canceledActive && (
+        <section className="space-y-1 rounded-2xl border border-border bg-card p-5 text-sm sm:p-6" data-canceled-notice>
+          <h2 className="text-base font-bold text-foreground">자동결제가 해지되었습니다.</h2>
+          <p className="text-foreground">현재 이용기간: {fmt(row?.current_period_end)}까지</p>
+          <p className="text-foreground">다음 자동결제 없음</p>
+          <p className="pt-1 text-muted">이용기간이 끝나면 등록·수정·삭제가 제한됩니다. 기존 데이터는 그대로 유지되며, 이후 결제하기로 다시 이용할 수 있습니다.</p>
+        </section>
+      )}
+
+      {cancellable && (
+        <section className="space-y-3 rounded-2xl border border-border bg-card p-5 sm:p-6" data-auto-renewal>
+          <h2 className="text-base font-bold text-foreground">자동결제</h2>
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-[120px_1fr]">
+            <dt className="text-muted">현재 요금제</dt>
+            <dd className="text-foreground">{BILLING_PLANS[cycle].label} {formatWon(BILLING_PLANS[cycle].amount)} (VAT 포함)</dd>
+            <dt className="text-muted">{row?.status === "trial" ? "무료체험 종료" : "이용기간 종료"}</dt>
+            <dd className="text-foreground">{fmt(usableUntil)}</dd>
+            <dt className="text-muted">다음 자동결제 예정</dt>
+            <dd className="text-foreground">{nextCharge ? `${fmtDate(nextCharge)} · ${formatWon(BILLING_PLANS[cycle].amount)}` : "-"}</dd>
+          </dl>
+          <CancelAutoRenewalButton periodEndLabel={fmt(usableUntil)} />
+        </section>
+      )}
 
       {blocked ? (
         <section className="space-y-4 rounded-2xl border border-red-200 bg-card p-5 sm:p-6">
@@ -122,7 +157,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             />
           </div>
         </section>
-      ) : (
+      ) : canceledActive ? null : (
         <section className="space-y-4 rounded-2xl border border-border bg-card p-5 sm:p-6">
           <div>
             <h2 className="text-base font-bold text-foreground">{cardLabel ? "결제수단 변경" : "결제수단 등록"}</h2>

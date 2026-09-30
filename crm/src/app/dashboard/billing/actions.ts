@@ -48,3 +48,20 @@ export async function payNow(formData: FormData) {
   revalidatePath("/dashboard", "layout");
   back(result);
 }
+
+/**
+ * 자동결제 해지 (다음 자동결제만 중단). 대표만.
+ * 매장 ID 를 받지 않는다: DB 함수가 로그인한 사용자의 매장·대표 권한을 직접 확인한다. 현재 이용기간은 그대로 유지된다.
+ */
+export async function cancelAutoRenewal() {
+  const { supabase, profile } = await requireBusinessContext();
+  if (profile.role !== "owner") back("error=forbidden");
+  const { data, error } = await supabase.rpc("billing_cancel_auto_renewal");
+  if (error) {
+    const known = ["not_cancellable", "forbidden"].find((k) => error.message?.includes(k));
+    if (!known) console.error("[billing] cancel failed", error.code);
+    back(`error=${known ?? "cancel_failed"}`);
+  }
+  revalidatePath("/dashboard", "layout");
+  back((data as { already_canceled?: boolean } | null)?.already_canceled ? "error=already_canceled" : "canceled=1");
+}
