@@ -1,17 +1,20 @@
 // 토스페이먼츠 자동결제(빌링) API — 서버 전용.
 // 예약 결제(lib/toss.ts, 결제위젯)와 완전히 분리: 키도 따로(TOSS_BILLING_*), 공개 테스트 키 대체값도 두지 않는다.
 // 빌링키·customerKey·authKey·paymentKey 는 로그에 남기지 않는다 (오류 코드만).
+import { usablePaymentKey } from "@/lib/payment-env";
+
 const API = "https://api.tosspayments.com/v1";
 
+// 운영 배포(Vercel Production)에서는 test_ 키를 거부한다 (lib/payment-env.ts) → 테스트 키로 "결제된 것처럼" 구독이 열리지 않는다.
 function authHeader() {
-  const secret = process.env.TOSS_BILLING_SECRET_KEY;
-  if (!secret) throw new Error("TOSS_BILLING_SECRET_KEY 환경변수가 필요합니다.");
+  const secret = usablePaymentKey(process.env.TOSS_BILLING_SECRET_KEY);
+  if (!secret) throw new Error("TOSS_BILLING_SECRET_KEY 환경변수가 없거나 이 환경에서 쓸 수 없는 키입니다.");
   return `Basic ${Buffer.from(`${secret}:`).toString("base64")}`;
 }
 
 export function billingClientKey(): string {
-  const key = process.env.NEXT_PUBLIC_TOSS_BILLING_CLIENT_KEY;
-  if (!key) throw new Error("NEXT_PUBLIC_TOSS_BILLING_CLIENT_KEY 환경변수가 필요합니다.");
+  const key = usablePaymentKey(process.env.NEXT_PUBLIC_TOSS_BILLING_CLIENT_KEY);
+  if (!key) throw new Error("NEXT_PUBLIC_TOSS_BILLING_CLIENT_KEY 환경변수가 없거나 이 환경에서 쓸 수 없는 키입니다.");
   return key;
 }
 

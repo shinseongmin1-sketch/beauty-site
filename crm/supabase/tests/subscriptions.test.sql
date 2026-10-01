@@ -37,14 +37,47 @@ begin
   insert into results values (p_name, v_ok, v_detail);
 end $$;
 
+-- 서버(service_role)로 문장 실행: 016 이후 사업장 생성/사업자번호 등록은 서버 전용 함수로만 한다.
+-- request.jwt.claim.sub 에 p_uid 를 넣어 두므로 문장 안에서 auth.uid() 로 "세션으로 확인한 사용자 id" 를 넘길 수 있다.
+create or replace function pg_temp.svc_fail(p_name text, p_uid uuid, p_stmt text, p_state text default null)
+returns void language plpgsql as $$
+declare v_ok boolean := false; v_detail text := 'no error raised';
+begin
+  begin
+    perform set_config('request.jwt.claim.sub', p_uid::text, true);
+    set local role service_role;
+    execute p_stmt;
+  exception when others then
+    if p_state is null or sqlstate = p_state then v_ok := true; v_detail := sqlstate || ' ' || sqlerrm;
+    else v_detail := 'wrong sqlstate ' || sqlstate || ' ' || sqlerrm; end if;
+  end;
+  reset role; perform set_config('request.jwt.claim.sub', '', true);
+  insert into results values (p_name, v_ok, v_detail);
+end $$;
+
+create or replace function pg_temp.svc_rows(p_name text, p_uid uuid, p_stmt text, p_rows int)
+returns void language plpgsql as $$
+declare v_ok boolean := false; v_detail text; v_n int;
+begin
+  begin
+    perform set_config('request.jwt.claim.sub', p_uid::text, true);
+    set local role service_role;
+    execute p_stmt;
+    get diagnostics v_n = row_count;
+    v_ok := (v_n = p_rows); v_detail := 'rows=' || v_n || ' expected=' || p_rows;
+  exception when others then v_detail := sqlstate || ' ' || sqlerrm; end;
+  reset role; perform set_config('request.jwt.claim.sub', '', true);
+  insert into results values (p_name, v_ok, v_detail);
+end $$;
+
 -- 사용자로 사업장 생성 (셋업용, 결과 기록 없음). 실패해도 예외를 밖으로 던지지 않고 null 반환.
 create or replace function pg_temp.sub_create(p_uid uuid, p_name text, p_hash text, p_phone_hash text default null)
 returns uuid language plpgsql as $$
 declare v uuid;
 begin
   perform set_config('request.jwt.claim.sub', p_uid::text, true);
-  set local role authenticated;
-  v := public.create_my_business(p_name, '02-000', '서울', '대표', p_hash, '***', p_phone_hash);
+  set local role service_role;  -- 016: 서버 전용 함수로만
+  v := public.create_my_business_as(p_uid, p_name, '02-000', '서울', '대표', p_hash, '***', p_phone_hash);
   reset role; perform set_config('request.jwt.claim.sub', '', true);
   return v;
 end $$;
@@ -83,8 +116,23 @@ insert into results select 'A: 사업장에 사업자번호는 해시/마스킹�
 insert into results select 'A: 지급 즉시 쓰기 가능 (business_is_writable)', public.business_is_writable((select v::uuid from ids where k = 'bizA')), null;
 
 -- 사업자번호 필수 / 형식
-select pg_temp.sub_fail('사업자번호 해시 없이 사업장 생성 → 차단', 'a0000000-0000-0000-0000-0000000000f2', $$select public.create_my_business('무번호매장')$$, '22023');
-select pg_temp.sub_fail('사업자번호 해시 형식 오류 → 차단', 'a0000000-0000-0000-0000-0000000000f2', $$select public.create_my_business('형식오류', null, null, null, 'not-a-hash')$$, '22023');
+select pg_temp.svc_fail('사업자번호 해시 없이 사업장 생성 → 차단', 'a0000000-0000-0000-0000-0000000000f2', $$select public.create_my_business_as(auth.uid(), '무번호매장')$$, '22023');
+select pg_temp.svc_fail('사업자번호 해시 형식 오류 → 차단', 'a0000000-0000-0000-0000-0000000000f2', $$select public.create_my_business_as(auth.uid(), '형식오류', null, null, null, 'not-a-hash')$$, '22023');
+
+-- ── S-5 (016): 브라우저 권한으로는 해시를 직접 넣을 수 없다 ─────────────────────
+select pg_temp.sub_fail('S-5: 브라우저 권한으로 create_my_business 직접 호출 → 차단(권한 없음)', 'a0000000-0000-0000-0000-0000000000f2', $$select public.create_my_business('우회', null, null, null, repeat('d', 64))$$, '42501');
+select pg_temp.sub_fail('S-5: 브라우저 권한으로 서버 전용 함수 create_my_business_as 호출 → 차단', 'a0000000-0000-0000-0000-0000000000f2', $$select public.create_my_business_as(auth.uid(), '우회', null, null, null, repeat('d', 64))$$, '42501');
+select pg_temp.sub_fail('S-5: 브라우저 권한으로 set_business_number 직접 호출 → 차단', 'a0000000-0000-0000-0000-0000000000f2', $$select public.set_business_number(repeat('d', 64), '***')$$, '42501');
+select pg_temp.sub_fail('S-5: 브라우저 권한으로 set_business_number_as 호출 → 차단', 'a0000000-0000-0000-0000-0000000000f2', $$select public.set_business_number_as(auth.uid(), repeat('d', 64), '***')$$, '42501');
+select pg_temp.svc_fail('S-5: 없는 사용자로 서버 전용 함수 호출 → 차단', 'a0000000-0000-0000-0000-0000000000f2', $$select public.create_my_business_as('ffffffff-0000-0000-0000-000000000000', '유령', null, null, null, repeat('d', 64))$$, 'P0002');
+insert into results select 'S-5: 우회 시도 후에도 그 해시로는 체험 이력/사업장이 생기지 않음',
+  not exists (select 1 from trial_history where business_number_hash = repeat('d', 64))
+  and not exists (select 1 from businesses where business_number_hash = repeat('d', 64)), null;
+insert into results select 'S-5: 서버 전용 함수로 만든 사업장의 대표/체험 시작 기록 행위자 = 요청 사용자 본인',
+  (select owner_id = 'a0000000-0000-0000-0000-0000000000a1' from businesses where id = (select v::uuid from ids where k = 'bizA'))
+  and exists (select 1 from audit_logs where action = 'trial.start' and business_id = (select v::uuid from ids where k = 'bizA')
+              and actor_user_id = 'a0000000-0000-0000-0000-0000000000a1' and actor_type = 'owner'), null;
+insert into results select 'S-5: 서버 전용 함수 호출 뒤 요청 사용자 정보가 원래 값으로 돌아온다', auth.uid() is null, null;
 
 -- ── 2. B 계정: 같은 사업자번호 → 무료체험 거부 ────────────────────────────
 insert into ids values ('bizB', pg_temp.sub_create('a0000000-0000-0000-0000-0000000000a2', 'B사업장', repeat('1', 64))::text);
@@ -171,7 +219,7 @@ select pg_temp.sub_fail('종료 후: 직급 변경 함수 → 차단(subscriptio
 select pg_temp.sub_fail('종료 후: 직원 초대 생성 → 차단(subscription_inactive)', 'a0000000-0000-0000-0000-0000000000a1', $$select public.create_staff_invitation('a1000000-0000-0000-0000-000000000008', 'x@example.com', repeat('c', 64))$$, '42501');
 select pg_temp.sub_rows('종료 후: 초대 취소는 허용(보안 조치)', 'a0000000-0000-0000-0000-0000000000a1', $$select public.revoke_staff_invitation('a1000000-0000-0000-0000-000000000008')$$, 1);
 select pg_temp.sub_rows('종료 후: 직원 계정 연결 해제는 허용(접근 회수)', 'a0000000-0000-0000-0000-0000000000a1', $$select public.unlink_staff_account('a1000000-0000-0000-0000-000000000007')$$, 1);
-select pg_temp.sub_fail('종료 후: 새 사업장 생성으로 우회 불가 (이미 사업장 있음)', 'a0000000-0000-0000-0000-0000000000a1', $$select public.create_my_business('우회', null, null, null, repeat('9', 64))$$, '23505');
+select pg_temp.svc_fail('종료 후: 새 사업장 생성으로 우회 불가 (이미 사업장 있음)', 'a0000000-0000-0000-0000-0000000000a1', $$select public.create_my_business_as(auth.uid(), '우회', null, null, null, repeat('9', 64))$$, '23505');
 
 -- 만료 반영 함수
 select pg_temp.sub_rows('종료 후: 대표 로그인 후 만료 반영(sync) 호출 가능', 'a0000000-0000-0000-0000-0000000000a1', 'select public.sync_my_subscription()', 1);
@@ -231,13 +279,13 @@ insert into businesses (id, owner_id, name) values ('a6000000-0000-0000-0000-000
 update profiles set business_id = 'a6000000-0000-0000-0000-000000000001', role = 'owner' where id = 'a0000000-0000-0000-0000-0000000000f1';
 insert into subscriptions (business_id, status, trial_source, trial_started_at, trial_ends_at) values ('a6000000-0000-0000-0000-000000000001', 'trial', 'legacy_backfill', now(), now() + interval '3 months');
 insert into trial_history (business_id, source, trial_started_at, trial_ends_at) values ('a6000000-0000-0000-0000-000000000001', 'legacy_backfill', now(), now() + interval '3 months');
-select pg_temp.sub_fail('기존 사업장: 이미 다른 사업장이 쓴 사업자번호는 등록 불가(in_use)', 'a0000000-0000-0000-0000-0000000000f1', $$select public.set_business_number(repeat('2', 64), '***')$$, '23505');
-select pg_temp.sub_rows('기존 사업장: 새 사업자번호 등록 성공', 'a0000000-0000-0000-0000-0000000000f1', $$select public.set_business_number(repeat('7', 64), '777-**-***77')$$, 1);
+select pg_temp.svc_fail('기존 사업장: 이미 다른 사업장이 쓴 사업자번호는 등록 불가(in_use)', 'a0000000-0000-0000-0000-0000000000f1', $$select public.set_business_number_as(auth.uid(), repeat('2', 64), '***')$$, '23505');
+select pg_temp.svc_rows('기존 사업장: 새 사업자번호 등록 성공', 'a0000000-0000-0000-0000-0000000000f1', $$select public.set_business_number_as(auth.uid(), repeat('7', 64), '777-**-***77')$$, 1);
 insert into results select '사후 등록: 사업장과 이력 행에 해시가 채워진다',
   (select business_number_hash = repeat('7', 64) from businesses where id = 'a6000000-0000-0000-0000-000000000001')
   and exists (select 1 from trial_history where business_id = 'a6000000-0000-0000-0000-000000000001' and business_number_hash = repeat('7', 64)), null;
-select pg_temp.sub_fail('사후 등록: 한 번 등록하면 변경 불가', 'a0000000-0000-0000-0000-0000000000f1', $$select public.set_business_number(repeat('8', 64), '***')$$, '23505');
-select pg_temp.sub_fail('사업자번호 등록은 대표만 (직원 불가)', 'a0000000-0000-0000-0000-0000000000a6', $$select public.set_business_number(repeat('8', 64), '***')$$);
+select pg_temp.svc_fail('사후 등록: 한 번 등록하면 변경 불가', 'a0000000-0000-0000-0000-0000000000f1', $$select public.set_business_number_as(auth.uid(), repeat('8', 64), '***')$$, '23505');
+select pg_temp.svc_fail('사업자번호 등록은 대표만 (직원 불가)', 'a0000000-0000-0000-0000-0000000000a6', $$select public.set_business_number_as(auth.uid(), repeat('8', 64), '***')$$, '42501');
 
 -- ── 11. 일괄 만료 함수 ────────────────────────────────────────────────
 update subscriptions set trial_ends_at = now() - interval '1 minute' where business_id = (select v::uuid from ids where k = 'bizD');

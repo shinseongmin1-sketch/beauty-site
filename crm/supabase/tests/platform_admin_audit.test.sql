@@ -65,8 +65,8 @@ create or replace function pg_temp.pa_create(p_uid uuid, p_name text, p_hash tex
 declare v uuid;
 begin
   perform set_config('request.jwt.claim.sub', p_uid::text, true);
-  set local role authenticated;
-  v := public.create_my_business(p_name, '02-000', '서울', '대표', p_hash, '***', null);
+  set local role service_role;  -- 016: 사업장 생성은 서버 전용 함수로만
+  v := public.create_my_business_as(p_uid, p_name, '02-000', '서울', '대표', p_hash, '***', null);
   reset role; perform set_config('request.jwt.claim.sub', '', true);
   return v;
 end $$;

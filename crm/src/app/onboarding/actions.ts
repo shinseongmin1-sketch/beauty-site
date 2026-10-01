@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import {
   hashBusinessNumber,
   hashPhone,
@@ -47,7 +47,11 @@ export async function createBusiness(formData: FormData) {
   }
 
   // 사업장 생성 / 내 프로필 연결 / 대표 직원 등록 / 기본 데이터 / 구독(무료체험) 을 DB 함수 하나가 한 트랜잭션으로 처리한다.
-  const { error } = await supabase.rpc("create_my_business", {
+  // 체험 판단에 쓰는 해시를 브라우저 권한으로는 넣을 수 없도록, 서버 전용(service_role) 함수로 호출한다 (016).
+  // 대상 사용자는 위에서 세션으로 확인한 user.id 뿐이다 (요청 값으로 바꿀 수 없음).
+  const admin = await createAdminClient();
+  const { error } = await admin.rpc("create_my_business_as", {
+    p_user: user!.id,
     p_name: name,
     p_phone: phone,
     p_address: address,

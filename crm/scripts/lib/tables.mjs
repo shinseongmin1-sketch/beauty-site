@@ -10,11 +10,11 @@ export const CRM_TABLES = [
   "platform_settings",
   "profiles",
   "staff",
+  "customer_grades", // customers.grade_id 가 참조하므로 customers 보다 먼저
   "customers",
   "services",
   "reservation_groups",
   "reservation_types",
-  "customer_grades",
   "customer_tags",
   "payment_methods",
   "consultation_types",
@@ -37,6 +37,17 @@ export const TABLE_INTRODUCED_BY = {
   subscription_payment_methods: "012_subscription_billing.sql",
   subscription_payments: "012_subscription_billing.sql",
 };
+
+// 테이블별 기본키 컬럼. 백업은 기본키 순서로 끊어 읽고(같은 created_at 이 많아도 순서가 고정됨),
+// 복원 검증은 백업한 기본키가 대상 DB 에 모두 있는지로 확인한다. 여기 없는 테이블은 ["id"].
+// (tests/local/backup-tables.test.mjs 가 실제 스키마의 기본키와 일치하는지 검사한다)
+export const TABLE_PRIMARY_KEYS = {
+  platform_settings: ["key"],
+  customer_tag_links: ["customer_id", "tag_id"],
+  platform_admins: ["user_id"],
+};
+
+export const primaryKeyOf = (table) => TABLE_PRIMARY_KEYS[table] ?? ["id"];
 
 export const OTHER_APP_TABLES = [
   /^community_/,

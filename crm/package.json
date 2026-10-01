@@ -16,6 +16,7 @@
     "db:backup:test": "node scripts/backup.mjs --target=test",
     "db:restore:test": "node scripts/restore.mjs --target=test",
     "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:local": "node --test tests/local/*.test.mjs",
     "db:reset:test": "node scripts/reset-test.mjs",
     "dev:test": "node scripts/dev-test.mjs",
     "test:e2e": "node tests/e2e/manual-flow.mjs",

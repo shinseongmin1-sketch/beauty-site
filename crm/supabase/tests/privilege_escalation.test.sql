@@ -69,8 +69,9 @@ drop table if exists pg_temp.ids;
 create temp table ids (k text primary key, v text);
 grant all on ids to public;
 
-insert into ids values ('bizA', pg_temp.as_user_scalar('00000000-0000-0000-0000-0000000000a1', 'select public.create_my_business(''A매장'', ''02-111'', ''서울'', null, repeat(''a'', 64))'));
-insert into ids values ('bizB', pg_temp.as_user_scalar('00000000-0000-0000-0000-0000000000b1', 'select public.create_my_business(''B매장'', null, null, null, repeat(''b'', 64))'));
+-- 016: 사업장 생성은 서버 전용 함수(create_my_business_as)로만 한다 (셋업은 슈퍼유저로 호출)
+insert into ids values ('bizA', public.create_my_business_as('00000000-0000-0000-0000-0000000000a1', 'A매장', '02-111', '서울', null, repeat('a', 64))::text);
+insert into ids values ('bizB', public.create_my_business_as('00000000-0000-0000-0000-0000000000b1', 'B매장', null, null, null, repeat('b', 64))::text);
 
 -- u3 을 A 사업장의 직원(staff) 계정으로 연결 (운영에서는 초대 기능이 담당. 여기서는 슈퍼유저로 셋업)
 update profiles set business_id = (select v::uuid from ids where k='bizA'), role = 'staff'
@@ -137,9 +138,18 @@ select pg_temp.expect_rows('businesses: A대표가 B매장 수정 시도는 0행
   format($$update businesses set name = '해킹' where id = %L$$, (select v from ids where k='bizB')), 0);
 
 -- ── 3. create_my_business ─────────────────────────────────────────────
-select pg_temp.expect_fail('create_my_business: 이미 매장이 있으면 재생성 불가',
+select pg_temp.expect_fail('create_my_business: 브라우저 권한(authenticated)으로 직접 호출 불가 (016)',
   '00000000-0000-0000-0000-0000000000a1',
-  $$select public.create_my_business('두번째')$$, '23505');
+  $$select public.create_my_business('두번째', null, null, null, repeat('e', 64))$$, '42501');
+
+do $$ begin
+  begin
+    perform public.create_my_business_as('00000000-0000-0000-0000-0000000000a1', '두번째', null, null, null, repeat('e', 64));
+    insert into results values ('create_my_business_as: 이미 매장이 있으면 재생성 불가', false, 'no error raised');
+  exception when others then
+    insert into results values ('create_my_business_as: 이미 매장이 있으면 재생성 불가', sqlstate = '23505', sqlstate || ' ' || sqlerrm);
+  end;
+end $$;
 
 select pg_temp.expect_fail('create_my_business: 로그인 없이 호출 불가',
   '00000000-0000-0000-0000-000000000000',

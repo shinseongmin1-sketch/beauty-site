@@ -13,7 +13,8 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import { loadTarget, parseArgs, root } from "./lib/env.mjs";
-import { CRM_TABLES, TABLE_INTRODUCED_BY, findUnlistedTables } from "./lib/tables.mjs";
+import { CRM_TABLES, TABLE_INTRODUCED_BY, findUnlistedTables, primaryKeyOf } from "./lib/tables.mjs";
+import { fetchAllRows } from "./lib/backup-io.mjs";
 
 const args = parseArgs();
 const t = loadTarget(args.target);
@@ -29,30 +30,9 @@ if (key.length !== 32) {
 
 const headers = { apikey: t.serviceKey, Authorization: `Bearer ${t.serviceKey}` };
 
-async function fetchAll(table) {
-  const rows = [];
-  const page = 1000;
-  for (let from = 0; ; from += page) {
-    const res = await fetch(`${t.url}/rest/v1/${table}?select=*&order=created_at.asc.nullsfirst`, {
-      headers: { ...headers, Range: `${from}-${from + page - 1}`, "Range-Unit": "items" },
-    });
-    if (!res.ok) {
-      // created_at 이 없는 테이블(customer_tag_links 등은 있음) 대비: 정렬 없이 재시도
-      const retry = await fetch(`${t.url}/rest/v1/${table}?select=*`, {
-        headers: { ...headers, Range: `${from}-${from + page - 1}`, "Range-Unit": "items" },
-      });
-      if (!retry.ok) throw new Error(`${table} 조회 실패 (${retry.status})`);
-      const part = await retry.json();
-      rows.push(...part);
-      if (part.length < page) break;
-      continue;
-    }
-    const part = await res.json();
-    rows.push(...part);
-    if (part.length < page) break;
-  }
-  return rows;
-}
+// 기본키 순서 + 서버 전체 행 수(count=exact) 대조로 끊어 읽는다 (lib/backup-io.mjs).
+// 같은 created_at 행의 페이지 경계 중복/누락, 서버 Max Rows 로 인한 조기 종료를 막고, 어긋나면 백업을 중단한다.
+const fetchAll = (table) => fetchAllRows({ url: t.url, headers, table, pk: primaryKeyOf(table) });
 
 async function fetchAuthUsers() {
   const users = [];

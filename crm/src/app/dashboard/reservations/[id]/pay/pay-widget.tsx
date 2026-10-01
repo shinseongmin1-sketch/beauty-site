@@ -19,6 +19,7 @@ export function PayWidget({
   const [amount, setAmount] = useState<number | null>(null);
   const [orderInfo, setOrderInfo] = useState<{ orderId: string; orderName: string } | null>(null);
   const [alreadyPaid, setAlreadyPaid] = useState(false);
+  const [testMode, setTestMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,6 +34,7 @@ export function PayWidget({
         setAmount(intent.amount);
         setOrderInfo({ orderId: intent.orderId, orderName: intent.orderName });
         setAlreadyPaid(intent.alreadyPaid);
+        setTestMode(intent.testMode);
 
         if (intent.alreadyPaid) return;
 
@@ -93,9 +95,11 @@ export function PayWidget({
       >
         {widget ? "결제하기" : "결제 준비 중..."}
       </button>
-      <p className="text-xs text-muted">
-        테스트 모드입니다. 실제 카드가 결제되지 않으며, 토스페이먼츠 테스트 카드로만 진행됩니다.
-      </p>
+      {testMode && (
+        <p className="text-xs text-muted">
+          테스트 모드입니다. 실제 카드가 결제되지 않으며, 토스페이먼츠 테스트 카드로만 진행됩니다.
+        </p>
+      )}
     </div>
   );
 }

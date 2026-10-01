@@ -6,6 +6,7 @@ import { hashBusinessNumber, maskBusinessNumber, normalizeBusinessNumber } from 
 import { requireBusinessContext } from "@/lib/business";
 import { requireWritable } from "@/lib/subscription";
 import { requireAccess } from "@/lib/permissions";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export async function updateBusiness(formData: FormData) {
   const { supabase, business, profile, subscription } = await requireBusinessContext();
@@ -40,7 +41,10 @@ export async function updateBusiness(formData: FormData) {
     if (!digits) {
       redirect(`/dashboard/settings?error=${encodeURIComponent("사업자등록번호 10자리를 정확히 입력해주세요.")}`);
     }
-    const { error } = await supabase.rpc("set_business_number", {
+    // 해시는 서버에서만 계산해 서버 전용 함수로 넣는다 (016). 대표 여부·1회 등록 제한은 DB 함수가 이 사용자로서 다시 확인한다.
+    const admin = await createAdminClient();
+    const { error } = await admin.rpc("set_business_number_as", {
+      p_user: profile.id,
       p_hash: hashBusinessNumber(digits!),
       p_masked: maskBusinessNumber(digits!),
     });

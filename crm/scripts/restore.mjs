@@ -10,7 +10,8 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import { loadTarget, parseArgs, runSql } from "./lib/env.mjs";
-import { CRM_TABLES } from "./lib/tables.mjs";
+import { CRM_TABLES, primaryKeyOf } from "./lib/tables.mjs";
+import { countMissingKeys, totalFromContentRange } from "./lib/backup-io.mjs";
 
 const args = parseArgs();
 if (args.target === "prod") {
@@ -98,12 +99,26 @@ for (const table of CRM_TABLES) {
   }
 }
 
-// 3) 대조: 원본 매니페스트의 행 수와 복원된 행 수 비교
+// 3) 대조: (a) 원본 매니페스트의 행 수 = 백업 파일 안의 행 수, (b) 백업한 행의 기본키가 대상 DB 에 모두 있는지, (c) 대상 DB 행 수
 let bad = 0;
 for (const table of CRM_TABLES) {
   const res = await fetch(`${t.url}/rest/v1/${table}?select=*&limit=0`, { headers: { ...headers, Prefer: "count=exact" } });
-  const restored = Number(res.headers.get("content-range")?.split("/")[1] ?? -1);
+  const restored = totalFromContentRange(res.headers.get("content-range")) ?? -1;
   const expected = manifest.rows[table];
+  const backedUp = snap.tables[table];
+  if (backedUp && backedUp.length !== expected) {
+    bad++;
+    console.log(`  DIFF ${table}: 매니페스트 ${expected}행 / 백업 파일 ${backedUp.length}행`);
+    continue;
+  }
+  if (backedUp) {
+    const missing = await countMissingKeys({ url: t.url, headers, table, pk: primaryKeyOf(table), rows: backedUp });
+    if (missing > 0) {
+      bad++;
+      console.log(`  MISS ${table}: 백업 ${expected}행 중 ${missing}행이 복원되지 않음`);
+      continue;
+    }
+  }
   // 백업 당시 마이그레이션 미적용으로 없던 테이블(manifest.skippedTables)은 비교하지 않는다
   if (expected === null || expected === undefined) {
     if (!(manifest.skippedTables ?? []).includes(table)) bad++;

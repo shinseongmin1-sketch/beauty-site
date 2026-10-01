@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { requireBusinessContext } from "@/lib/business";
 import { canAccess } from "@/lib/permissions";
+import { reservationPaymentConfig } from "@/lib/toss";
 import type { ReservationWithRelations } from "@/lib/types";
 import { getStatusBadge } from "@/lib/status";
 import { reservationCode } from "@/lib/phone";
@@ -129,13 +130,15 @@ export default async function ReservationDetailPage({
             {payment.amount.toLocaleString()}원 ·{" "}
             {payment.status === "paid" ? "결제완료" : payment.status}
           </p>
-        ) : (
+        ) : reservationPaymentConfig(business.toss_client_key) ? (
           <Link
             href={`/dashboard/reservations/${reservation.id}/pay`}
             className="inline-block rounded-lg bg-accent hover:bg-accent-hover px-4 py-2 text-sm font-medium text-white"
           >
             결제 요청하기
           </Link>
+        ) : (
+          <p className="text-sm text-muted">예약 결제는 현재 사용할 수 없습니다.</p>
         )}
       </div>
       )}
