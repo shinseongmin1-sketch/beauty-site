@@ -13,7 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import { loadTarget, parseArgs, root } from "./lib/env.mjs";
-import { CRM_TABLES, findUnlistedTables } from "./lib/tables.mjs";
+import { CRM_TABLES, TABLE_INTRODUCED_BY, findUnlistedTables } from "./lib/tables.mjs";
 
 const args = parseArgs();
 const t = loadTarget(args.target);
@@ -84,8 +84,34 @@ if (unlisted.length) {
   process.exit(1);
 }
 
+// 백업 대상인데 DB 에 없는 테이블 처리:
+//  - tables.mjs 의 TABLE_INTRODUCED_BY 에 등록된 테이블이고, 그 마이그레이션이 이 DB 에 "아직 적용되지 않았을" 때만 건너뛴다
+//    (예: 012 적용 전 운영 DB 의 subscription_payments). 적용 여부는 _crm_migrations 기록으로 확인한다.
+//  - 그 외(등록 안 된 테이블, 마이그레이션이 적용됐는데 테이블이 없음, 적용 기록을 읽지 못함)는 백업을 중단한다
+//    → 기존 테이블을 "없음"으로 잘못 판단해 조용히 누락시키는 일이 없다.
+const existingTables = new Set(Object.keys(spec.definitions ?? {}));
+const missingTables = CRM_TABLES.filter((table) => !existingTables.has(table));
+let pendingTables = [];
+if (missingTables.length) {
+  const res = await fetch(`${t.url}/rest/v1/_crm_migrations?select=filename`, { headers });
+  const applied = res.ok ? new Set((await res.json()).map((r) => r.filename)) : null;
+  const notAllowed = missingTables.filter((table) => {
+    const introducedBy = TABLE_INTRODUCED_BY[table];
+    return !introducedBy || applied === null || applied.has(introducedBy);
+  });
+  if (notAllowed.length) {
+    console.error(`✖ 백업 대상 테이블이 DB 에 없습니다 (누락 위험, 백업 중단): ${notAllowed.join(", ")}` + (applied === null ? " — 마이그레이션 적용 기록을 읽지 못함" : ""));
+    process.exit(1);
+  }
+  pendingTables = missingTables;
+  console.log(`⚠ 마이그레이션 미적용으로 아직 없는 테이블(이번 백업에서 제외): ${pendingTables.map((tb) => `${tb}(${TABLE_INTRODUCED_BY[tb]})`).join(", ")}`);
+}
+
 const snapshot = { version: 1, target: t.target, ref: t.ref, createdAt: new Date().toISOString(), authUsers: await fetchAuthUsers(), tables: {} };
-for (const table of CRM_TABLES) snapshot.tables[table] = await fetchAll(table);
+for (const table of CRM_TABLES) {
+  if (!existingTables.has(table)) continue;
+  snapshot.tables[table] = await fetchAll(table);
+}
 
 const plain = Buffer.from(JSON.stringify(snapshot));
 const plainSha = crypto.createHash("sha256").update(plain).digest("hex");
@@ -106,7 +132,8 @@ const manifest = {
   createdAt: snapshot.createdAt,
   plaintextSha256: plainSha,
   authUsers: snapshot.authUsers.length,
-  rows: Object.fromEntries(CRM_TABLES.map((n) => [n, snapshot.tables[n].length])),
+  rows: Object.fromEntries(CRM_TABLES.map((n) => [n, snapshot.tables[n]?.length ?? null])),
+  skippedTables: pendingTables,
 };
 fs.writeFileSync(`${base}.manifest.json`, JSON.stringify(manifest, null, 2) + "\n");
 

@@ -8,6 +8,7 @@ import crypto from "node:crypto";
 import { loadTarget, mintUserToken } from "../../scripts/lib/env.mjs";
 
 const t = loadTarget("test");
+const CONSENT = "test-consent-v1";
 const run = crypto.randomBytes(4).toString("hex");
 const PW = `Pw-${crypto.randomBytes(9).toString("base64url")}`;
 const SH = { apikey: t.serviceKey, Authorization: `Bearer ${t.serviceKey}`, "Content-Type": "application/json" };
@@ -47,7 +48,7 @@ const canWrite = async (u) => {
 };
 const customerKeyOf = async (u) => (await call(u, "POST", "rpc/billing_customer_key", {})).json;
 const attach = async (u, cycle) =>
-  rpcSvc("billing_attach_method", { p_business: u.biz, p_customer_key: await customerKeyOf(u), p_billing_key_enc: `v1.fake.${crypto.randomBytes(8).toString("hex")}`, p_card_company: "국민", p_card_number_masked: "5585****0000", p_card_type: "신용", p_billing_cycle: cycle });
+  rpcSvc("billing_attach_method", { p_business: u.biz, p_customer_key: await customerKeyOf(u), p_billing_key_enc: `v1.fake.${crypto.randomBytes(8).toString("hex")}`, p_card_company: "국민", p_card_number_masked: "5585****0000", p_card_type: "신용", p_billing_cycle: cycle, p_consent_version: CONSENT });
 const claimFor = async (u) => ((await rpcSvc("billing_claim_due", { p_limit: 500 })).json ?? []).filter((r) => r.business_id === u.biz);
 const record = (paymentId, success, approvedAt = null) =>
   rpcSvc("billing_record_result", { p_payment_id: paymentId, p_success: success, p_toss_payment_key: success ? `tpk_${crypto.randomBytes(6).toString("hex")}` : null, p_approved_at: approvedAt, p_failure_code: success ? null : "NOT_SUPPORTED_CARD_TYPE", p_failure_message: success ? null : "테스트 실패" });
@@ -201,9 +202,9 @@ test("G/H. 차단 상태 우회·결제 결과 조작 불가 (사용자 JWT 로 
 
 test("E. expired → 직접 결제 성공 → 즉시 active, 결제 성공 시각부터 새 기간 (연간)", async () => {
   const before = await sub(A);
-  const [row] = (await rpcSvc("billing_start_manual", { p_business: A.biz, p_cycle: "yearly" })).json;
+  const [row] = (await rpcSvc("billing_start_manual", { p_business: A.biz, p_cycle: "yearly", p_consent_version: CONSENT })).json;
   assert.equal(row.amount, 110000);
-  const dupStart = await rpcSvc("billing_start_manual", { p_business: A.biz, p_cycle: "yearly" }, false);
+  const dupStart = await rpcSvc("billing_start_manual", { p_business: A.biz, p_cycle: "yearly", p_consent_version: CONSENT }, false);
   assert.equal(dupStart.ok, false, "진행 중인 결제가 있으면 두 번째 결제 시작 거부");
   const approvedAt = new Date(Date.now() - 5_000);
   assert.equal((await record(row.payment_id, true, iso(approvedAt))).json.status, "paid");
@@ -216,7 +217,7 @@ test("E. expired → 직접 결제 성공 → 즉시 active, 결제 성공 시�
   assert.notEqual(ms(s.current_period_start), ms(before.current_period_end));
   assert.equal(s.expired_reason, null);
   assert.equal(await canWrite(A), true, "즉시 쓰기 가능");
-  const again = await rpcSvc("billing_start_manual", { p_business: A.biz, p_cycle: "monthly" }, false);
+  const again = await rpcSvc("billing_start_manual", { p_business: A.biz, p_cycle: "monthly", p_consent_version: CONSENT }, false);
   assert.equal(again.ok, false, "이용 중이면 직접 결제를 받지 않음 (중복 결제 방지)");
 });
 
@@ -247,7 +248,7 @@ test("카드 없는 무료체험 종료 → expired(trial_expired) (기존 정�
 
 test("결제수단: 다른 매장 customerKey 로 연결 불가, 교체 시 이전 카드 반환, 빌링키는 대표도 조회 불가", async () => {
   const other = await customerKeyOf(B);
-  const wrong = await rpcSvc("billing_attach_method", { p_business: C.biz, p_customer_key: other, p_billing_key_enc: "v1.x.y.z", p_card_company: null, p_card_number_masked: null, p_card_type: null, p_billing_cycle: "monthly" }, false);
+  const wrong = await rpcSvc("billing_attach_method", { p_business: C.biz, p_customer_key: other, p_billing_key_enc: "v1.x.y.z", p_card_company: null, p_card_number_masked: null, p_card_type: null, p_billing_cycle: "monthly", p_consent_version: CONSENT }, false);
   assert.equal(wrong.ok, false, "다른 매장 customerKey 거부");
   const first = await attach(C, "monthly");
   const second = await attach(C, "monthly");

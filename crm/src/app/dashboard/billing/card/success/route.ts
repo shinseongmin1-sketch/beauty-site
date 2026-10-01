@@ -9,6 +9,7 @@ import { isBillingCycle } from "@/lib/billing/plans";
 import { issueBillingKey, deleteBillingKey } from "@/lib/billing/toss";
 import { encryptBillingKey, decryptBillingKey } from "@/lib/billing/crypto";
 import { chargeManual } from "@/lib/billing/charge";
+import { AUTO_RENEW_CONSENT_VERSION } from "@/lib/billing/consent";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
   const cycle = searchParams.get("cycle") ?? "";
   const intent = searchParams.get("intent") === "pay" ? "pay" : "register";
   if (!customerKey || !authKey || !isBillingCycle(cycle)) return back("error=invalid_request");
+  // 자동결제 동의(현재 문구 버전)를 거쳐 온 요청만 받는다. 동의 기록은 카드 연결과 같은 트랜잭션에서 저장된다.
+  if (searchParams.get("consent") !== AUTO_RENEW_CONSENT_VERSION) return back("error=consent_required");
 
   // 이 매장에 발급한 customerKey 인지 (다른 매장 키로 받은 인증을 끼워 넣는 것 차단). DB 함수도 한 번 더 확인한다.
   const { data: myKey } = await supabase.rpc("billing_customer_key");
@@ -44,6 +47,7 @@ export async function GET(request: NextRequest) {
     p_card_number_masked: issued.cardNumberMasked,
     p_card_type: issued.cardType,
     p_billing_cycle: cycle,
+    p_consent_version: AUTO_RENEW_CONSENT_VERSION,
   });
   if (error) {
     console.error("[billing] attach failed", error.code);
@@ -60,7 +64,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (intent === "pay" && !subscription.writable) {
-    return back(await chargeManual(business.id, cycle));
+    return back(await chargeManual(business.id, cycle, AUTO_RENEW_CONSENT_VERSION));
   }
   return back("registered=1");
 }

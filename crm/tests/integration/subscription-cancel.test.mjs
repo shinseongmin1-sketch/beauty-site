@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import { loadTarget, mintUserToken } from "../../scripts/lib/env.mjs";
 
 const t = loadTarget("test");
+const CONSENT = "test-consent-v1";
 const run = crypto.randomBytes(4).toString("hex");
 const PW = `Pw-${crypto.randomBytes(9).toString("base64url")}`;
 const SH = { apikey: t.serviceKey, Authorization: `Bearer ${t.serviceKey}`, "Content-Type": "application/json" };
@@ -45,7 +46,7 @@ const setSub = (u, patch) => svc("PATCH", `subscriptions?business_id=eq.${u.biz}
 const canWrite = async (u) => { const r = await call(u, "POST", "customers", { business_id: u.biz, name: `w-${crypto.randomBytes(3).toString("hex")}` }); return r.ok && r.rows === 1; };
 const attach = async (u, cycle) => {
   const key = (await call(u, "POST", "rpc/billing_customer_key", {})).json;
-  return svc("POST", "rpc/billing_attach_method", { p_business: u.biz, p_customer_key: key, p_billing_key_enc: `v1.fake.${crypto.randomBytes(8).toString("hex")}`, p_card_company: "국민", p_card_number_masked: "5585****0000", p_card_type: "신용", p_billing_cycle: cycle });
+  return svc("POST", "rpc/billing_attach_method", { p_business: u.biz, p_customer_key: key, p_billing_key_enc: `v1.fake.${crypto.randomBytes(8).toString("hex")}`, p_card_company: "국민", p_card_number_masked: "5585****0000", p_card_type: "신용", p_billing_cycle: cycle, p_consent_version: CONSENT });
 };
 const cancel = (u) => call(u, "POST", "rpc/billing_cancel_auto_renewal", {});
 const claimFor = async (u) => ((await svc("POST", "rpc/billing_claim_due", { p_limit: 500 })).json ?? []).filter((r) => r.business_id === u.biz);
@@ -228,7 +229,7 @@ test("J/K. 다른 매장 ID 조작·직접 조작 우회 → 거부", async () =
 });
 
 test("해지 후 만료(expired cancelled) → 기존 직접 결제 경로로 다시 이용 가능 (재활성화 버튼 없이 기존 정책)", async () => {
-  const [row] = (await svc("POST", "rpc/billing_start_manual", { p_business: A.biz, p_cycle: "monthly" })).json;
+  const [row] = (await svc("POST", "rpc/billing_start_manual", { p_business: A.biz, p_cycle: "monthly", p_consent_version: CONSENT })).json;
   assert.equal(row.amount, 10000);
   const rec = await svc("POST", "rpc/billing_record_result", { p_payment_id: row.payment_id, p_success: true, p_toss_payment_key: "tpk_test", p_approved_at: null, p_failure_code: null, p_failure_message: null });
   assert.equal(rec.json.status, "paid");

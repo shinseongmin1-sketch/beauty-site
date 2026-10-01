@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
-import { loadTarget, parseArgs } from "./lib/env.mjs";
+import { loadTarget, parseArgs, runSql } from "./lib/env.mjs";
 import { CRM_TABLES } from "./lib/tables.mjs";
 
 const args = parseArgs();
@@ -63,9 +63,28 @@ for (const u of snap.authUsers) {
 }
 console.log(`  계정 ${usersCreated}개 생성 (기존 ${snap.authUsers.length - usersCreated}개는 이미 존재)`);
 
+// platform_settings.value 는 jsonb not null 이고 "미확정" 설정을 JSON null('null'::jsonb)로 둔다.
+// REST(PostgREST)로 넣으면 JSON null 이 SQL NULL 로 바뀌어 NOT NULL 에 걸리므로, 이 테이블만 SQL 로 jsonb 값을 그대로 복원한다.
+// (이 스크립트는 테스트 프로젝트 전용 — 위에서 --target=prod 를 거부하고 loadTarget("test") 만 쓴다)
+const sqlText = (v) => (v === null || v === undefined ? "null" : `'${String(v).replace(/'/g, "''")}'`);
+async function restorePlatformSettings(rows) {
+  if (!t.accessToken) throw new Error("platform_settings 복원에는 SUPABASE_TEST_ACCESS_TOKEN 이 필요합니다.");
+  for (const r of rows) {
+    await runSql(
+      t,
+      `insert into public.platform_settings (key, value, updated_at) values (${sqlText(r.key)}, ${sqlText(JSON.stringify(r.value))}::jsonb, ${sqlText(r.updated_at)}::timestamptz)
+       on conflict (key) do update set value = excluded.value, updated_at = excluded.updated_at`
+    );
+  }
+}
+
 // 2) 테이블: 부모 → 자식 순서로 upsert
 for (const table of CRM_TABLES) {
   let rows = snap.tables[table] ?? [];
+  if (table === "platform_settings") {
+    await restorePlatformSettings(rows);
+    continue;
+  }
   // 감사 로그는 append-only(수정 불가)라 이미 있는 행은 건너뛰고(ignore-duplicates), seq 는 자동 생성 컬럼이라 값을 넣을 수 없다.
   const isAudit = table === "audit_logs";
   if (isAudit) rows = rows.map(({ seq, ...rest }) => rest);
@@ -85,6 +104,12 @@ for (const table of CRM_TABLES) {
   const res = await fetch(`${t.url}/rest/v1/${table}?select=*&limit=0`, { headers: { ...headers, Prefer: "count=exact" } });
   const restored = Number(res.headers.get("content-range")?.split("/")[1] ?? -1);
   const expected = manifest.rows[table];
+  // 백업 당시 마이그레이션 미적용으로 없던 테이블(manifest.skippedTables)은 비교하지 않는다
+  if (expected === null || expected === undefined) {
+    if (!(manifest.skippedTables ?? []).includes(table)) bad++;
+    console.log(`  SKIP ${table}: 백업 당시 없던 테이블 (복원 ${restored})`);
+    continue;
+  }
   // 복원 작업 자체가 트리거로 감사 로그를 추가로 남기므로(시스템 기록), 감사 로그는 "원본 이상"이면 정상이다.
   const ok = table === "audit_logs" ? restored >= expected : restored === expected;
   if (!ok) bad++;

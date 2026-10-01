@@ -50,5 +50,13 @@
   "013_subscription_cancel.sql": {
     "sha256": "a57f282a6b55ae42e220dba929903abc93e1e6f39cf47c7a30dc2530b7d9698d",
     "verifiedAt": "2026-09-30T06:17:59.014Z"
+  },
+  "014_billing_manual_pending_reconcile.sql": {
+    "sha256": "6344f78715af75bb27f8444d8b1602f9027c1520d4938df6e233c80d6bd5daf6",
+    "verifiedAt": "2026-09-30T07:35:29.432Z"
+  },
+  "015_billing_auto_renew_consent.sql": {
+    "sha256": "827b162bd7ee0de28743695bdb92d8aed5cb3f36ecdf6869f89bb8972becfa64",
+    "verifiedAt": "2026-09-30T07:35:29.433Z"
   }
 }

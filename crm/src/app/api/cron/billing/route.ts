@@ -4,7 +4,7 @@
 import crypto from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { processCharge, type ChargeRow } from "@/lib/billing/charge";
+import { processCharge, reconcilePendingManual, type ChargeRow } from "@/lib/billing/charge";
 
 export const dynamic = "force-dynamic";
 
@@ -35,5 +35,7 @@ export async function GET(request: NextRequest) {
     const r = await processCharge(admin, row);
     summary[r.outcome === "paid" ? "paid" : r.outcome === "failed" ? "failed" : "unknown"]++;
   }
-  return NextResponse.json({ ok: true, ...summary });
+  // 결과를 모르는 직접 결제(pending)를 주문번호 조회로 확정 (재결제 요청 없음)
+  const manual = await reconcilePendingManual(admin, null);
+  return NextResponse.json({ ok: true, ...summary, manualResolved: manual.resolved, manualPending: manual.pending });
 }

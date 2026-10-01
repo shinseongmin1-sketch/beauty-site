@@ -31,7 +31,7 @@ export function CardRegisterForm({
     if (!consent) return setError("자동결제 안내에 동의해주세요.");
     setBusy(true);
     try {
-      const prep = await prepareCardRegistration(cycle);
+      const prep = await prepareCardRegistration(cycle, consent);
       if (!prep.ok) {
         setError(prep.error);
         return;
@@ -40,7 +40,7 @@ export function CardRegisterForm({
       const payment = toss.payment({ customerKey: prep.customerKey });
       await payment.requestBillingAuth({
         method: "CARD",
-        successUrl: `${window.location.origin}/dashboard/billing/card/success?cycle=${cycle}&intent=${intent}`,
+        successUrl: `${window.location.origin}/dashboard/billing/card/success?cycle=${cycle}&intent=${intent}&consent=${encodeURIComponent(prep.consentVersion)}`,
         failUrl: `${window.location.origin}/dashboard/billing?error=card_register_canceled`,
         ...(prep.customerEmail ? { customerEmail: prep.customerEmail } : {}),
       });

@@ -3,7 +3,9 @@
 // 새 마이그레이션으로 테이블을 추가하면 여기에도 추가해야 한다 (누락 시 backup.mjs 가 경고).
 export const CRM_TABLES = [
   "businesses",
+  "subscription_payment_methods", // 012: subscriptions.payment_method_id 가 참조하므로 subscriptions 보다 먼저 (→ businesses)
   "subscriptions",
+  "subscription_payments", // 012: → subscriptions, subscription_payment_methods, businesses
   "trial_history",
   "platform_settings",
   "profiles",
@@ -27,6 +29,14 @@ export const CRM_TABLES = [
   "audit_logs",
   "inquiries",
 ];
+
+// 나중 마이그레이션이 만드는 테이블 → 만드는 마이그레이션 파일.
+// 백업 시 DB 에 이 테이블이 없으면, 해당 마이그레이션이 "아직 적용되지 않은" 경우에만 건너뛴다.
+// (마이그레이션이 적용됐는데 테이블이 없거나, 여기 없는 테이블이 없으면 백업을 중단한다 → 기존 테이블이 누락되는 일이 없다)
+export const TABLE_INTRODUCED_BY = {
+  subscription_payment_methods: "012_subscription_billing.sql",
+  subscription_payments: "012_subscription_billing.sql",
+};
 
 export const OTHER_APP_TABLES = [
   /^community_/,

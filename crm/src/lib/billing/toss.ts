@@ -102,3 +102,29 @@ export async function deleteBillingKey(billingKey: string): Promise<boolean> {
     return false;
   }
 }
+
+export type OrderLookup =
+  | { found: true; status: string; totalAmount: number | null; paymentKey: string | null; approvedAt: string | null }
+  | { found: false } // 토스에 이 주문번호의 결제 기록이 없음 (요청이 도달하지 않았거나 아직 처리 전)
+  | { error: string }; // 조회 자체 실패 → 결과를 추측하지 않는다
+
+/** 주문번호로 결제 결과 조회 (결과를 모르는 결제를 "다시 결제하지 않고" 확인할 때 쓴다) */
+export async function getPaymentByOrderId(orderId: string): Promise<OrderLookup> {
+  try {
+    const r = await call("GET", `/payments/orders/${encodeURIComponent(orderId)}`);
+    if (r.ok) {
+      const j = r.json;
+      return {
+        found: true,
+        status: String(j.status ?? ""),
+        totalAmount: typeof j.totalAmount === "number" ? j.totalAmount : null,
+        paymentKey: typeof j.paymentKey === "string" ? j.paymentKey : null,
+        approvedAt: typeof j.approvedAt === "string" ? j.approvedAt : null,
+      };
+    }
+    if (r.status === 404) return { found: false };
+    return { error: String(r.json.code ?? r.status) };
+  } catch {
+    return { error: "NETWORK_ERROR" };
+  }
+}

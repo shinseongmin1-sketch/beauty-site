@@ -5,25 +5,32 @@ import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
 import { isBillingCycle } from "@/lib/billing/plans";
 import { billingClientKey } from "@/lib/billing/toss";
-import { chargeManual } from "@/lib/billing/charge";
+import { chargeManual, reconcilePendingManual } from "@/lib/billing/charge";
+import { AUTO_RENEW_CONSENT_VERSION } from "@/lib/billing/consent";
+import { createAdminClient } from "@/lib/supabase/server";
 
 /**
  * 카드 등록(토스 자동결제 인증창) 준비. 대표만.
  * 브라우저에는 client key 와 이 매장의 customerKey 만 준다 (빌링키/시크릿 키는 서버에만).
  */
 export async function prepareCardRegistration(
-  cycle: string
-): Promise<{ ok: true; clientKey: string; customerKey: string; customerEmail: string | null } | { ok: false; error: string }> {
+  cycle: string,
+  consent: boolean
+): Promise<
+  { ok: true; clientKey: string; customerKey: string; customerEmail: string | null; consentVersion: string } | { ok: false; error: string }
+> {
   const { supabase, user, profile } = await requireBusinessContext();
   if (profile.role !== "owner") return { ok: false, error: "대표 계정만 결제수단을 관리할 수 있습니다." };
   if (!isBillingCycle(cycle)) return { ok: false, error: "요금제를 선택해주세요." };
+  // 자동결제 동의 없이는 카드 등록(자동결제 설정)을 시작하지 않는다. 동의 기록은 카드 연결이 성공할 때 서버가 저장한다.
+  if (consent !== true) return { ok: false, error: "자동결제 안내에 동의해주세요." };
   const { data: customerKey, error } = await supabase.rpc("billing_customer_key");
   if (error || typeof customerKey !== "string") {
     console.error("[billing] customer key failed", error?.code);
     return { ok: false, error: "결제 준비에 실패했습니다. 잠시 후 다시 시도해주세요." };
   }
   try {
-    return { ok: true, clientKey: billingClientKey(), customerKey, customerEmail: user.email ?? null };
+    return { ok: true, clientKey: billingClientKey(), customerKey, customerEmail: user.email ?? null, consentVersion: AUTO_RENEW_CONSENT_VERSION };
   } catch (e) {
     console.error("[billing] client key missing", e instanceof Error ? e.message : e);
     return { ok: false, error: "결제 설정이 완료되지 않았습니다. 고객센터에 문의해주세요." };
@@ -44,7 +51,7 @@ export async function payNow(formData: FormData) {
   if (formData.get("consent") !== "on") back("error=consent_required");
   if (subscription.writable) back("error=already_active");
 
-  const result = await chargeManual(business.id, cycle);
+  const result = await chargeManual(business.id, cycle, AUTO_RENEW_CONSENT_VERSION);
   revalidatePath("/dashboard", "layout");
   back(result);
 }
@@ -64,4 +71,16 @@ export async function cancelAutoRenewal() {
   }
   revalidatePath("/dashboard", "layout");
   back((data as { already_canceled?: boolean } | null)?.already_canceled ? "error=already_canceled" : "canceled=1");
+}
+
+/** 결과를 모르는 직접 결제를 다시 확인 (대표 본인 매장만). 토스 주문번호 조회로 확정하며 새 결제는 만들지 않는다. */
+export async function recheckPendingPayment() {
+  const { business, profile } = await requireBusinessContext();
+  if (profile.role !== "owner") back("error=forbidden");
+  const admin = await createAdminClient();
+  const r = await reconcilePendingManual(admin, business.id);
+  revalidatePath("/dashboard", "layout");
+  const { data: sub } = await admin.from("subscriptions").select("status").eq("business_id", business.id).maybeSingle();
+  if (r.pending > 0) back("error=payment_pending");
+  back(sub?.status === "active" ? "paid=1" : r.resolved > 0 ? "error=payment_failed" : "rechecked=1");
 }

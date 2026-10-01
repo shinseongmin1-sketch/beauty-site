@@ -4,6 +4,7 @@ import { BILLING_PLANS, formatWon, isBillingCycle, type BillingCycle } from "@/l
 import { CardRegisterForm } from "./card-form";
 import { PayNowForm } from "./pay-now-form";
 import { CancelAutoRenewalButton } from "./cancel-button";
+import { recheckPendingPayment } from "./actions";
 
 const fmt = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy.MM.dd HH:mm") : "-");
 const fmtDate = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy.MM.dd") : "-");
@@ -25,6 +26,7 @@ const MESSAGES: Record<string, { ok: boolean; text: string }> = {
   already_canceled: { ok: false, text: "이미 자동결제가 해지된 상태입니다." },
   not_cancellable: { ok: false, text: "해지할 자동결제가 없습니다." },
   cancel_failed: { ok: false, text: "자동결제 해지에 실패했습니다. 잠시 후 다시 시도해주세요." },
+  rechecked: { ok: true, text: "확인이 끝났습니다. 진행 중인 결제가 없으니 다시 결제할 수 있습니다." },
 };
 
 function labelOf(status: string, reason: string | null, awaiting: boolean) {
@@ -48,7 +50,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
   const { data: row } = await supabase
     .from("subscriptions")
-    .select("status, billing_cycle, trial_ends_at, current_period_start, current_period_end, expired_reason")
+    .select("status, billing_cycle, trial_ends_at, current_period_start, current_period_end, expired_reason, auto_renew_consented_at, auto_renew_consent_version")
     .maybeSingle();
   const { data: cardRows } = await supabase.rpc("billing_my_payment_method");
   const card = (cardRows as { card_company: string | null; card_number_masked: string | null }[] | null)?.[0] ?? null;
@@ -63,7 +65,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const cardLabel = card ? `${card.card_company ?? "카드"} ${card.card_number_masked ?? ""}`.trim() : null;
   const nextCharge =
     card && row?.status === "trial" ? row.trial_ends_at : card && row?.status === "active" ? row.current_period_end : null;
-  const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.canceled ? "canceled" : q.error;
+  const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.canceled ? "canceled" : q.rechecked ? "rechecked" : q.error;
+  const showRecheck = msgKey === "payment_pending" || msgKey === "payment_in_progress";
   // 자동결제 해지: 이용 중(active 기간 안) 또는 카드를 등록한 체험 중일 때만 가능. 해지해도 이 종료 시각까지 이용한다.
   const usableUntil = row?.status === "trial" ? row.trial_ends_at : row?.current_period_end ?? null;
   const cancellable = subscription.writable && ((row?.status === "active") || (row?.status === "trial" && !!card));
@@ -78,6 +81,13 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         <p className={`rounded-xl px-4 py-3 text-sm ${msg.ok ? "bg-status-mint-bg text-status-mint-text" : "bg-red-50 text-red-600"}`} data-billing-message={msgKey}>
           {msg.text}
         </p>
+      )}
+      {showRecheck && (
+        <form action={recheckPendingPayment}>
+          <button type="submit" className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium hover:bg-background" data-recheck>
+            결제 결과 다시 확인
+          </button>
+        </form>
       )}
 
       <section className="space-y-3 rounded-2xl border border-border bg-card p-5 sm:p-6">
@@ -111,6 +121,14 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           </dd>
           <dt className="text-muted">결제수단</dt>
           <dd className="text-foreground">{cardLabel ?? "등록된 카드 없음"}</dd>
+          {row?.auto_renew_consented_at && (
+            <>
+              <dt className="text-muted">자동결제 동의</dt>
+              <dd className="text-foreground" data-consent>
+                {fmt(row.auto_renew_consented_at)} <span className="text-xs text-muted">(안내 문구 {row.auto_renew_consent_version})</span>
+              </dd>
+            </>
+          )}
         </dl>
       </section>
 
