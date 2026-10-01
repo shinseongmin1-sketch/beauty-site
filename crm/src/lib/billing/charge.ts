@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/server";
 import { decryptBillingKey } from "./crypto";
 import { chargeBillingKey, getPaymentByOrderId, type ChargeResult } from "./toss";
+import { runAutoPending, type AutoPendingOutcome, type AutoPendingRow } from "./auto-pending";
 
 export type ChargeRow = {
   payment_id: string;
@@ -52,6 +53,26 @@ export async function processCharge(admin: SupabaseClient, row: ChargeRow): Prom
     return { outcome: "unknown", code: "RECORD_FAILED" };
   }
   return result;
+}
+
+/**
+ * 자동결제 스케줄러가 billing_claim_due 로 받은 pending 1건 처리 (S-3, 규칙은 lib/billing/auto-pending.ts).
+ * 이번 실행에서 만든 결제만 바로 요청하고, 이전 pending 은 토스 주문번호 조회로 먼저 확인한다 — 해지·카드 변경된 구독에는 다시 결제하지 않는다.
+ */
+export function processAutoPending(admin: SupabaseClient, row: AutoPendingRow): Promise<AutoPendingOutcome> {
+  return runAutoPending(row, {
+    lookup: async (orderId) => {
+      const r = await getPaymentByOrderId(orderId);
+      if ("error" in r) console.error("[billing] auto order lookup failed", r.error);
+      return r;
+    },
+    chargeAndRecord: (r) => processCharge(admin, r),
+    rpc: async (name, args) => {
+      const { error } = await admin.rpc(name, args);
+      if (error) console.error(`[billing] ${name} failed`, error.code);
+      return { error };
+    },
+  });
 }
 
 // 토스에 결제 기록이 없을 때 "결제가 일어나지 않았다"고 확정하기까지 기다리는 시간 (요청이 아직 처리 중일 수 있음)

@@ -67,9 +67,11 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
     card && row?.status === "trial" ? row.trial_ends_at : card && row?.status === "active" ? row.current_period_end : null;
   const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.canceled ? "canceled" : q.rechecked ? "rechecked" : q.error;
   const showRecheck = msgKey === "payment_pending" || msgKey === "payment_in_progress";
-  // 자동결제 해지: 이용 중(active 기간 안) 또는 카드를 등록한 체험 중일 때만 가능. 해지해도 이 종료 시각까지 이용한다.
+  // 자동결제 해지: 이용 중(active) 또는 카드를 등록한 체험 중이면 가능. 해지해도 이 종료 시각까지 이용한다.
+  // 결제일이 지나 자동결제 결과를 확인 중(awaitingPayment)일 때도 해지는 접수한다 (S-3, 017).
   const usableUntil = row?.status === "trial" ? row.trial_ends_at : row?.current_period_end ?? null;
-  const cancellable = subscription.writable && ((row?.status === "active") || (row?.status === "trial" && !!card));
+  const cancellable =
+    (subscription.writable || subscription.awaitingPayment) && ((row?.status === "active") || (row?.status === "trial" && !!card));
   const canceledActive = row?.status === "canceled" && subscription.writable;
   const msg = msgKey ? (MESSAGES[msgKey] ?? { ok: false, text: "요청을 처리하지 못했습니다." }) : null;
 
