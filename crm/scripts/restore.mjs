@@ -1,6 +1,9 @@
 // 복구 드릴: 백업 파일을 "테스트 프로젝트"에 복원하고 행 수/체크섬을 원본 매니페스트와 대조한다.
 //
-//   node scripts/restore.mjs --target=test --file=backups/prod-20260921T000000Z.json.gz.enc
+//   node scripts/restore.mjs --target=test --file=backups/prod-20260921T000000Z.json.gz.enc --confirm=<복원 대상 프로젝트 ref>
+//
+// --confirm 은 실제 대상 ref(SUPABASE_TEST_URL, 없으면 .env.test)와 같아야 한다. 운영/백업 원본 프로젝트는 항상 거부,
+// 보존 중인 테스트 프로젝트(lib/restore-guard.mjs)는 --allow-protected-target=<ref> 를 추가로 요구한다.
 //
 // 운영 DB 에는 이 스크립트로 복원하지 않는다 (--target=prod 는 거부). 운영 복구 절차는 docs/OPERATIONS_DB.md 참고.
 // 테스트 프로젝트에는 먼저 마이그레이션이 모두 적용돼 있어야 한다 (npm run db:migrate:test).
@@ -9,9 +12,10 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
-import { loadTarget, parseArgs, runSql } from "./lib/env.mjs";
+import { loadTarget, parseArgs, prodRef, runSql } from "./lib/env.mjs";
 import { CRM_TABLES, primaryKeyOf } from "./lib/tables.mjs";
 import { countMissingKeys, totalFromContentRange } from "./lib/backup-io.mjs";
+import { checkRestoreTarget } from "./lib/restore-guard.mjs";
 
 const args = parseArgs();
 if (args.target === "prod") {
@@ -19,10 +23,29 @@ if (args.target === "prod") {
   process.exit(1);
 }
 const t = loadTarget("test");
+console.log(`▶ 복원 대상: 테스트 대상 프로젝트 ${t.ref}`);
 if (!args.file) {
   console.error("✖ --file=<백업파일> 을 지정하세요.");
   process.exit(1);
 }
+const manifestPath = args.file.replace(/\.json\.gz\.enc$/, ".manifest.json");
+const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+
+// 대상 확인은 네트워크 요청·복호화보다 먼저 한다
+const guard = checkRestoreTarget({
+  targetRef: t.ref,
+  confirm: args.confirm,
+  allowProtected: args["allow-protected-target"],
+  prodRef: prodRef(),
+  backupSourceRef: manifest.ref ?? null,
+});
+if (!guard.ok) {
+  console.error(`✖ ${guard.error}`);
+  process.exit(1);
+}
+if (guard.warning) console.log(guard.warning);
+console.log(`✔ 대상 확인: ${t.ref} (백업 원본 ${manifest.ref ?? "알 수 없음"})`);
+
 if (!t.backupKey) {
   console.error("✖ BACKUP_ENCRYPTION_KEY 가 필요합니다.");
   process.exit(1);
@@ -36,8 +59,6 @@ const decipher = crypto.createDecipheriv("aes-256-gcm", Buffer.from(t.backupKey,
 decipher.setAuthTag(tag);
 const plain = zlib.gunzipSync(Buffer.concat([decipher.update(packed.subarray(34)), decipher.final()]));
 
-const manifestPath = args.file.replace(/\.json\.gz\.enc$/, ".manifest.json");
-const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const sha = crypto.createHash("sha256").update(plain).digest("hex");
 if (sha !== manifest.plaintextSha256) throw new Error("체크섬 불일치: 백업 파일이 손상되었거나 변조되었습니다.");
 console.log("✔ 복호화·체크섬 확인 OK");

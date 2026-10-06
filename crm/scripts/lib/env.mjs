@@ -29,6 +29,12 @@ function prodUrl() {
   return parseEnvFile(path.join(root, ".env.local"))?.NEXT_PUBLIC_SUPABASE_URL ?? null;
 }
 
+/** .env.local 이 가리키는 운영 프로젝트 ref (없으면 null). */
+export function prodRef() {
+  const url = prodUrl();
+  return url ? refOf(url) : null;
+}
+
 export function loadTarget(target) {
   if (target !== "test" && target !== "prod") {
     throw new Error("--target=test 또는 --target=prod 를 지정하세요.");

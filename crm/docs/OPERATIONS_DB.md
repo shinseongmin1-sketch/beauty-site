@@ -36,7 +36,7 @@ npm run db:backup:prod
 | 상황 | 절차 |
 |---|---|
 | 특정 데이터를 실수로 삭제 | (Pro) 대시보드 Backups에서 복원 / (논리 백업) 백업 파일을 테스트 프로젝트에 복원 → 필요한 행만 SQL로 운영에 되돌림 |
-| DB/프로젝트 전체 장애 | ① 새 Supabase 프로젝트 생성 → ② `.env.test` 를 새 프로젝트로 지정하고 `npm run db:migrate:test`(스키마 재구성) → ③ `npm run db:restore:test -- --file=backups/<파일>` → ④ Vercel 환경변수(URL/키)를 새 프로젝트로 교체 후 재배포 → ⑤ 사용자에게 비밀번호 재설정 안내 |
+| DB/프로젝트 전체 장애 | ① 새 Supabase 프로젝트 생성 → ② `.env.test` 를 새 프로젝트로 지정하고 `npm run db:migrate:test`(스키마 재구성) → ③ `npm run db:restore:test -- --file=backups/<파일> --confirm=<새 프로젝트 ref>` (대상 ref 확인 필수, 보존 중인 테스트 프로젝트는 `--allow-protected-target=<ref>` 추가 필요) → ④ Vercel 환경변수(URL/키)를 새 프로젝트로 교체 후 재배포 → ⑤ 사용자에게 비밀번호 재설정 안내 |
 | 마이그레이션 적용 실패 | 각 마이그레이션은 트랜잭션이라 실패 시 자동 롤백됨. 성공 후 문제가 생기면 파일 하단의 ROLLBACK 주석 참고 |
 
 ## 2. 테스트 → 운영 적용 절차
