@@ -22,7 +22,7 @@ async function mkOwner(label, n) {
   assert.ok(r.ok, `create ${label}`);
   created.push(j.id);
   const u = { id: j.id, email, token: await mintUserToken(t, { id: j.id, email }) };
-  const b = await call(u, "POST", "rpc/create_my_business", { p_name: `B-${run}-${label}`, p_representative_name: "대표", p_business_number_hash: hashOf(n), p_business_number_masked: "123-**-***45" });
+  const b = await call({ token: t.serviceKey }, "POST", "rpc/create_my_business_as", { p_user: u.id, p_name: `B-${run}-${label}`, p_representative_name: "대표", p_business_number_hash: hashOf(n), p_business_number_masked: "123-**-***45" });
   assert.ok(b.ok, `biz ${label}: ${b.status} ${b.message}`);
   u.biz = b.json;
   return u;

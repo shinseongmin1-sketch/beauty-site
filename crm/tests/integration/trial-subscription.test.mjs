@@ -46,8 +46,10 @@ const svc = async (method, pq, body) => {
   assert.ok(r.ok, `svc ${method} ${pq}: ${r.status} ${text.slice(0, 200)}`);
   return text ? JSON.parse(text) : [];
 };
+// 016 이후 사업장 생성은 앱 서버가 서버 전용 함수로 한다 (해시는 서버만 계산). 대상 사용자는 u.id
 const createBiz = (u, name, number, phoneN) =>
-  call(u, "POST", "rpc/create_my_business", {
+  call({ token: t.serviceKey }, "POST", "rpc/create_my_business_as", {
+    p_user: u.id,
     p_name: name,
     p_phone: "02-1234-5678",
     p_representative_name: "대표",
@@ -183,10 +185,15 @@ test("체험 거부 계정이 새 사업장을 만들어 체험을 다시 받는
 
 test("사업자번호 해시 없이/잘못된 형식으로는 사업장을 만들 수 없다", async () => {
   const E = await mkUser("e");
-  const noHash = await call(E, "POST", "rpc/create_my_business", { p_name: "무번호" });
+  const noHash = await call({ token: t.serviceKey }, "POST", "rpc/create_my_business_as", { p_user: E.id, p_name: "무번호" });
   assert.ok(!noHash.ok); assert.equal(noHash.code, "22023");
-  const bad = await call(E, "POST", "rpc/create_my_business", { p_name: "형식오류", p_business_number_hash: "abc" });
+  const bad = await call({ token: t.serviceKey }, "POST", "rpc/create_my_business_as", { p_user: E.id, p_name: "형식오류", p_business_number_hash: "abc" });
   assert.ok(!bad.ok); assert.equal(bad.code, "22023");
+  // S-5 (016): 브라우저 권한으로는 임의의 해시를 넣어 직접 호출할 수 없다
+  const direct = await call(E, "POST", "rpc/create_my_business", { p_name: "우회", p_business_number_hash: crypto.randomBytes(32).toString("hex") });
+  assert.ok(!direct.ok); assert.equal(direct.code, "42501");
+  const directNumber = await call(E, "POST", "rpc/set_business_number", { p_hash: crypto.randomBytes(32).toString("hex"), p_masked: "***" });
+  assert.ok(!directNumber.ok); assert.equal(directNumber.code, "42501");
 });
 
 // ══════════════════════════════════════════════════════════════════════
@@ -353,7 +360,7 @@ test("체험 종료 후: 함수 경로(초대 생성/직급 변경)도 차단, �
 
 test("체험 종료 후: 사업자번호 재등록/새 사업장 생성으로 우회 불가", async () => {
   const o = OX;
-  const again = await call(o, "POST", "rpc/set_business_number", { p_hash: hashOf("7777777777"), p_masked: "***" });
+  const again = await call({ token: t.serviceKey }, "POST", "rpc/set_business_number_as", { p_user: o.id, p_hash: hashOf("7777777777"), p_masked: "***" });
   assert.ok(!again.ok); assert.equal(again.code, "23505");
   const second = await createBiz(o, `X2-${run}`, "8888888888");
   assert.ok(!second.ok); assert.equal(second.code, "23505");
@@ -370,7 +377,8 @@ test("sync: 로그인 시 만료 반영 → 저장 상태 expired, 이력 ended 
 test("유료 구독 상태(결제 연동 시 service_role 이 설정) 별 쓰기 가능 여부: active 허용 / suspended·canceled(기간 없음) 차단 / canceled(기간 남음) 허용", async () => {
   const o = OX;
   const add = (name) => call(o, "POST", "customers", { business_id: bizX, name });
-  await svc("PATCH", `subscriptions?business_id=eq.${bizX}`, { status: "active", plan: "basic", billing_cycle: "monthly", current_period_start: new Date().toISOString(), current_period_end: new Date(Date.now() + 30 * 86_400_000).toISOString() });
+  // 이용기간 시작은 1분 전: JS 시계로 만든 "지금"은 DB now() 보다 늦을 수 있어 start <= now() 가 경합으로 깨진다
+  await svc("PATCH", `subscriptions?business_id=eq.${bizX}`, { status: "active", plan: "basic", billing_cycle: "monthly", current_period_start: new Date(Date.now() - 60_000).toISOString(), current_period_end: new Date(Date.now() + 30 * 86_400_000).toISOString() });
   assert.ok((await add("유료고객")).ok, "active");
   await svc("PATCH", `subscriptions?business_id=eq.${bizX}`, { status: "suspended", suspended_at: new Date().toISOString(), suspended_reason: "시험" });
   assert.ok(blocked(await add("정지고객")), "suspended");
@@ -408,12 +416,12 @@ test("기존(백필) 사업장: 사업자번호 사후 등록 — 대표만, 중
   await svc("PATCH", `profiles?id=eq.${L.id}`, { business_id: biz, role: "owner" });
   await svc("POST", "subscriptions", { business_id: biz, status: "trial", trial_source: "legacy_backfill", trial_started_at: new Date().toISOString(), trial_ends_at: new Date(Date.now() + 90 * 86_400_000).toISOString() });
   await svc("POST", "trial_history", { business_id: biz, source: "legacy_backfill", trial_started_at: new Date().toISOString(), trial_ends_at: new Date(Date.now() + 90 * 86_400_000).toISOString() });
-  const used = await call(L, "POST", "rpc/set_business_number", { p_hash: hashOf(NUM_D), p_masked: "***" });
+  const used = await call({ token: t.serviceKey }, "POST", "rpc/set_business_number_as", { p_user: L.id, p_hash: hashOf(NUM_D), p_masked: "***" });
   assert.ok(!used.ok); assert.equal(used.code, "23505");
-  const ok = await call(L, "POST", "rpc/set_business_number", { p_hash: hashOf("9999999999"), p_masked: "999-**-***99" });
+  const ok = await call({ token: t.serviceKey }, "POST", "rpc/set_business_number_as", { p_user: L.id, p_hash: hashOf("9999999999"), p_masked: "999-**-***99" });
   assert.ok(ok.ok, `${ok.status} ${JSON.stringify(ok.json)}`);
   assert.equal((await svc("GET", `trial_history?business_id=eq.${biz}&select=business_number_hash`))[0].business_number_hash, hashOf("9999999999"));
-  assert.ok(!(await call(L, "POST", "rpc/set_business_number", { p_hash: hashOf("1010101010"), p_masked: "***" })).ok, "한 번 등록하면 변경 불가");
+  assert.ok(!(await call({ token: t.serviceKey }, "POST", "rpc/set_business_number_as", { p_user: L.id, p_hash: hashOf("1010101010"), p_masked: "***" })).ok, "한 번 등록하면 변경 불가");
   // 이 번호로 새 계정이 가입하면 체험 거부 (이력에 반영됨)
   const N = await mkUser("legacy-dup");
   const r = await createBiz(N, `기존중복-${run}`, "9999999999");

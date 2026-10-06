@@ -51,9 +51,12 @@ test("가입 직후 프로필이 트리거로 자동 생성되고 매장은 아�
 });
 
 test("온보딩: create_my_business 로 매장/대표 직원/기본 데이터가 한 번에 만들어진다", async () => {
-  // 최종 상태(009 이후)는 사업자번호 해시가 필수이고, 005 상태에서는 그 인자가 없다. 두 서명 모두에서 온보딩 호출이 동작해야 한다.
+  // 최종 상태(016 이후)는 앱 서버가 서버 전용 함수(create_my_business_as)로 호출한다. 009~015 는 사용자 권한 + 사업자번호 해시,
+  // 005 상태에서는 해시 인자가 없다. 검증 단계(005 → 006 → … → 최신)마다 그 시점의 온보딩 경로가 동작해야 한다.
   const legacyArgs = { p_name: `흐름매장-${run}`, p_phone: "02-1234-5678", p_address: "서울" };
-  let res = await rest("POST", "rpc/create_my_business", { ...legacyArgs, p_representative_name: "대표", p_business_number_hash: crypto.randomBytes(32).toString("hex"), p_business_number_masked: "***" });
+  const fullArgs = { ...legacyArgs, p_representative_name: "대표", p_business_number_hash: crypto.randomBytes(32).toString("hex"), p_business_number_masked: "***" };
+  let res = await fetch(`${t.url}/rest/v1/rpc/create_my_business_as`, { method: "POST", headers: { ...svcHeaders, Prefer: "return=representation" }, body: JSON.stringify({ p_user: user.id, ...fullArgs }) });
+  if (!res.ok && res.status === 404) res = await rest("POST", "rpc/create_my_business", fullArgs);
   if (!res.ok && res.status === 404) res = await rest("POST", "rpc/create_my_business", legacyArgs);
   biz = await ok(res, "rpc");
   assert.match(String(biz), /^[0-9a-f-]{36}$/);

@@ -45,8 +45,8 @@ let A, B, S, bizA, bizB, staffS;
 
 before(async () => {
   [A, B, S] = await Promise.all([createUser("a"), createUser("b"), createUser("s")]);
-  bizA = await (await rpc(A, "create_my_business", { p_name: `A-${run}`, p_business_number_hash: crypto.randomBytes(32).toString("hex") })).json();
-  bizB = await (await rpc(B, "create_my_business", { p_name: `B-${run}`, p_business_number_hash: crypto.randomBytes(32).toString("hex") })).json();
+  bizA = await (await rpc({ token: t.serviceKey }, "create_my_business_as", { p_user: A.id, p_name: `A-${run}`, p_business_number_hash: crypto.randomBytes(32).toString("hex") })).json();
+  bizB = await (await rpc({ token: t.serviceKey }, "create_my_business_as", { p_user: B.id, p_name: `B-${run}`, p_business_number_hash: crypto.randomBytes(32).toString("hex") })).json();
   assert.match(String(bizA), /^[0-9a-f-]{36}$/);
   assert.match(String(bizB), /^[0-9a-f-]{36}$/);
 
@@ -93,8 +93,12 @@ test("businesses 를 API 로 직접 생성 → 거부", async () => {
   assert.ok(denied(res), `status ${res.status}`);
 });
 
-test("이미 매장이 있는 계정의 create_my_business 재호출 → 거부(23505)", async () => {
-  const res = await rpc(A, "create_my_business", { p_name: "두번째" });
+test("브라우저 권한으로 create_my_business 직접 호출 → 거부(42501, 016) / 이미 매장이 있는 계정의 재생성 → 거부(23505)", async () => {
+  const hash = crypto.randomBytes(32).toString("hex");
+  const direct = await rpc(A, "create_my_business", { p_name: "두번째", p_business_number_hash: hash });
+  assert.ok(denied(direct));
+  assert.equal((await direct.json()).code, "42501");
+  const res = await rpc({ token: t.serviceKey }, "create_my_business_as", { p_user: A.id, p_name: "두번째", p_business_number_hash: hash });
   assert.ok(denied(res));
   assert.equal((await res.json()).code, "23505");
 });

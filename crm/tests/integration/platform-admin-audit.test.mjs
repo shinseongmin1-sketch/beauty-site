@@ -52,7 +52,7 @@ let OA, MA, SA, OB, PA, U, bizA, bizB, ids = {};
 
 before(async () => {
   [OA, MA, SA, OB, PA, U] = await Promise.all(["oa", "ma", "sa", "ob", "pa", "u"].map(mkUser));
-  const create = async (u, name) => (await rpc(u, "create_my_business", { p_name: name, p_representative_name: `대표-${name}`, p_business_number_hash: hash(), p_business_number_masked: "111-**-***11" })).json;
+  const create = async (u, name) => (await rpc({ token: t.serviceKey }, "create_my_business_as", { p_user: u.id, p_name: name, p_representative_name: `대표-${name}`, p_business_number_hash: hash(), p_business_number_masked: "111-**-***11" })).json;
   bizA = await create(OA, `감사시험A-${run}`);
   bizB = await create(OB, `감사시험B-${run}`);
   await svc("PATCH", `profiles?id=eq.${MA.id}`, { business_id: bizA, role: "manager" });
@@ -344,7 +344,7 @@ test("운영자 비활성화 즉시 반영, 운영자 등록/해제는 로그로
 
 test("탈퇴: 사업장 삭제 시 business.delete 1건만 남고 로그는 유지된다 (연쇄 삭제 노이즈 없음)", async () => {
   const tmp = await mkUser("tmp");
-  const biz = (await rpc(tmp, "create_my_business", { p_name: `탈퇴시험-${run}`, p_business_number_hash: hash(), p_business_number_masked: "***" })).json;
+  const biz = (await rpc({ token: t.serviceKey }, "create_my_business_as", { p_user: tmp.id, p_name: `탈퇴시험-${run}`, p_business_number_hash: hash(), p_business_number_masked: "***" })).json;
   await svc("POST", "customers", { business_id: biz, name: "탈퇴고객1" });
   await svc("POST", "customers", { business_id: biz, name: "탈퇴고객2" });
   const before_ = (await logs(`business_id=eq.${biz}`)).length;

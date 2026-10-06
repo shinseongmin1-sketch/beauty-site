@@ -48,7 +48,7 @@ let O, M, S, OY, U, bizA, bizY, ids = {};
 
 before(async () => {
   [O, M, S, OY, U] = await Promise.all(["o", "m", "s", "oy", "u"].map(mkUser));
-  const create = async (u, name) => (await rpc(u, "create_my_business", { p_name: name, p_representative_name: "대표", p_business_number_hash: hash(), p_business_number_masked: "***" })).json;
+  const create = async (u, name) => (await rpc({ token: t.serviceKey }, "create_my_business_as", { p_user: u.id, p_name: name, p_representative_name: "대표", p_business_number_hash: hash(), p_business_number_masked: "***" })).json;
   bizA = await create(O, `CIE-A-${run}`);
   bizY = await create(OY, `CIE-Y-${run}`);
   await svc("PATCH", `profiles?id=eq.${M.id}`, { business_id: bizA, role: "manager" });
@@ -162,7 +162,7 @@ test("전화번호 없는 고객은 이름이 같아도 항상 신규 등록(자
 // ══ 체험 종료 후 차단 (009 유지) ══
 test("체험 종료 후에는 대표도 Import 할 수 없다 (조회/Export 는 별개)", async () => {
   const t2 = await mkUser("expired-owner");
-  const biz = (await rpc(t2, "create_my_business", { p_name: `만료${run}`, p_representative_name: "대표", p_business_number_hash: hash(), p_business_number_masked: "***" })).json;
+  const biz = (await rpc({ token: t.serviceKey }, "create_my_business_as", { p_user: t2.id, p_name: `만료${run}`, p_representative_name: "대표", p_business_number_hash: hash(), p_business_number_masked: "***" })).json;
   await svc("PATCH", `subscriptions?business_id=eq.${biz}`, { status: "expired", trial_started_at: new Date(Date.now() - 100 * 86_400_000).toISOString(), trial_ends_at: new Date(Date.now() - 86_400_000).toISOString() });
   const r = await rpc(t2, "import_customers", { p_rows: [importRow("만료후고객")] });
   assert.ok(!r.ok && /subscription_inactive/.test(r.message));

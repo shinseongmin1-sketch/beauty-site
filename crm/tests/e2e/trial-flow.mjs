@@ -224,7 +224,7 @@ try {
     await d.p.waitForLoadState("networkidle").catch(() => {});
     expect(new URL(d.p.url()).pathname === "/dashboard", "체험 종료 후 로그인/대시보드 접근이 막힘");
     const text = await bannerText(d.p);
-    expect(text.includes("무료체험이 종료되었습니다") && text.includes("조회와 내보내기"), `배너: ${text.slice(0, 80)}`);
+    expect(text.includes("이용 기간이 종료되었습니다") && text.includes("조회와 내보내기"), `배너: ${text.slice(0, 80)}`);
     await d.p.screenshot({ path: path.join(shotDir, "trial-4-D-expired.png"), fullPage: true });
     // 서버가 로그인 시점에 저장 상태도 맞춘다 (sync)
     await d.p.waitForTimeout(500);

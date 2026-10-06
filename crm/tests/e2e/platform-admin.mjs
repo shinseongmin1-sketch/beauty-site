@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright-core";
-import { loadTarget, parseArgs, mintUserToken, root } from "../../scripts/lib/env.mjs";
+import { loadTarget, parseArgs, root } from "../../scripts/lib/env.mjs";
 
 const args = parseArgs();
 const t = loadTarget("test");
@@ -59,9 +59,8 @@ console.log(`\n▶ 대상: ${BASE} → 테스트 Supabase(${t.ref})\n`);
 try {
   // ── 셋업 ────────────────────────────────────────────────────────────
   const OA = await mkUser("owner"), PA = await mkUser("padmin");
-  const tokenOA = await mintUserToken(t, { id: OA.id, email: OA.email });
   const bizName = `운영자시험-${run}`, repName = `대표${run}`;
-  const bizA = (await (await fetch(`${t.url}/rest/v1/rpc/create_my_business`, { method: "POST", headers: { apikey: t.anonKey, Authorization: `Bearer ${tokenOA}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_name: bizName, p_representative_name: repName, p_business_number_hash: crypto.randomBytes(32).toString("hex"), p_business_number_masked: "123-**-***45" }) })).json());
+  const bizA = (await (await fetch(`${t.url}/rest/v1/rpc/create_my_business_as`, { method: "POST", headers: { apikey: t.anonKey, Authorization: `Bearer ${t.serviceKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_user: OA.id, p_name: bizName, p_representative_name: repName, p_business_number_hash: crypto.randomBytes(32).toString("hex"), p_business_number_masked: "123-**-***45" }) })).json());
   const cust = (await svc("POST", "customers", { business_id: bizA, name: PII.custName, phone: PII.custPhone, memo: PII.memo }))[0].id;
   const start = new Date(Date.now() + 86_400_000).toISOString(), end = new Date(Date.now() + 90_000_000).toISOString();
   await svc("POST", "reservations", { business_id: bizA, customer_id: cust, start_time: start, end_time: end });
@@ -210,9 +209,9 @@ try {
     expect((await bodyText(a.p)).includes("customer.create"), "행위 필터");
     await a.p.screenshot({ path: path.join(shotDir, "adm-5-audit.png"), fullPage: true });
   });
-  await check("운영자는 일반 매장 권한이 없다: /dashboard 로 가면 사업장 없음(온보딩)으로 이동 — 매장 데이터에 접근 불가", async () => {
+  await check("운영자는 일반 매장 권한이 없다: /dashboard 접근 시 /admin으로 이동 — 매장 데이터에 접근 불가", async () => {
     await a.p.goto(`${BASE}/dashboard/customers`);
-    await a.p.waitForURL(/\/onboarding/);
+    await a.p.waitForURL(/\/admin/);
     expect(!(await bodyText(a.p)).includes(PII.custName), "운영자가 고객 정보를 봄");
   });
   await check("운영자 비활성화 시 즉시 접근 불가 (DB 가 매 요청마다 확인)", async () => {

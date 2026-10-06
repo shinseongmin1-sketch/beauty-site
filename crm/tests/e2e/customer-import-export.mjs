@@ -37,8 +37,8 @@ const mkUser = async (label) => {
   return { id: u.id, email };
 };
 const rpcCreateBiz = async (user, name) => {
-  const l = await (await fetch(`${t.url}/auth/v1/token?grant_type=password`, { method: "POST", headers: { apikey: t.anonKey, "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, password: PW }) })).json();
-  return await (await fetch(`${t.url}/rest/v1/rpc/create_my_business`, { method: "POST", headers: { apikey: t.anonKey, Authorization: `Bearer ${l.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_name: name, p_representative_name: "대표", p_business_number_hash: crypto.randomBytes(32).toString("hex"), p_business_number_masked: "***" }) })).json();
+  // 016: 사업장 생성은 서버 전용 함수로 (앱 서버와 같은 경로)
+  return await (await fetch(`${t.url}/rest/v1/rpc/create_my_business_as`, { method: "POST", headers: { apikey: t.anonKey, Authorization: `Bearer ${t.serviceKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_user: user.id, p_name: name, p_representative_name: "대표", p_business_number_hash: crypto.randomBytes(32).toString("hex"), p_business_number_masked: "***" }) })).json();
 };
 
 const rows = [];

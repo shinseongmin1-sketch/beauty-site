@@ -35,7 +35,7 @@ async function mkUser(label) {
 }
 async function mkOwner(label, n) {
   const u = await mkUser(label);
-  const b = await call(u, "POST", "rpc/create_my_business", { p_name: `C-${run}-${label}`, p_representative_name: "대표", p_business_number_hash: hashOf(n), p_business_number_masked: "123-**-***45" });
+  const b = await call({ token: t.serviceKey }, "POST", "rpc/create_my_business_as", { p_user: u.id, p_name: `C-${run}-${label}`, p_representative_name: "대표", p_business_number_hash: hashOf(n), p_business_number_masked: "123-**-***45" });
   assert.ok(b.ok, `biz ${label}: ${b.status} ${b.message}`);
   u.biz = b.json;
   await svc("POST", "customers", [{ business_id: u.biz, name: `${label}-고객1` }, { business_id: u.biz, name: `${label}-고객2` }]);

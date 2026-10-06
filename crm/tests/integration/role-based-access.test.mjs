@@ -45,7 +45,7 @@ let O, M, S, Y, bizA, bizB, ids = {};
 
 before(async () => {
   [O, M, S, Y] = await Promise.all([mkUser("owner"), mkUser("manager"), mkUser("staff"), mkUser("yowner")]);
-  const rpc = async (u, name) => (await (await fetch(`${t.url}/rest/v1/rpc/create_my_business`, { method: "POST", headers: { apikey: t.anonKey, Authorization: `Bearer ${u.token}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_name: name, p_business_number_hash: crypto.randomBytes(32).toString("hex") }) })).json());
+  const rpc = async (u, name) => (await (await fetch(`${t.url}/rest/v1/rpc/create_my_business_as`, { method: "POST", headers: { apikey: t.anonKey, Authorization: `Bearer ${t.serviceKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_user: u.id, p_name: name, p_business_number_hash: crypto.randomBytes(32).toString("hex") }) })).json());
   bizA = await rpc(O, `RBA-A-${run}`);
   bizB = await rpc(Y, `RBA-B-${run}`);
   await svc("PATCH", `profiles?id=eq.${M.id}`, { business_id: bizA, role: "manager" });
