@@ -23,15 +23,13 @@
 ### 도메인 남은 단계 (각각 사용자 승인 필요)
 1. 사용자가 `https://app.manion.kr`에서 로그인·예약·예약결제 직접 확인
 2. Supabase 운영 Auth Redirect URL에 `https://app.manion.kr/**` 추가 (이후 Site URL 변경)
-3. CRM `NEXT_PUBLIC_APP_URL` 변경 후 재배포 — **반드시 master 기준**(git archive 방식). 이 결제 브랜치에서 배포하면 미적용 결제 코드가 운영에 올라감.
+3. CRM `NEXT_PUBLIC_APP_URL` 변경 후 재배포 — **반드시 master 기준**(git archive + API 배포 스크립트). 이 결제 브랜치에서 배포하면 미적용 결제 코드가 운영에 올라감.
 4. 홈페이지 `app.js`의 `CRM_APP_URL` → `https://app.manion.kr` (master push = 운영 반영)
 5. 데스크톱 앱 새 버전(새 주소 허용) 배포 (`desktop-app/README.md` 절차)
 
-## 운영 반영 대기: 보안 핫픽스 (2026-10-20 승인됨, 배포만 남음)
-- 내용: 버튼 처리중 표시·비밀번호 규칙(8자+영문+숫자)·보안 헤더 + S-1(결제 금액 DB 기준) + S-4(로그인 후 외부 이동 차단). S-2(테스트 키 차단)·S-5(migration 016)·정기결제는 제외.
-- 파일: `crm/docs/hotfix/2026-10-20-prod-security.patch` (master `f0c288e` 기준 커밋 2개, tsc·lint·로컬 테스트·빌드 통과)
-- 막힌 이유: 클라우드 env `VERCEL_TOKEN`이 Vercel에서 invalidToken으로 거절됨 → 사용자가 새 토큰으로 교체 후 새 세션.
-- 새 세션 절차: `git fetch origin master` → master가 `f0c288e`면 `git worktree add <dir> origin/master` 후 `git am` 으로 패치 적용 (달라졌으면 충돌 확인) → 검증 → 사용자에게 바뀌는 점 알리고 승인 → master push(홈페이지는 변경 없음) → master 기준 CRM `vercel --prod` 배포 → 배포 전 운영 배포 ID 기록(롤백용) → 배포 후 로그인 화면·보안 헤더 확인.
+## 운영 배포 기록
+- 2026-10-20: master `3d5dba6` = 보안 핫픽스(버튼 처리중·비밀번호 규칙·보안 헤더·S-1·S-4) + 로그인/회원가입/비밀번호 찾기 "매니온 홈으로" 링크. CRM 운영 배포 `dpl_GzDZcZgrQipGgT9j6jkJvJhLY1TH` (롤백 대상: 직전 `dpl_29j3FhqmCyLvEwsGDV5FebVDdp3L`). app.manion.kr·옛 주소 모두 확인 완료.
+- 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간·Supabase 리전)을 채우고 사용자 승인 후 master에 반영.
 
 ## 정기결제 (브랜치 `billing/subscription-v1`, 운영 미적용)
 - master 미병합, 운영 DB에 migration 012~017 미적용.
@@ -53,7 +51,7 @@
   - 기타: NEXT_PUBLIC_TOSS_CLIENT_KEY / TOSS_SECRET_KEY (test_ 키), BACKUP_ENCRYPTION_KEY (33바이트 불량값일 수 있음, 운영 백업 전 확인), BUSINESS_NUMBER_PEPPER, VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID (CRM 프로젝트)
   - 없음: SUPABASE_PROD_ACCESS_TOKEN (운영 migration 때 사용자에게 요청), 정기결제 env 4개
 - crm/.env.local, crm/.env.test 파일은 없다. 필요하면 위 환경 변수로 세션 안에서만 만들고 절대 커밋하지 않는다.
-- Vercel CLI는 npx vercel --token "$VERCEL_TOKEN" 으로 쓴다. 네트워크는 Full.
+- 현재 VERCEL_TOKEN은 Vercel CLI에서 실패한다(User not found / Could not retrieve Project Settings). API는 정상 → CRM 배포는 `git archive origin/master crm | tar -x -C <dir>` 후 `node crm/scripts/vercel-api-deploy.mjs <dir>/crm` (production 배포, READY까지 대기). 배포 전 운영 배포 ID 기록. 네트워크는 Full.
 - 키를 쓰는 명령이 권한 검사에 막히면, 사용자에게 모드 선택에서 승인 방식 모드로 바꾸라고 안내한다.
 - crm/package-lock.json은 웹 VM의 npm ci와 안 맞는다(PC와 기존 Vercel 배포는 정상). 검증은 npm install --no-package-lock 으로 하고, lockfile은 사용자 지시 전에 수정하지 않는다.
 
