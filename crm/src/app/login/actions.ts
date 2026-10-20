@@ -3,11 +3,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { actorTypeFromRole, logAudit, safeErrorCode } from "@/lib/audit";
+import { safeNextPath } from "@/lib/safe-redirect";
 
 export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "/dashboard");
+  // 외부 사이트로 보내는 값(//evil.com 등)은 /dashboard 로 바꾼다 (오픈 리다이렉트 차단)
+  const next = safeNextPath(formData.get("next"));
 
   if (!email || !password) {
     redirect(`/login?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
@@ -47,8 +49,8 @@ export async function signIn(formData: FormData) {
   });
 
   // 운영자 계정은 기본적으로 운영자 화면으로 보낸다 (일반 매장 화면과 분리)
-  if (isPlatformAdmin === true && (next === "/dashboard" || !next.startsWith("/"))) {
+  if (isPlatformAdmin === true && next === "/dashboard") {
     redirect("/admin");
   }
-  redirect(next.startsWith("/") ? next : "/dashboard");
+  redirect(next);
 }

@@ -12,7 +12,15 @@ export function getTossClientKey(businessClientKey?: string | null) {
   return businessClientKey || process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || TOSS_TEST_CLIENT_KEY;
 }
 
-/** 토스페이먼츠 결제 승인 API 호출 (서버 전용, secret key 사용). */
+export interface ConfirmedTossPayment {
+  status?: string;
+  orderId?: string;
+  totalAmount?: number;
+  method?: string;
+  [key: string]: unknown;
+}
+
+/** 토스페이먼츠 결제 승인 API 호출 (서버 전용, secret key 사용). amount 는 반드시 서버(DB)에 기록된 금액을 넘긴다. */
 export async function confirmTossPayment(params: {
   paymentKey: string;
   orderId: string;
@@ -28,6 +36,7 @@ export async function confirmTossPayment(params: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(params),
+    cache: "no-store",
   });
 
   const data = await res.json();
@@ -36,5 +45,5 @@ export async function confirmTossPayment(params: {
     throw new Error(data?.message ?? "결제 승인에 실패했습니다.");
   }
 
-  return data as { method?: string; [key: string]: unknown };
+  return data as ConfirmedTossPayment;
 }
