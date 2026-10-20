@@ -4,17 +4,18 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signUpErrorMessage } from "@/lib/auth-errors";
 import { logAudit, safeErrorCode } from "@/lib/audit";
+import { passwordProblem } from "@/lib/password";
 
 export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "").trim();
 
-  if (!email || !password || password.length < 6) {
-    redirect(
-      `/signup?error=${encodeURIComponent("이메일과 6자 이상의 비밀번호를 입력해주세요.")}`
-    );
+  if (!email || !password) {
+    redirect(`/signup?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
   }
+  const pwProblem = passwordProblem(password);
+  if (pwProblem) redirect(`/signup?error=${encodeURIComponent(pwProblem)}`);
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({

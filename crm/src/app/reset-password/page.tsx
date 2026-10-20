@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasValidRecoveryCookie } from "@/lib/recovery";
 import { updatePassword } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function ResetPasswordPage({
   searchParams,
@@ -43,7 +44,7 @@ export default async function ResetPasswordPage({
               minLength={8}
               autoComplete="new-password"
               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
-              placeholder="8자 이상"
+              placeholder="8자 이상, 영문+숫자"
             />
           </div>
           <div>
@@ -57,12 +58,7 @@ export default async function ResetPasswordPage({
               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
-          >
-            비밀번호 변경
-          </button>
+          <SubmitButton pendingText="변경 중…">비밀번호 변경</SubmitButton>
         </form>
       </div>
     </div>

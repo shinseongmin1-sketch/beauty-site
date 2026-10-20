@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createBusiness } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function OnboardingPage({
   searchParams,
@@ -121,12 +122,7 @@ export default async function OnboardingPage({
               placeholder="서울특별시 강남구 ..."
             />
           </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
-          >
-            시작하기
-          </button>
+          <SubmitButton pendingText="준비 중…">시작하기</SubmitButton>
         </form>
       </div>
     </div>

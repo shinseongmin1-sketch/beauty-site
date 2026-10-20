@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { hashInviteToken } from "@/lib/invitations";
 import { STAFF_ROLE_LABEL, type StaffRole } from "@/lib/types";
 import { acceptInvitation } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export const dynamic = "force-dynamic";
 
@@ -80,7 +81,7 @@ export default async function InvitePage({
               minLength={8}
               autoComplete="new-password"
               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
-              placeholder="8자 이상"
+              placeholder="8자 이상, 영문+숫자"
             />
           </div>
           <div>
@@ -94,12 +95,7 @@ export default async function InvitePage({
               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-accent py-2.5 font-semibold text-white transition-colors hover:bg-accent-hover"
-          >
-            계정 만들고 시작하기
-          </button>
+          <SubmitButton pendingText="계정 만드는 중…">계정 만들고 시작하기</SubmitButton>
         </form>
       </div>
     </div>

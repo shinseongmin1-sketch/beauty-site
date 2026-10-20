@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { hashInviteToken } from "@/lib/invitations";
+import { passwordProblem } from "@/lib/password";
 
 const back = (token: string, message: string): never =>
   redirect(`/invite/${encodeURIComponent(token)}?error=${encodeURIComponent(message)}`);
@@ -18,7 +19,8 @@ export async function acceptInvitation(token: string, formData: FormData) {
   const passwordConfirm = String(formData.get("password_confirm") ?? "");
 
   if (!fullName) back(token, "이름을 입력해주세요.");
-  if (password.length < 8) back(token, "비밀번호는 8자 이상이어야 합니다.");
+  const pwProblem = passwordProblem(password);
+  if (pwProblem) back(token, pwProblem);
   if (password !== passwordConfirm) back(token, "비밀번호가 서로 다릅니다.");
 
   const admin = await createAdminClient();

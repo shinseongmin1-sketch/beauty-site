@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signIn } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function LoginPage({
   searchParams,
@@ -37,6 +38,7 @@ export default async function LoginPage({
             <input
               type="email"
               name="email"
+              autoComplete="email"
               required
               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="owner@example.com"
@@ -47,17 +49,13 @@ export default async function LoginPage({
             <input
               type="password"
               name="password"
+              autoComplete="current-password"
               required
               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="••••••••"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
-          >
-            로그인
-          </button>
+          <SubmitButton pendingText="로그인 중…">로그인</SubmitButton>
         </form>
 
         <p className="text-center text-sm">
