@@ -1,3 +1,4 @@
+import { HomeLink } from "@/components/home-link";
 import Link from "next/link";
 import { signUp } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
@@ -12,6 +13,7 @@ export default async function SignupPage({
   return (
     <div className="flex min-h-full flex-1 items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-6">
+        <HomeLink />
         <div className="text-center">
           <h1 className="text-2xl font-bold">3개월 무료체험 시작</h1>
           <p className="mt-2 text-sm text-muted">

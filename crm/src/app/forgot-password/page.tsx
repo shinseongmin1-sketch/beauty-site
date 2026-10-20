@@ -1,3 +1,4 @@
+import { HomeLink } from "@/components/home-link";
 import Link from "next/link";
 import { requestPasswordReset } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
@@ -20,6 +21,7 @@ export default async function ForgotPasswordPage({
   return (
     <div className="flex min-h-full flex-1 items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-6">
+        <HomeLink />
         <div className="text-center">
           <h1 className="text-2xl font-bold">
             <span className="text-navy">비밀번호</span> 재설정
