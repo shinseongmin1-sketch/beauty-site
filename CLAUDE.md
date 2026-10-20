@@ -4,7 +4,7 @@
 
 ## 구성
 - 루트(`index.html`, `style.css`, `app.js`): 매니온 소개 홈페이지. Vercel 프로젝트 `beauty-site`, GitHub 연동, **master push = 즉시 운영 배포**.
-- `crm/`: 예약관리 CRM (Next.js 16 + Supabase + 토스페이먼츠). Vercel 프로젝트 `beauty-site-crm`, GitHub 미연동(CLI 배포만), 서버 리전 bom1.
+- `crm/`: 예약관리 CRM (Next.js 16 + Supabase + 토스페이먼츠). Vercel 프로젝트 `beauty-site-crm`, GitHub 미연동(CLI 배포만), 서버 리전 icn1(서울, 2026-10-20 bom1에서 변경).
 - `desktop-app/`: CRM 웹을 여는 Electron 앱. 주소가 `main.js`에 고정됨.
 
 ## 작업 규칙 (사용자 지시)
@@ -22,30 +22,34 @@
 
 ### 도메인 남은 단계 (각각 사용자 승인 필요)
 1. ~~사용자가 `https://app.manion.kr`에서 로그인·예약·예약결제 직접 확인~~ (2026-10-20 완료)
-2. Supabase 운영 Auth Redirect URL에 `https://app.manion.kr/**` 추가 (이후 Site URL 변경)
+2. ~~Supabase 운영 Auth Redirect URL에 `https://app.manion.kr/**` 추가~~ (서울 이사 때 완료. 허용 목록 = `https://app.manion.kr/**`, `https://beauty-site-crm.vercel.app/**`). 남은 것: Site URL(현재 `https://beauty-site-crm.vercel.app`) → `https://app.manion.kr` 변경 (재설정 메일 링크에 쓰임, 3번과 함께)
 3. CRM `NEXT_PUBLIC_APP_URL` 변경 후 재배포 — **반드시 master 기준**(git archive + API 배포 스크립트). 이 결제 브랜치에서 배포하면 미적용 결제 코드가 운영에 올라감.
 4. 홈페이지 `app.js`의 `CRM_APP_URL` → `https://app.manion.kr` (master push = 운영 반영)
 5. 데스크톱 앱 새 버전(새 주소 허용) 배포 (`desktop-app/README.md` 절차)
 
 ## 운영 배포 기록
 - 2026-10-20: master `3d5dba6` = 보안 핫픽스(버튼 처리중·비밀번호 규칙·보안 헤더·S-1·S-4) + 로그인/회원가입/비밀번호 찾기 "매니온 홈으로" 링크. CRM 운영 배포 `dpl_GzDZcZgrQipGgT9j6jkJvJhLY1TH` (롤백 대상: 직전 `dpl_29j3FhqmCyLvEwsGDV5FebVDdp3L`). app.manion.kr·옛 주소 모두 확인 완료.
+- 2026-10-20: 운영 DB 서울 전환. 같은 master `3d5dba6`, env(URL/ANON/SERVICE_ROLE) 서울 값 + 리전 icn1. CRM 운영 배포 `dpl_82kJZVrJRjfKMFAzcuyCGEAW96jJ` (롤백: env 3개 뭄바이 값 + 리전 bom1로 되돌린 뒤 `dpl_GzDZcZgrQipGgT9j6jkJvJhLY1TH` 재배포/승격). 사용자 로그인·예약 확인, 서울 감사기록 확인 완료.
 - 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간)을 채우고 사용자 승인 후 master에 반영.
 
 ## 장애 기록
-- 2026-10-20: 운영·테스트 Supabase가 무료 플랜 자동 일시정지(INACTIVE)로 로그인 전부 실패(화면엔 "비밀번호 틀림"으로 표시). 사용자가 대시보드에서 Restore로 복구. 운영 프로젝트 = Supabase 대시보드의 "shinseongmin1-sketch's Project"(ref `evrg…`, ap-south-1 뭄바이). 테스트 = manion-crm-test(ref `gmnw…`, 서울). morelol은 무관. 현재 SUPABASE_PROD_ACCESS_TOKEN은 테스트 프로젝트만 보인다(운영 Management API 작업 시 운영 접근 토큰 별도 필요). 재발 방지로 운영 Pro 플랜 전환 권장.
+- 2026-10-20: 운영·테스트 Supabase가 무료 플랜 자동 일시정지(INACTIVE)로 로그인 전부 실패(화면엔 "비밀번호 틀림"으로 표시). 사용자가 대시보드에서 Restore로 복구. (당시 운영 = 뭄바이, 테스트 = 서울. 같은 날 서울 이사로 역할이 바뀜 → 아래 참고.) morelol은 무관. 재발 방지로 운영 Pro 플랜 전환 권장.
+- 2026-10-20: 서울 이사 리허설 중 미리보기 로그인 실패. 원인 = 클라우드 env `SUPABASE_TEST_URL` 값 끝에 `/rest/v1/` 경로가 붙어 있어 Auth 호출이 PostgREST로 감(화면엔 "비밀번호 틀림"). Supabase URL은 항상 origin(`new URL(x).origin`)만 쓴다.
 
-## 운영 Supabase 서울 이사 (2026-10-20 사용자 결정: "바꿔치기" 방식, 무료 플랜)
-- 방식: 서울 `manion-crm-test`(ref `gmnw…`)를 **새 운영**으로, 뭄바이 "shinseongmin1-sketch's Project"(ref `evrg…`)를 전환 1~2주 후 **새 테스트**로. 새 프로젝트 생성·일시정지 없음(무료 2개 제한 회피). Pro는 나중에 조직 요금제만 변경.
-- 이 웹 환경은 DB 직접 연결(5432 TCP)과 *.supabase.co 접속이 막혀 있다. Supabase Management API(api.supabase.com, `/v1/projects/{ref}/database/query`)로 SQL 실행.
+## 운영 Supabase 서울 이사 (2026-10-20 전환 완료, 무료 플랜)
+- **현재: 운영 = 서울 `manion-crm-prod`(ref `gmnw…`, ap-northeast-2). 뭄바이(ref `evrg…`, ap-south-1)는 이사 직전 운영 데이터 그대로 보존 중(비밀번호 해시 포함 원본 백업 역할) → ⑤ 전까지 쓰기·삭제 금지.**
+- 방식: 서울(구 테스트)을 **새 운영**으로, 뭄바이(구 운영)를 1~2주 후 **새 테스트**로 바꿔치기. Pro는 나중에 조직 요금제만 변경.
+- 이 웹 환경은 DB 직접 연결(5432 TCP)이 막혀 있다. SQL은 Supabase Management API(api.supabase.com, `/v1/projects/{ref}/database/query`, 뭄바이 읽기 전용 토큰은 `/database/query/read-only`)로 실행. *.supabase.co 접속(Auth/REST)은 2026-10-20 기준 가능. Management API의 로그 조회(analytics)는 결과가 비어 나와 진단에 못 씀.
 - 토큰(사용자 등록, 새 세션에서 사용): `SUPABASE_MGMT_TOKEN_MUMBAI` = 뭄바이 전용 읽기 전용, `SUPABASE_MGMT_TOKEN_SEOUL` = 서울 전용 읽기+쓰기. 시작 전에 각 토큰이 해당 프로젝트만 보이는지, 뭄바이 토큰으로 쓰기가 거부되는지 확인. 기존 SUPABASE_PROD_ACCESS_TOKEN은 이름과 달리 테스트(서울)만 보임.
-- 순서:
-  ① 서울 비우기(시험 계정 2·매장 1·정기결제 012~017 객체 포함 전부) → schema.sql·001~011 적용(운영과 동일 구조) → 뭄바이 Auth 설정 복사 + redirect에 app.manion.kr 포함
-  ② 리허설: 뭄바이 읽기만 → auth.users/auth.identities(비밀번호 해시 포함)·public 테이블 서울로 복사(트리거·identity 시퀀스 주의: on_auth_user_created, audit 트리거) → 행 수·체크섬 대조 → 서울 연결 미리보기 CRM에서 사용자 확인
-  ③ 승인 후 전환(점검 ~30분): 직전 백업, 최종 복사·대조, Vercel env(URL/ANON/SERVICE_ROLE)를 서울 값으로 + 함수 리전 bom1→icn1 + master 기준 API 배포, 확인(문제 시 env 원복). 전원 재로그인 필요(비밀번호 유지)
-  ④ 클라우드 env 이름표 교체(운영 = 서울, TEST = 뭄바이), Supabase 프로젝트 이름 변경(manion-crm-prod / manion-crm-test), 이 문서 갱신
-  ⑤ 1~2주 후(승인): 뭄바이의 실제 고객 데이터 삭제 → 테스트로 사용. 개인정보처리방침 저장 국가 → 대한민국
+- 진행 기록:
+  ① ✅ 서울 비우기 → schema.sql·001~011 적용(뭄바이 `_crm_migrations` 체크섬과 동일), pg_graphql 활성화. 구조 지문(컬럼·제약·인덱스·정책·트리거·권한·함수 본문) 대조 일치(뭄바이 함수는 CRLF만 다름). 뭄바이 `community_*`·`rank_history`(다른 앱, 0행)는 옮기지 않음. Auth: Site URL·redirect 복사. **메일 템플릿은 무료 플랜+기본 메일 발송기라 변경 불가 → 서울은 Supabase 기본 영어 문구**(재설정은 앱이 PKCE `?code=` 방식도 처리, 단 같은 브라우저에서 열어야 함). 문구 복원은 Pro 또는 커스텀 SMTP 필요.
+  ② ✅ auth.users/identities + CRM 26개 테이블 복사(한 트랜잭션, `session_replication_role = replica`로 트리거 끔, audit_logs.seq 시퀀스 맞춤). JSON 컬럼은 SQL NULL과 JSON null을 구분해 복사해야 함(platform_settings.value). 행 수·체크섬 전부 일치. 미리보기에서 사용자 로그인 확인.
+  ③ ✅ 최종 복사·대조 → Vercel production env 3개 서울 값 + 리전 icn1 → master API 배포. 기존 백업 도구는 BACKUP_ENCRYPTION_KEY 불량(33바이트)으로 못 씀 → 보존된 뭄바이를 백업으로 삼음.
+  ④ 진행 중: 서울 이름 `manion-crm-prod` 변경 완료, 이 문서 갱신 완료. 남은 것(사용자): 클라우드 env 이름표 교체, 뭄바이 이름 → `manion-crm-test`(뭄바이 토큰은 읽기 전용이라 대시보드에서).
+  ⑤ 1~2주 후(승인): 뭄바이의 실제 고객 데이터 삭제 → 테스트로 사용(001~017 적용해 정기결제 검증용). Vercel Preview env(현재 서울=운영을 가리킴)를 뭄바이로 변경. 개인정보처리방침 저장 국가 → 대한민국
 - 무료 운영 보완: 하루 1회 DB 깨우기(Vercel cron) 제안, 이사 시 자체 암호화 백업 필수(무료는 자동 백업 없음). 정기결제 시작 전 Pro 재검토.
-- 서울 이사 전에는 정기결제 migration 012~017을 운영에 적용하지 않는다(이사 후 새 운영에 적용).
+- 정기결제 migration 012~017은 이제 새 운영(서울)에 적용한다. 단 테스트 DB(⑤ 이후 뭄바이)에서 먼저 검증.
+- 토스 예약결제: 이사 전후 모두 결제가 `ready`에서 멈춤(토스 위젯 "결제 UI가 아직 렌더링되지 않았습니다"). 이사와 무관. 실결제 전 토스 키 종류(결제위젯 키인지)·토스 설정 점검 필요.
 
 ## 정기결제 (브랜치 `billing/subscription-v1`, 운영 미적용)
 - master 미병합, 운영 DB에 migration 012~017 미적용.
@@ -62,10 +66,12 @@
 ## 작업 환경 (2026-10-20부터 웹 전용)
 - 사용자는 claude.ai/code 웹 세션만 쓴다. "PC에서 하세요"라고 넘기지 말고 웹에서 해결 방법을 먼저 찾는다.
 - 클라우드 환경 변수(값 출력 금지):
-  - 운영: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (이름에 TEST 없는 것 = 운영 DB)
-  - 테스트: SUPABASE_TEST_URL, SUPABASE_TEST_ANON_KEY, SUPABASE_TEST_SERVICE_ROLE_KEY, SUPABASE_TEST_ACCESS_TOKEN
+  - 운영: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (이름에 TEST 없는 것 = 운영 DB = 서울)
+  - 테스트: SUPABASE_TEST_URL, SUPABASE_TEST_ANON_KEY, SUPABASE_TEST_SERVICE_ROLE_KEY, SUPABASE_TEST_ACCESS_TOKEN (= 뭄바이)
+  - ⚠️ 2026-10-20 이사 직후 이 세션 기준으로는 값이 반대(TEST 이름 = 서울 = 운영)였다. 사용자가 이름표 교체를 마쳤는지 새 세션 시작 때 반드시 확인: URL 호스트의 ref가 운영 이름 = `gmnw…`, TEST 이름 = `evrg…` 인지(값은 출력하지 말고 ref 앞 4글자만 비교). 교체 전이면 `db:reset:test`·`test:e2e`·`db:migrate:test` 등 테스트 DB를 쓰는 명령 금지(운영 삭제 위험).
+  - Supabase 관리 토큰: SUPABASE_MGMT_TOKEN_SEOUL(서울=운영, 읽기+쓰기), SUPABASE_MGMT_TOKEN_MUMBAI(뭄바이, 읽기 전용)
   - 기타: NEXT_PUBLIC_TOSS_CLIENT_KEY / TOSS_SECRET_KEY (test_ 키), BACKUP_ENCRYPTION_KEY (33바이트 불량값일 수 있음, 운영 백업 전 확인), BUSINESS_NUMBER_PEPPER, VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID (CRM 프로젝트)
-  - 없음: SUPABASE_PROD_ACCESS_TOKEN (운영 migration 때 사용자에게 요청), 정기결제 env 4개
+  - 없음: 정기결제 env 4개. SUPABASE_PROD_ACCESS_TOKEN은 서울(현 운영)만 보이는 토큰이라 이름이 맞게 됨(있다면 운영 migration에 사용 가능, 사용 전 대상 ref 확인)
 - crm/.env.local, crm/.env.test 파일은 없다. 필요하면 위 환경 변수로 세션 안에서만 만들고 절대 커밋하지 않는다.
 - 현재 VERCEL_TOKEN은 Vercel CLI에서 실패한다(User not found / Could not retrieve Project Settings). API는 정상 → CRM 배포는 `git archive origin/master crm | tar -x -C <dir>` 후 `node crm/scripts/vercel-api-deploy.mjs <dir>/crm` (production 배포, READY까지 대기). 배포 전 운영 배포 ID 기록. 네트워크는 Full.
 - 키를 쓰는 명령이 권한 검사에 막히면, 사용자에게 모드 선택에서 승인 방식 모드로 바꾸라고 안내한다.
