@@ -37,7 +37,10 @@
 ## 운영 Supabase 서울 이사 (2026-10-20 사용자 결정, 준비 단계)
 - 목표: 운영 DB 뭄바이(ap-south-1) → 서울 새 프로젝트 `manion-crm-prod`(ap-northeast-2) + Vercel 함수 리전 bom1 → icn1.
 - 이 웹 환경은 DB 직접 연결(5432 TCP)과 *.supabase.co 접속이 막혀 있다. Supabase Management API(api.supabase.com, `/v1/projects/{ref}/database/query`)는 된다 → SQL API로 스키마 적용·데이터 복사.
-- 사용자 준비물: 조직 Pro 업그레이드(무료는 활성 프로젝트 2개 제한), 개인 Access Token을 클라우드 env `SUPABASE_MGMT_TOKEN`으로 등록 후 새 세션.
+- 요금제: 지금은 **무료 플랜으로 진행**(사용자 결정). Pro는 나중에 조직 요금제만 바꾸면 됨(재이사 불필요).
+- 무료 = 활성 프로젝트 2개 제한 → 이사 기간엔 테스트(manion-crm-test)를 일시정지하고, 리허설은 새 서울 프로젝트에서 직접 한 뒤 비우고 전환 때 재복사. 전환 후 1~2주는 롤백용으로 옛 뭄바이 유지 → 이후 뭄바이 정지/삭제(승인) → 테스트 Restore.
+- 무료 운영 보완: 하루 1회 DB 깨우기(Vercel cron) 추가 제안, 이사 시 자체 암호화 백업 필수(무료는 자동 백업 없음). 정기결제(유료 고객) 시작 전 Pro 재검토.
+- 사용자 준비물: 개인 Access Token을 클라우드 env `SUPABASE_MGMT_TOKEN`으로 등록 후 새 세션. 테스트 일시정지는 이사 시작 시 요청.
 - 순서: ① 새 프로젝트 생성 + schema.sql·001~011 적용 + Auth 설정 복사(redirect에 app.manion.kr 포함) ② 리허설: 운영 읽기만 해서 auth.users/auth.identities(비밀번호 해시 포함)·public 테이블 복사(트리거·identity 시퀀스 주의: on_auth_user_created, audit 트리거) → 행 수·체크섬 대조 → 새 DB 연결 미리보기 CRM에서 사용자 확인 ③ 승인 후 전환: 점검 시간, 직전 백업, 최종 복사·대조, Vercel env(URL/ANON/SERVICE_ROLE) 교체 + 리전 icn1 + master 기준 API 배포, 확인(문제 시 env 원복) ④ 전원 재로그인 필요(비밀번호 유지) ⑤ 1~2주 후 뭄바이 정리(삭제 전 승인), 개인정보처리방침 저장 국가 → 대한민국.
 - 서울 이사 전에는 정기결제 migration 012~017을 운영에 적용하지 않는다(이사 후 새 프로젝트에 적용).
 
