@@ -1049,3 +1049,39 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
   .pricing-checklist { padding: 22px 20px; }
   .pricing-checklist dl > div { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* 정책 문서 (이용약관·개인정보처리방침·환불정책) */
+.policy-page { padding: 120px 0 80px; background: var(--bg); }
+.policy-page .container { max-width: 860px; }
+.policy-doc { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 48px 52px; box-shadow: var(--shadow); color: var(--text); line-height: 1.75; font-size: 15px; }
+.policy-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.policy-tabs a { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; }
+.policy-tabs a[aria-current="page"] { background: var(--blue); border-color: var(--blue); color: white; }
+.policy-doc h1 { font-size: 30px; color: var(--navy); margin-bottom: 8px; }
+.policy-meta { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+.policy-summary { background: var(--blue-soft); border-radius: 12px; padding: 18px 22px; margin-bottom: 32px; }
+.policy-summary strong { color: var(--navy); }
+.policy-summary ul { margin: 8px 0 0 18px; }
+.policy-toc { border: 1px solid var(--border); border-radius: 12px; padding: 18px 22px; margin-bottom: 36px; font-size: 14px; }
+.policy-toc ol { margin-left: 18px; columns: 2; column-gap: 32px; }
+.policy-toc a { color: var(--blue-dark); text-decoration: none; }
+.policy-doc h2 { font-size: 19px; color: var(--navy); margin: 40px 0 12px; padding-top: 8px; scroll-margin-top: 90px; }
+.policy-doc h3 { font-size: 16px; color: var(--navy); margin: 20px 0 8px; }
+.policy-doc p { margin-bottom: 10px; }
+.policy-doc ol, .policy-doc ul { margin: 0 0 12px 22px; }
+.policy-doc li { margin-bottom: 6px; }
+.policy-doc table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 14px; }
+.policy-doc th, .policy-doc td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+.policy-doc th { background: var(--bg); color: var(--navy); font-weight: 700; }
+.policy-table-wrap { overflow-x: auto; }
+.policy-doc .fill { background: var(--amber-soft); color: #8a5a00; border-radius: 4px; padding: 1px 6px; font-weight: 600; }
+.policy-note { color: var(--muted); font-size: 13.5px; }
+.footer-biz { font-size: 12.5px; line-height: 1.8; color: rgba(255,255,255,0.5); margin-bottom: 20px; }
+.footer-biz .fill { color: #f5c451; }
+
+@media (max-width: 560px) {
+  .policy-page { padding: 96px 0 56px; }
+  .policy-doc { padding: 28px 20px; font-size: 14.5px; border-radius: 14px; }
+  .policy-doc h1 { font-size: 24px; }
+  .policy-toc ol { columns: 1; }
+}
