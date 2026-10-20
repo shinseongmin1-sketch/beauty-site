@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { clearRecoveryCookie, hasValidRecoveryCookie } from "@/lib/recovery";
+import { passwordProblem } from "@/lib/password";
 
 const back = (message: string): never =>
   redirect(`/reset-password?error=${encodeURIComponent(message)}`);
@@ -24,7 +25,8 @@ export async function updatePassword(formData: FormData) {
     redirect("/forgot-password?error=expired");
   }
 
-  if (password.length < 8) back("비밀번호는 8자 이상이어야 합니다.");
+  const pwProblem = passwordProblem(password);
+  if (pwProblem) back(pwProblem);
   if (password !== passwordConfirm) back("비밀번호가 서로 다릅니다.");
 
   const { error } = await supabase.auth.updateUser({ password });

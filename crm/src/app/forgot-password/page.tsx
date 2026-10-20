@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requestPasswordReset } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 const ERROR_MESSAGES: Record<string, string> = {
   required: "이메일을 입력해주세요.",
@@ -41,17 +42,13 @@ export default async function ForgotPasswordPage({
             <input
               type="email"
               name="email"
+              autoComplete="email"
               required
               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
               placeholder="owner@example.com"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
-          >
-            재설정 링크 받기
-          </button>
+          <SubmitButton pendingText="보내는 중…">재설정 링크 받기</SubmitButton>
         </form>
 
         <p className="text-center text-sm text-muted">
