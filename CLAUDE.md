@@ -27,6 +27,12 @@
 4. 홈페이지 `app.js`의 `CRM_APP_URL` → `https://app.manion.kr` (master push = 운영 반영)
 5. 데스크톱 앱 새 버전(새 주소 허용) 배포 (`desktop-app/README.md` 절차)
 
+## 운영 반영 대기: 보안 핫픽스 (2026-10-20 승인됨, 배포만 남음)
+- 내용: 버튼 처리중 표시·비밀번호 규칙(8자+영문+숫자)·보안 헤더 + S-1(결제 금액 DB 기준) + S-4(로그인 후 외부 이동 차단). S-2(테스트 키 차단)·S-5(migration 016)·정기결제는 제외.
+- 파일: `crm/docs/hotfix/2026-10-20-prod-security.patch` (master `f0c288e` 기준 커밋 2개, tsc·lint·로컬 테스트·빌드 통과)
+- 막힌 이유: 클라우드 env `VERCEL_TOKEN`이 Vercel에서 invalidToken으로 거절됨 → 사용자가 새 토큰으로 교체 후 새 세션.
+- 새 세션 절차: `git fetch origin master` → master가 `f0c288e`면 `git worktree add <dir> origin/master` 후 `git am` 으로 패치 적용 (달라졌으면 충돌 확인) → 검증 → 사용자에게 바뀌는 점 알리고 승인 → master push(홈페이지는 변경 없음) → master 기준 CRM `vercel --prod` 배포 → 배포 전 운영 배포 ID 기록(롤백용) → 배포 후 로그인 화면·보안 헤더 확인.
+
 ## 정기결제 (브랜치 `billing/subscription-v1`, 운영 미적용)
 - master 미병합, 운영 DB에 migration 012~017 미적용.
 - 운영 적용 전 필요: 토스 빌링 계약·실키, Vercel env(NEXT_PUBLIC_TOSS_BILLING_CLIENT_KEY, TOSS_BILLING_SECRET_KEY, BILLING_KEY_ENCRYPTION_KEY, CRON_SECRET), 개인정보처리방침·약관·환불정책 확정.

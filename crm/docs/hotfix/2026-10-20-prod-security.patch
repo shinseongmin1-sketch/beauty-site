@@ -1,0 +1,694 @@
+From 6c6e0e396fc1b622e07de696737080fc2b60a8ec Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 20 Oct 2026 02:30:04 +0000
+Subject: [PATCH 1/2] feat(crm): security headers, password rule, submit-button
+ feedback
+
+- Add security headers (clickjacking, nosniff, referrer, permissions) and hide x-powered-by
+- Unify password rule (8+ chars, letters and digits) for signup, invite, reset
+- Show pending state and block double submit on auth/onboarding forms
+- Add autocomplete hints to login/signup/forgot-password inputs
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BaRVzEBRb3ZWLyfjTV7FKu
+---
+ crm/next.config.ts                     | 18 +++++++++++++++++
+ crm/src/app/forgot-password/page.tsx   |  9 +++------
+ crm/src/app/invite/[token]/actions.ts  |  4 +++-
+ crm/src/app/invite/[token]/page.tsx    | 10 +++-------
+ crm/src/app/login/page.tsx             | 10 ++++------
+ crm/src/app/onboarding/page.tsx        |  8 ++------
+ crm/src/app/reset-password/actions.ts  |  4 +++-
+ crm/src/app/reset-password/page.tsx    | 10 +++-------
+ crm/src/app/signup/actions.ts          |  9 +++++----
+ crm/src/app/signup/page.tsx            | 15 +++++++-------
+ crm/src/components/submit-button.tsx   | 27 ++++++++++++++++++++++++++
+ crm/src/lib/password.ts                | 14 +++++++++++++
+ crm/tests/local/password-rule.test.mjs | 20 +++++++++++++++++++
+ 13 files changed, 112 insertions(+), 46 deletions(-)
+ create mode 100644 crm/src/components/submit-button.tsx
+ create mode 100644 crm/src/lib/password.ts
+ create mode 100644 crm/tests/local/password-rule.test.mjs
+
+diff --git a/crm/next.config.ts b/crm/next.config.ts
+index f984a55..7dc9344 100644
+--- a/crm/next.config.ts
++++ b/crm/next.config.ts
+@@ -1,6 +1,24 @@
+ import type { NextConfig } from "next";
+ 
++// 모든 화면에 붙이는 보안 헤더.
++// - 다른 사이트가 CRM 화면을 몰래 틀(iframe) 안에 넣어 클릭을 유도하는 공격(클릭재킹)을 막는다.
++// - 브라우저가 파일 형식을 임의로 추측해 실행하지 않게 한다.
++// - 결제 완료 주소 같은 내부 주소(쿼리 포함)가 외부 사이트로 전달되지 않게 한다.
++// - 카메라·마이크·위치 권한은 쓰지 않으므로 아예 막는다.
++// 토스 결제창은 CRM 화면 안에 토스 화면을 넣는 방식이라 frame-ancestors 제한과 무관하다.
++const securityHeaders = [
++  { key: "X-Frame-Options", value: "DENY" },
++  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
++  { key: "X-Content-Type-Options", value: "nosniff" },
++  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
++  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
++];
++
+ const nextConfig: NextConfig = {
++  poweredByHeader: false,
++  async headers() {
++    return [{ source: "/:path*", headers: securityHeaders }];
++  },
+   experimental: {
+     // 고객 CSV Import 는 서버 액션으로 파일을 받는다. 기본 1MB 로는 2MB 파일 정책과 안 맞아 올린다.
+     // Next 의 bodySizeLimit 은 10진수 MB(2mb=2,000,000바이트)로 해석되고 multipart 오버헤드도 포함되므로,
+diff --git a/crm/src/app/forgot-password/page.tsx b/crm/src/app/forgot-password/page.tsx
+index 114d23e..83eab54 100644
+--- a/crm/src/app/forgot-password/page.tsx
++++ b/crm/src/app/forgot-password/page.tsx
+@@ -1,5 +1,6 @@
+ import Link from "next/link";
+ import { requestPasswordReset } from "./actions";
++import { SubmitButton } from "@/components/submit-button";
+ 
+ const ERROR_MESSAGES: Record<string, string> = {
+   required: "이메일을 입력해주세요.",
+@@ -41,17 +42,13 @@ export default async function ForgotPasswordPage({
+             <input
+               type="email"
+               name="email"
++              autoComplete="email"
+               required
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+               placeholder="owner@example.com"
+             />
+           </div>
+-          <button
+-            type="submit"
+-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
+-          >
+-            재설정 링크 받기
+-          </button>
++          <SubmitButton pendingText="보내는 중…">재설정 링크 받기</SubmitButton>
+         </form>
+ 
+         <p className="text-center text-sm text-muted">
+diff --git a/crm/src/app/invite/[token]/actions.ts b/crm/src/app/invite/[token]/actions.ts
+index b1ac4b6..77d372d 100644
+--- a/crm/src/app/invite/[token]/actions.ts
++++ b/crm/src/app/invite/[token]/actions.ts
+@@ -3,6 +3,7 @@
+ import { redirect } from "next/navigation";
+ import { createAdminClient, createClient } from "@/lib/supabase/server";
+ import { hashInviteToken } from "@/lib/invitations";
++import { passwordProblem } from "@/lib/password";
+ 
+ const back = (token: string, message: string): never =>
+   redirect(`/invite/${encodeURIComponent(token)}?error=${encodeURIComponent(message)}`);
+@@ -18,7 +19,8 @@ export async function acceptInvitation(token: string, formData: FormData) {
+   const passwordConfirm = String(formData.get("password_confirm") ?? "");
+ 
+   if (!fullName) back(token, "이름을 입력해주세요.");
+-  if (password.length < 8) back(token, "비밀번호는 8자 이상이어야 합니다.");
++  const pwProblem = passwordProblem(password);
++  if (pwProblem) back(token, pwProblem);
+   if (password !== passwordConfirm) back(token, "비밀번호가 서로 다릅니다.");
+ 
+   const admin = await createAdminClient();
+diff --git a/crm/src/app/invite/[token]/page.tsx b/crm/src/app/invite/[token]/page.tsx
+index 0f89793..ca9c04c 100644
+--- a/crm/src/app/invite/[token]/page.tsx
++++ b/crm/src/app/invite/[token]/page.tsx
+@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/server";
+ import { hashInviteToken } from "@/lib/invitations";
+ import { STAFF_ROLE_LABEL, type StaffRole } from "@/lib/types";
+ import { acceptInvitation } from "./actions";
++import { SubmitButton } from "@/components/submit-button";
+ 
+ export const dynamic = "force-dynamic";
+ 
+@@ -80,7 +81,7 @@ export default async function InvitePage({
+               minLength={8}
+               autoComplete="new-password"
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+-              placeholder="8자 이상"
++              placeholder="8자 이상, 영문+숫자"
+             />
+           </div>
+           <div>
+@@ -94,12 +95,7 @@ export default async function InvitePage({
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+             />
+           </div>
+-          <button
+-            type="submit"
+-            className="w-full rounded-lg bg-accent py-2.5 font-semibold text-white transition-colors hover:bg-accent-hover"
+-          >
+-            계정 만들고 시작하기
+-          </button>
++          <SubmitButton pendingText="계정 만드는 중…">계정 만들고 시작하기</SubmitButton>
+         </form>
+       </div>
+     </div>
+diff --git a/crm/src/app/login/page.tsx b/crm/src/app/login/page.tsx
+index 94b11da..e838b20 100644
+--- a/crm/src/app/login/page.tsx
++++ b/crm/src/app/login/page.tsx
+@@ -1,5 +1,6 @@
+ import Link from "next/link";
+ import { signIn } from "./actions";
++import { SubmitButton } from "@/components/submit-button";
+ 
+ export default async function LoginPage({
+   searchParams,
+@@ -37,6 +38,7 @@ export default async function LoginPage({
+             <input
+               type="email"
+               name="email"
++              autoComplete="email"
+               required
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+               placeholder="owner@example.com"
+@@ -47,17 +49,13 @@ export default async function LoginPage({
+             <input
+               type="password"
+               name="password"
++              autoComplete="current-password"
+               required
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+               placeholder="••••••••"
+             />
+           </div>
+-          <button
+-            type="submit"
+-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
+-          >
+-            로그인
+-          </button>
++          <SubmitButton pendingText="로그인 중…">로그인</SubmitButton>
+         </form>
+ 
+         <p className="text-center text-sm">
+diff --git a/crm/src/app/onboarding/page.tsx b/crm/src/app/onboarding/page.tsx
+index 7c5cf47..c7287f7 100644
+--- a/crm/src/app/onboarding/page.tsx
++++ b/crm/src/app/onboarding/page.tsx
+@@ -2,6 +2,7 @@ import Link from "next/link";
+ import { redirect } from "next/navigation";
+ import { createClient } from "@/lib/supabase/server";
+ import { createBusiness } from "./actions";
++import { SubmitButton } from "@/components/submit-button";
+ 
+ export default async function OnboardingPage({
+   searchParams,
+@@ -121,12 +122,7 @@ export default async function OnboardingPage({
+               placeholder="서울특별시 강남구 ..."
+             />
+           </div>
+-          <button
+-            type="submit"
+-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
+-          >
+-            시작하기
+-          </button>
++          <SubmitButton pendingText="준비 중…">시작하기</SubmitButton>
+         </form>
+       </div>
+     </div>
+diff --git a/crm/src/app/reset-password/actions.ts b/crm/src/app/reset-password/actions.ts
+index 80c09c6..98611b9 100644
+--- a/crm/src/app/reset-password/actions.ts
++++ b/crm/src/app/reset-password/actions.ts
+@@ -3,6 +3,7 @@
+ import { redirect } from "next/navigation";
+ import { createClient } from "@/lib/supabase/server";
+ import { clearRecoveryCookie, hasValidRecoveryCookie } from "@/lib/recovery";
++import { passwordProblem } from "@/lib/password";
+ 
+ const back = (message: string): never =>
+   redirect(`/reset-password?error=${encodeURIComponent(message)}`);
+@@ -24,7 +25,8 @@ export async function updatePassword(formData: FormData) {
+     redirect("/forgot-password?error=expired");
+   }
+ 
+-  if (password.length < 8) back("비밀번호는 8자 이상이어야 합니다.");
++  const pwProblem = passwordProblem(password);
++  if (pwProblem) back(pwProblem);
+   if (password !== passwordConfirm) back("비밀번호가 서로 다릅니다.");
+ 
+   const { error } = await supabase.auth.updateUser({ password });
+diff --git a/crm/src/app/reset-password/page.tsx b/crm/src/app/reset-password/page.tsx
+index de94d78..4cba67d 100644
+--- a/crm/src/app/reset-password/page.tsx
++++ b/crm/src/app/reset-password/page.tsx
+@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
+ import { createClient } from "@/lib/supabase/server";
+ import { hasValidRecoveryCookie } from "@/lib/recovery";
+ import { updatePassword } from "./actions";
++import { SubmitButton } from "@/components/submit-button";
+ 
+ export default async function ResetPasswordPage({
+   searchParams,
+@@ -43,7 +44,7 @@ export default async function ResetPasswordPage({
+               minLength={8}
+               autoComplete="new-password"
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+-              placeholder="8자 이상"
++              placeholder="8자 이상, 영문+숫자"
+             />
+           </div>
+           <div>
+@@ -57,12 +58,7 @@ export default async function ResetPasswordPage({
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+             />
+           </div>
+-          <button
+-            type="submit"
+-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
+-          >
+-            비밀번호 변경
+-          </button>
++          <SubmitButton pendingText="변경 중…">비밀번호 변경</SubmitButton>
+         </form>
+       </div>
+     </div>
+diff --git a/crm/src/app/signup/actions.ts b/crm/src/app/signup/actions.ts
+index 512e803..7ee4ec2 100644
+--- a/crm/src/app/signup/actions.ts
++++ b/crm/src/app/signup/actions.ts
+@@ -4,17 +4,18 @@ import { redirect } from "next/navigation";
+ import { createClient } from "@/lib/supabase/server";
+ import { signUpErrorMessage } from "@/lib/auth-errors";
+ import { logAudit, safeErrorCode } from "@/lib/audit";
++import { passwordProblem } from "@/lib/password";
+ 
+ export async function signUp(formData: FormData) {
+   const email = String(formData.get("email") ?? "").trim();
+   const password = String(formData.get("password") ?? "");
+   const fullName = String(formData.get("full_name") ?? "").trim();
+ 
+-  if (!email || !password || password.length < 6) {
+-    redirect(
+-      `/signup?error=${encodeURIComponent("이메일과 6자 이상의 비밀번호를 입력해주세요.")}`
+-    );
++  if (!email || !password) {
++    redirect(`/signup?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
+   }
++  const pwProblem = passwordProblem(password);
++  if (pwProblem) redirect(`/signup?error=${encodeURIComponent(pwProblem)}`);
+ 
+   const supabase = await createClient();
+   const { data, error } = await supabase.auth.signUp({
+diff --git a/crm/src/app/signup/page.tsx b/crm/src/app/signup/page.tsx
+index bf91332..eae074b 100644
+--- a/crm/src/app/signup/page.tsx
++++ b/crm/src/app/signup/page.tsx
+@@ -1,5 +1,6 @@
+ import Link from "next/link";
+ import { signUp } from "./actions";
++import { SubmitButton } from "@/components/submit-button";
+ 
+ export default async function SignupPage({
+   searchParams,
+@@ -28,6 +29,7 @@ export default async function SignupPage({
+             <input
+               type="text"
+               name="full_name"
++              autoComplete="name"
+               required
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+               placeholder="홍길동"
+@@ -38,6 +40,7 @@ export default async function SignupPage({
+             <input
+               type="email"
+               name="email"
++              autoComplete="email"
+               required
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+               placeholder="owner@example.com"
+@@ -48,18 +51,14 @@ export default async function SignupPage({
+             <input
+               type="password"
+               name="password"
++              autoComplete="new-password"
+               required
+-              minLength={6}
++              minLength={8}
+               className="w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-accent"
+-              placeholder="6자 이상"
++              placeholder="8자 이상, 영문+숫자"
+             />
+           </div>
+-          <button
+-            type="submit"
+-            className="w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors"
+-          >
+-            무료체험 시작하기
+-          </button>
++          <SubmitButton pendingText="가입 중…">무료체험 시작하기</SubmitButton>
+         </form>
+ 
+         <p className="text-center text-sm text-muted">
+diff --git a/crm/src/components/submit-button.tsx b/crm/src/components/submit-button.tsx
+new file mode 100644
+index 0000000..d0bce0f
+--- /dev/null
++++ b/crm/src/components/submit-button.tsx
+@@ -0,0 +1,27 @@
++"use client";
++
++import { useFormStatus } from "react-dom";
++
++// 폼 전송 버튼. 누르면 바로 "처리 중" 표시로 바뀌고 다시 누를 수 없게 막는다.
++// (응답이 느려도 눌린 걸 알 수 있고, 두 번 눌러 중복 요청되는 것을 막는다)
++export function SubmitButton({
++  children,
++  pendingText = "처리 중…",
++  className = "w-full rounded-lg bg-accent hover:bg-accent-hover py-2.5 font-semibold text-white transition-colors",
++}: {
++  children: React.ReactNode;
++  pendingText?: string;
++  className?: string;
++}) {
++  const { pending } = useFormStatus();
++  return (
++    <button
++      type="submit"
++      disabled={pending}
++      aria-busy={pending}
++      className={`${className} disabled:cursor-wait disabled:opacity-70`}
++    >
++      {pending ? pendingText : children}
++    </button>
++  );
++}
+diff --git a/crm/src/lib/password.ts b/crm/src/lib/password.ts
+new file mode 100644
+index 0000000..4e34a3d
+--- /dev/null
++++ b/crm/src/lib/password.ts
+@@ -0,0 +1,14 @@
++// 비밀번호 작성 규칙 (가입·초대 수락·재설정 공통).
++// 개인정보의 안전성 확보조치 기준에 따라 추측하기 쉬운 비밀번호를 막는다: 8자 이상, 영문과 숫자를 모두 포함.
++export const PASSWORD_RULE_TEXT = "8자 이상, 영문과 숫자를 모두 포함";
++export const PASSWORD_MIN_LENGTH = 8;
++// bcrypt(Supabase Auth)는 72바이트까지만 사용하므로 그 이상은 받지 않는다.
++const PASSWORD_MAX_BYTES = 72;
++
++/** 규칙에 맞으면 null, 아니면 화면에 보여줄 한국어 안내를 돌려준다. */
++export function passwordProblem(password: string): string | null {
++  if (password.length < PASSWORD_MIN_LENGTH) return `비밀번호는 ${PASSWORD_RULE_TEXT}해야 합니다.`;
++  if (new TextEncoder().encode(password).length > PASSWORD_MAX_BYTES) return "비밀번호가 너무 깁니다. 72자 이하로 입력해주세요.";
++  if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) return `비밀번호는 ${PASSWORD_RULE_TEXT}해야 합니다.`;
++  return null;
++}
+diff --git a/crm/tests/local/password-rule.test.mjs b/crm/tests/local/password-rule.test.mjs
+new file mode 100644
+index 0000000..a01bc15
+--- /dev/null
++++ b/crm/tests/local/password-rule.test.mjs
+@@ -0,0 +1,20 @@
++// 비밀번호 작성 규칙 (가입·초대 수락·재설정 공통) — 로컬 전용
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import { passwordProblem } from "../../src/lib/password.ts";
++
++test("8자 이상 + 영문 + 숫자면 통과", () => {
++  assert.equal(passwordProblem("abcd1234"), null);
++  assert.equal(passwordProblem("한글도OK1a비밀번호"), null);
++});
++
++test("짧거나, 영문/숫자 중 하나가 없으면 거부", () => {
++  for (const pw of ["", "abc123", "abcdefgh", "12345678", "!!!!!!!!"]) {
++    assert.ok(passwordProblem(pw), pw);
++  }
++});
++
++test("72바이트 초과는 거부 (Auth 가 뒤를 잘라 쓰는 것을 막음)", () => {
++  assert.ok(passwordProblem("a1" + "x".repeat(71)));
++  assert.equal(passwordProblem("a1" + "x".repeat(70)), null);
++});
+-- 
+2.43.0
+
+
+From 58d078ea76513932aea1c185c9f25c4b15815b09 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 20 Oct 2026 03:29:08 +0000
+Subject: [PATCH 2/2] fix(crm): port S-1 payment amount check and S-4 safe
+ login redirect
+
+- S-1: reservation payment success trusts the DB amount, not the URL;
+  checks order ownership/ready status, Toss confirm result and a
+  single-row update
+- S-4: login next parameter limited to same-site paths (open redirect)
+- Toss key handling (S-2) intentionally not ported: production still
+  uses test keys for reservation payments
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01BaRVzEBRb3ZWLyfjTV7FKu
+---
+ crm/src/app/login/actions.ts           |  8 ++-
+ crm/src/app/payments/success/page.tsx  | 86 +++++++++++++++++---------
+ crm/src/lib/safe-redirect.ts           | 20 ++++++
+ crm/src/lib/toss.ts                    | 13 +++-
+ crm/tests/local/safe-redirect.test.mjs | 16 +++++
+ 5 files changed, 110 insertions(+), 33 deletions(-)
+ create mode 100644 crm/src/lib/safe-redirect.ts
+ create mode 100644 crm/tests/local/safe-redirect.test.mjs
+
+diff --git a/crm/src/app/login/actions.ts b/crm/src/app/login/actions.ts
+index 0a3fce8..d20891c 100644
+--- a/crm/src/app/login/actions.ts
++++ b/crm/src/app/login/actions.ts
+@@ -3,11 +3,13 @@
+ import { redirect } from "next/navigation";
+ import { createClient } from "@/lib/supabase/server";
+ import { actorTypeFromRole, logAudit, safeErrorCode } from "@/lib/audit";
++import { safeNextPath } from "@/lib/safe-redirect";
+ 
+ export async function signIn(formData: FormData) {
+   const email = String(formData.get("email") ?? "").trim();
+   const password = String(formData.get("password") ?? "");
+-  const next = String(formData.get("next") ?? "/dashboard");
++  // 외부 사이트로 보내는 값(//evil.com 등)은 /dashboard 로 바꾼다 (오픈 리다이렉트 차단)
++  const next = safeNextPath(formData.get("next"));
+ 
+   if (!email || !password) {
+     redirect(`/login?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
+@@ -47,8 +49,8 @@ export async function signIn(formData: FormData) {
+   });
+ 
+   // 운영자 계정은 기본적으로 운영자 화면으로 보낸다 (일반 매장 화면과 분리)
+-  if (isPlatformAdmin === true && (next === "/dashboard" || !next.startsWith("/"))) {
++  if (isPlatformAdmin === true && next === "/dashboard") {
+     redirect("/admin");
+   }
+-  redirect(next.startsWith("/") ? next : "/dashboard");
++  redirect(next);
+ }
+diff --git a/crm/src/app/payments/success/page.tsx b/crm/src/app/payments/success/page.tsx
+index 7451f5b..3752c30 100644
+--- a/crm/src/app/payments/success/page.tsx
++++ b/crm/src/app/payments/success/page.tsx
+@@ -1,9 +1,8 @@
+ import Link from "next/link";
+-import { createClient } from "@/lib/supabase/server";
+ import { requireBusinessContext } from "@/lib/business";
+ import { requireAccess } from "@/lib/permissions";
+ import { requireWritable } from "@/lib/subscription";
+-import { confirmTossPayment } from "@/lib/toss";
++import { confirmTossPayment, type ConfirmedTossPayment } from "@/lib/toss";
+ 
+ export default async function PaymentSuccessPage({
+   searchParams,
+@@ -13,7 +12,7 @@ export default async function PaymentSuccessPage({
+   const { paymentKey, orderId, amount } = await searchParams;
+ 
+   // 결제 승인/저장은 대표·관리자만. 직원이 이 주소를 직접 열어도 토스 승인 호출 전에 차단된다.
+-  const { profile, subscription } = await requireBusinessContext();
++  const { supabase, business, profile, subscription } = await requireBusinessContext();
+   requireAccess(profile.role, "payments");
+   requireWritable(subscription);
+ 
+@@ -21,40 +20,71 @@ export default async function PaymentSuccessPage({
+     return <ResultShell ok={false} title="잘못된 접근입니다." />;
+   }
+ 
+-  let result: { ok: boolean; title: string; description?: string };
++  // 금액은 URL 값이 아니라 서버(DB)에 만들어 둔 결제 기록을 기준으로 한다.
++  // 내 매장의 주문이고, 아직 결제 전(ready)이며, URL 금액이 기록과 같을 때만 토스 승인을 요청한다.
++  // (금액이 다르면 승인하지 않는다 — 승인되지 않은 결제는 토스에서 자동으로 만료된다)
++  const { data: payment } = await supabase
++    .from("payments")
++    .select("id, amount, status")
++    .eq("toss_order_id", orderId)
++    .eq("business_id", business.id)
++    .maybeSingle();
+ 
++  if (!payment) {
++    return <ResultShell ok={false} title="잘못된 접근입니다." description="결제 요청 기록을 찾을 수 없습니다." />;
++  }
++  if (payment.status === "paid") {
++    return <ResultShell ok title="이미 결제가 완료된 주문입니다" />;
++  }
++  if (payment.status !== "ready" || !Number.isSafeInteger(payment.amount) || payment.amount <= 0) {
++    return <ResultShell ok={false} title="결제를 진행할 수 없는 주문입니다." />;
++  }
++  if (Number(amount) !== payment.amount) {
++    return <ResultShell ok={false} title="결제 금액이 주문 금액과 다릅니다" description="결제가 승인되지 않았습니다. 다시 시도해주세요." />;
++  }
++
++  let confirmed: ConfirmedTossPayment;
+   try {
+-    const confirmed = await confirmTossPayment({
++    confirmed = await confirmTossPayment({
+       paymentKey,
+       orderId,
+-      amount: Number(amount),
++      amount: payment.amount,
+     });
++  } catch (e) {
++    return <ResultShell ok={false} title="결제 승인에 실패했습니다" description={e instanceof Error ? e.message : undefined} />;
++  }
+ 
+-    const supabase = await createClient();
+-    await supabase
+-      .from("payments")
+-      .update({
+-        status: "paid",
+-        toss_payment_key: paymentKey,
+-        method: typeof confirmed.method === "string" ? confirmed.method : null,
+-        paid_at: new Date().toISOString(),
+-      })
+-      .eq("toss_order_id", orderId);
++  // 승인 응답도 주문번호·금액·상태가 우리 기록과 같은지 다시 확인한다.
++  if (confirmed.status !== "DONE" || confirmed.orderId !== orderId || confirmed.totalAmount !== payment.amount) {
++    console.error("[payments] confirm result mismatch", { status: confirmed.status });
++    return <ResultShell ok={false} title="결제 결과 확인이 필요합니다" description="고객센터로 문의해주세요." />;
++  }
+ 
+-    result = {
+-      ok: true,
+-      title: "결제가 완료되었습니다",
+-      description: `${Number(amount).toLocaleString()}원 결제가 정상적으로 처리되었습니다.`,
+-    };
+-  } catch (e) {
+-    result = {
+-      ok: false,
+-      title: "결제 승인에 실패했습니다",
+-      description: e instanceof Error ? e.message : undefined,
+-    };
++  // 결제 전(ready) 상태인 이 주문 1건만 결제완료로 바꾸고, 실제로 바뀌었는지 확인한다.
++  const { data: updated, error: updateError } = await supabase
++    .from("payments")
++    .update({
++      status: "paid",
++      toss_payment_key: paymentKey,
++      method: typeof confirmed.method === "string" ? confirmed.method : null,
++      paid_at: new Date().toISOString(),
++    })
++    .eq("id", payment.id)
++    .eq("status", "ready")
++    .select("id");
++
++  if (updateError || updated?.length !== 1) {
++    console.error("[payments] paid record update failed", { code: updateError?.code, rows: updated?.length ?? 0 });
++    return <ResultShell ok={false} title="결제는 승인되었지만 기록하지 못했습니다" description="고객센터로 문의해주세요." />;
+   }
+ 
+-  return <ResultShell ok={result.ok} title={result.title} description={result.description} />;
++  return (
++    <ResultShell
++      ok
++      title="결제가 완료되었습니다"
++      description={`${payment.amount.toLocaleString()}원 결제가 정상적으로 처리되었습니다.`}
++    />
++  );
+ }
+ 
+ function ResultShell({
+diff --git a/crm/src/lib/safe-redirect.ts b/crm/src/lib/safe-redirect.ts
+new file mode 100644
+index 0000000..4398354
+--- /dev/null
++++ b/crm/src/lib/safe-redirect.ts
+@@ -0,0 +1,20 @@
++// 로그인 후 이동 경로(next) 검증. 같은 사이트 안의 경로만 허용해 오픈 리다이렉트를 막는다.
++//   허용: "/dashboard", "/dashboard/customers?x=1", "/admin"
++//   거부: "//evil.com", "/\evil.com", "https://evil.com", "/%5Cevil.com" 처럼 브라우저가 다른 사이트로 해석할 수 있는 값
++const BASE = "http://same-origin.invalid";
++
++export function safeNextPath(next: unknown, fallback = "/dashboard"): string {
++  if (typeof next !== "string" || next.length === 0 || next.length > 2000) return fallback;
++  // 반드시 "/" 하나로 시작하는 상대 경로. "//", "/\" 는 브라우저가 다른 호스트로 해석한다.
++  if (!next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return fallback;
++  // 제어문자·역슬래시(인코딩 포함)가 섞인 값은 브라우저마다 해석이 달라 받지 않는다.
++  if (/[\u0000-\u001f\u007f\\]/.test(next) || /%(5c|2f%2f|0[0-9a-f]|1[0-9a-f])/i.test(next)) return fallback;
++  let url: URL;
++  try {
++    url = new URL(next, BASE);
++  } catch {
++    return fallback;
++  }
++  if (url.origin !== BASE) return fallback;
++  return `${url.pathname}${url.search}${url.hash}`;
++}
+diff --git a/crm/src/lib/toss.ts b/crm/src/lib/toss.ts
+index ee94775..08470e4 100644
+--- a/crm/src/lib/toss.ts
++++ b/crm/src/lib/toss.ts
+@@ -12,7 +12,15 @@ export function getTossClientKey(businessClientKey?: string | null) {
+   return businessClientKey || process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || TOSS_TEST_CLIENT_KEY;
+ }
+ 
+-/** 토스페이먼츠 결제 승인 API 호출 (서버 전용, secret key 사용). */
++export interface ConfirmedTossPayment {
++  status?: string;
++  orderId?: string;
++  totalAmount?: number;
++  method?: string;
++  [key: string]: unknown;
++}
++
++/** 토스페이먼츠 결제 승인 API 호출 (서버 전용, secret key 사용). amount 는 반드시 서버(DB)에 기록된 금액을 넘긴다. */
+ export async function confirmTossPayment(params: {
+   paymentKey: string;
+   orderId: string;
+@@ -28,6 +36,7 @@ export async function confirmTossPayment(params: {
+       "Content-Type": "application/json",
+     },
+     body: JSON.stringify(params),
++    cache: "no-store",
+   });
+ 
+   const data = await res.json();
+@@ -36,5 +45,5 @@ export async function confirmTossPayment(params: {
+     throw new Error(data?.message ?? "결제 승인에 실패했습니다.");
+   }
+ 
+-  return data as { method?: string; [key: string]: unknown };
++  return data as ConfirmedTossPayment;
+ }
+diff --git a/crm/tests/local/safe-redirect.test.mjs b/crm/tests/local/safe-redirect.test.mjs
+new file mode 100644
+index 0000000..5c66c83
+--- /dev/null
++++ b/crm/tests/local/safe-redirect.test.mjs
+@@ -0,0 +1,16 @@
++// S-4 로그인 후 이동 경로 검증 (로컬 전용, 네트워크·DB 없음)
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import { safeNextPath } from "../../src/lib/safe-redirect.ts";
++
++test("같은 사이트 경로는 그대로 허용", () => {
++  assert.equal(safeNextPath("/dashboard"), "/dashboard");
++  assert.equal(safeNextPath("/dashboard/customers?x=1"), "/dashboard/customers?x=1");
++  assert.equal(safeNextPath("/admin"), "/admin");
++});
++
++test("다른 사이트로 보낼 수 있는 값은 /dashboard 로 바꾼다", () => {
++  for (const v of ["//evil.com", "/\\evil.com", "https://evil.com", "/%5Cevil.com", "/%2f%2fevil.com", "evil.com", "", null, undefined, 123]) {
++    assert.equal(safeNextPath(v), "/dashboard", String(v));
++  }
++});
+-- 
+2.43.0
+
