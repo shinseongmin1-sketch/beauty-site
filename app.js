@@ -1,5 +1,5 @@
 // 예약관리 CRM 앱 주소 (crm/ 폴더, 별도 Vercel 프로젝트로 배포).
-const CRM_APP_URL = 'https://beauty-site-crm.vercel.app';
+const CRM_APP_URL = 'https://app.manion.kr';
 
 document.querySelectorAll('[data-crm-link="login"]').forEach(a => {
   a.href = `${CRM_APP_URL}/login`;
