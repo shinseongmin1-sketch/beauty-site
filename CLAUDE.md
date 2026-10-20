@@ -34,6 +34,13 @@
 ## 장애 기록
 - 2026-10-20: 운영·테스트 Supabase가 무료 플랜 자동 일시정지(INACTIVE)로 로그인 전부 실패(화면엔 "비밀번호 틀림"으로 표시). 사용자가 대시보드에서 Restore로 복구. 운영 프로젝트 = Supabase 대시보드의 "shinseongmin1-sketch's Project"(ref `evrg…`, ap-south-1 뭄바이). 테스트 = manion-crm-test(ref `gmnw…`, 서울). morelol은 무관. 현재 SUPABASE_PROD_ACCESS_TOKEN은 테스트 프로젝트만 보인다(운영 Management API 작업 시 운영 접근 토큰 별도 필요). 재발 방지로 운영 Pro 플랜 전환 권장.
 
+## 운영 Supabase 서울 이사 (2026-10-20 사용자 결정, 준비 단계)
+- 목표: 운영 DB 뭄바이(ap-south-1) → 서울 새 프로젝트 `manion-crm-prod`(ap-northeast-2) + Vercel 함수 리전 bom1 → icn1.
+- 이 웹 환경은 DB 직접 연결(5432 TCP)과 *.supabase.co 접속이 막혀 있다. Supabase Management API(api.supabase.com, `/v1/projects/{ref}/database/query`)는 된다 → SQL API로 스키마 적용·데이터 복사.
+- 사용자 준비물: 조직 Pro 업그레이드(무료는 활성 프로젝트 2개 제한), 개인 Access Token을 클라우드 env `SUPABASE_MGMT_TOKEN`으로 등록 후 새 세션.
+- 순서: ① 새 프로젝트 생성 + schema.sql·001~011 적용 + Auth 설정 복사(redirect에 app.manion.kr 포함) ② 리허설: 운영 읽기만 해서 auth.users/auth.identities(비밀번호 해시 포함)·public 테이블 복사(트리거·identity 시퀀스 주의: on_auth_user_created, audit 트리거) → 행 수·체크섬 대조 → 새 DB 연결 미리보기 CRM에서 사용자 확인 ③ 승인 후 전환: 점검 시간, 직전 백업, 최종 복사·대조, Vercel env(URL/ANON/SERVICE_ROLE) 교체 + 리전 icn1 + master 기준 API 배포, 확인(문제 시 env 원복) ④ 전원 재로그인 필요(비밀번호 유지) ⑤ 1~2주 후 뭄바이 정리(삭제 전 승인), 개인정보처리방침 저장 국가 → 대한민국.
+- 서울 이사 전에는 정기결제 migration 012~017을 운영에 적용하지 않는다(이사 후 새 프로젝트에 적용).
+
 ## 정기결제 (브랜치 `billing/subscription-v1`, 운영 미적용)
 - master 미병합, 운영 DB에 migration 012~017 미적용.
 - 운영 적용 전 필요: 토스 빌링 계약·실키, Vercel env(NEXT_PUBLIC_TOSS_BILLING_CLIENT_KEY, TOSS_BILLING_SECRET_KEY, BILLING_KEY_ENCRYPTION_KEY, CRON_SECRET), 개인정보처리방침·약관·환불정책 확정.
