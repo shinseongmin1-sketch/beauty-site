@@ -39,5 +39,24 @@
 - `npx tsc --noEmit`, `npm run lint`, `npm run build:test`
 - `db:verify`, `test:e2e:*`, `db:migrate:prod` 등은 `.env.test`/운영 토큰이 필요해 사용자 PC에서만 실행.
 
-## 웹(클라우드) 세션 한계
-- `.env.local`, `.env.test`, Vercel/Supabase CLI 인증은 사용자 PC에만 있음. 웹 세션에서는 코드 수정·로컬 테스트까지만 하고, 배포·DB·Vercel 설정은 사용자 PC 세션에서 진행.
+## 작업 환경 (2026-10-20부터 웹 전용)
+- 사용자는 claude.ai/code 웹 세션만 쓴다. "PC에서 하세요"라고 넘기지 말고 웹에서 해결 방법을 먼저 찾는다.
+- 클라우드 환경 변수(값 출력 금지):
+  - 운영: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (이름에 TEST 없는 것 = 운영 DB)
+  - 테스트: SUPABASE_TEST_URL, SUPABASE_TEST_ANON_KEY, SUPABASE_TEST_SERVICE_ROLE_KEY, SUPABASE_TEST_ACCESS_TOKEN
+  - 기타: NEXT_PUBLIC_TOSS_CLIENT_KEY / TOSS_SECRET_KEY (test_ 키), BACKUP_ENCRYPTION_KEY (33바이트 불량값일 수 있음, 운영 백업 전 확인), BUSINESS_NUMBER_PEPPER, VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID (CRM 프로젝트)
+  - 없음: SUPABASE_PROD_ACCESS_TOKEN (운영 migration 때 사용자에게 요청), 정기결제 env 4개
+- crm/.env.local, crm/.env.test 파일은 없다. 필요하면 위 환경 변수로 세션 안에서만 만들고 절대 커밋하지 않는다.
+- Vercel CLI는 npx vercel --token "$VERCEL_TOKEN" 으로 쓴다. 네트워크는 Full.
+- 키를 쓰는 명령이 권한 검사에 막히면, 사용자에게 모드 선택에서 승인 방식 모드로 바꾸라고 안내한다.
+- crm/package-lock.json은 웹 VM의 npm ci와 안 맞는다(PC와 기존 Vercel 배포는 정상). 검증은 npm install --no-package-lock 으로 하고, lockfile은 사용자 지시 전에 수정하지 않는다.
+
+## 다음 단계 추천 방식
+- 사용자는 비개발자다. 매 작업이 끝나면 "다음 추천 단계"를 1개 제안한다. 왜 필요한지, 사용자가 할 일(있다면)을 쉬운 한국어로 짧게 쓴다.
+- 운영에 영향이 있는 작업(운영 DB, 배포, master push, Vercel/Supabase 설정)은 실행 전에 무엇이 바뀌는지 알리고 "진행할까요?"로 승인을 받는다. 그 외(코드 수정, 테스트, 작업 브랜치 커밋·push)는 요청받으면 바로 한다.
+- 추천 우선순위:
+  1. 도메인 남은 단계 1~5 (CLAUDE.md 순서대로. 1번은 사용자가 app.manion.kr에서 직접 확인)
+  2. 저장소 비공개 전환 검토 (데스크톱 앱 EXE가 GitHub Release에 있어서, 다운로드 링크 영향부터 확인)
+  3. 정기결제 운영 적용 준비: 사용자 준비물(토스 빌링 계약·실키, 개인정보처리방침·약관·환불정책) 진행 확인 → 준비되면 테스트 DB 재검증 → 운영 백업 → 012~017 적용 → 배포
+  4. 미착수 제안: 체험 남용 방지(사업자번호 검증·이메일 인증), 홈페이지 다운로드 메뉴, review_required 관리자 화면
+- 사용자 준비물이 없어서 막힌 단계는 건너뛰고, 할 수 있는 다음 단계를 추천한다.
