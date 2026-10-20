@@ -34,15 +34,18 @@
 ## 장애 기록
 - 2026-10-20: 운영·테스트 Supabase가 무료 플랜 자동 일시정지(INACTIVE)로 로그인 전부 실패(화면엔 "비밀번호 틀림"으로 표시). 사용자가 대시보드에서 Restore로 복구. 운영 프로젝트 = Supabase 대시보드의 "shinseongmin1-sketch's Project"(ref `evrg…`, ap-south-1 뭄바이). 테스트 = manion-crm-test(ref `gmnw…`, 서울). morelol은 무관. 현재 SUPABASE_PROD_ACCESS_TOKEN은 테스트 프로젝트만 보인다(운영 Management API 작업 시 운영 접근 토큰 별도 필요). 재발 방지로 운영 Pro 플랜 전환 권장.
 
-## 운영 Supabase 서울 이사 (2026-10-20 사용자 결정, 준비 단계)
-- 목표: 운영 DB 뭄바이(ap-south-1) → 서울 새 프로젝트 `manion-crm-prod`(ap-northeast-2) + Vercel 함수 리전 bom1 → icn1.
-- 이 웹 환경은 DB 직접 연결(5432 TCP)과 *.supabase.co 접속이 막혀 있다. Supabase Management API(api.supabase.com, `/v1/projects/{ref}/database/query`)는 된다 → SQL API로 스키마 적용·데이터 복사.
-- 요금제: 지금은 **무료 플랜으로 진행**(사용자 결정). Pro는 나중에 조직 요금제만 바꾸면 됨(재이사 불필요).
-- 무료 = 활성 프로젝트 2개 제한 → 이사 기간엔 테스트(manion-crm-test)를 일시정지하고, 리허설은 새 서울 프로젝트에서 직접 한 뒤 비우고 전환 때 재복사. 전환 후 1~2주는 롤백용으로 옛 뭄바이 유지 → 이후 뭄바이 정지/삭제(승인) → 테스트 Restore.
-- 무료 운영 보완: 하루 1회 DB 깨우기(Vercel cron) 추가 제안, 이사 시 자체 암호화 백업 필수(무료는 자동 백업 없음). 정기결제(유료 고객) 시작 전 Pro 재검토.
-- 사용자 준비물: 개인 Access Token을 클라우드 env `SUPABASE_MGMT_TOKEN`으로 등록 후 새 세션. 테스트 일시정지는 이사 시작 시 요청.
-- 순서: ① 새 프로젝트 생성 + schema.sql·001~011 적용 + Auth 설정 복사(redirect에 app.manion.kr 포함) ② 리허설: 운영 읽기만 해서 auth.users/auth.identities(비밀번호 해시 포함)·public 테이블 복사(트리거·identity 시퀀스 주의: on_auth_user_created, audit 트리거) → 행 수·체크섬 대조 → 새 DB 연결 미리보기 CRM에서 사용자 확인 ③ 승인 후 전환: 점검 시간, 직전 백업, 최종 복사·대조, Vercel env(URL/ANON/SERVICE_ROLE) 교체 + 리전 icn1 + master 기준 API 배포, 확인(문제 시 env 원복) ④ 전원 재로그인 필요(비밀번호 유지) ⑤ 1~2주 후 뭄바이 정리(삭제 전 승인), 개인정보처리방침 저장 국가 → 대한민국.
-- 서울 이사 전에는 정기결제 migration 012~017을 운영에 적용하지 않는다(이사 후 새 프로젝트에 적용).
+## 운영 Supabase 서울 이사 (2026-10-20 사용자 결정: "바꿔치기" 방식, 무료 플랜)
+- 방식: 서울 `manion-crm-test`(ref `gmnw…`)를 **새 운영**으로, 뭄바이 "shinseongmin1-sketch's Project"(ref `evrg…`)를 전환 1~2주 후 **새 테스트**로. 새 프로젝트 생성·일시정지 없음(무료 2개 제한 회피). Pro는 나중에 조직 요금제만 변경.
+- 이 웹 환경은 DB 직접 연결(5432 TCP)과 *.supabase.co 접속이 막혀 있다. Supabase Management API(api.supabase.com, `/v1/projects/{ref}/database/query`)로 SQL 실행.
+- 토큰(사용자 등록, 새 세션에서 사용): `SUPABASE_MGMT_TOKEN_MUMBAI` = 뭄바이 전용 읽기 전용, `SUPABASE_MGMT_TOKEN_SEOUL` = 서울 전용 읽기+쓰기. 시작 전에 각 토큰이 해당 프로젝트만 보이는지, 뭄바이 토큰으로 쓰기가 거부되는지 확인. 기존 SUPABASE_PROD_ACCESS_TOKEN은 이름과 달리 테스트(서울)만 보임.
+- 순서:
+  ① 서울 비우기(시험 계정 2·매장 1·정기결제 012~017 객체 포함 전부) → schema.sql·001~011 적용(운영과 동일 구조) → 뭄바이 Auth 설정 복사 + redirect에 app.manion.kr 포함
+  ② 리허설: 뭄바이 읽기만 → auth.users/auth.identities(비밀번호 해시 포함)·public 테이블 서울로 복사(트리거·identity 시퀀스 주의: on_auth_user_created, audit 트리거) → 행 수·체크섬 대조 → 서울 연결 미리보기 CRM에서 사용자 확인
+  ③ 승인 후 전환(점검 ~30분): 직전 백업, 최종 복사·대조, Vercel env(URL/ANON/SERVICE_ROLE)를 서울 값으로 + 함수 리전 bom1→icn1 + master 기준 API 배포, 확인(문제 시 env 원복). 전원 재로그인 필요(비밀번호 유지)
+  ④ 클라우드 env 이름표 교체(운영 = 서울, TEST = 뭄바이), Supabase 프로젝트 이름 변경(manion-crm-prod / manion-crm-test), 이 문서 갱신
+  ⑤ 1~2주 후(승인): 뭄바이의 실제 고객 데이터 삭제 → 테스트로 사용. 개인정보처리방침 저장 국가 → 대한민국
+- 무료 운영 보완: 하루 1회 DB 깨우기(Vercel cron) 제안, 이사 시 자체 암호화 백업 필수(무료는 자동 백업 없음). 정기결제 시작 전 Pro 재검토.
+- 서울 이사 전에는 정기결제 migration 012~017을 운영에 적용하지 않는다(이사 후 새 운영에 적용).
 
 ## 정기결제 (브랜치 `billing/subscription-v1`, 운영 미적용)
 - master 미병합, 운영 DB에 migration 012~017 미적용.
