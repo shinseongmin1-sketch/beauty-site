@@ -29,10 +29,10 @@
 
 ## 운영 배포 기록
 - 2026-10-20: master `3d5dba6` = 보안 핫픽스(버튼 처리중·비밀번호 규칙·보안 헤더·S-1·S-4) + 로그인/회원가입/비밀번호 찾기 "매니온 홈으로" 링크. CRM 운영 배포 `dpl_GzDZcZgrQipGgT9j6jkJvJhLY1TH` (롤백 대상: 직전 `dpl_29j3FhqmCyLvEwsGDV5FebVDdp3L`). app.manion.kr·옛 주소 모두 확인 완료.
-- 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간·Supabase 리전)을 채우고 사용자 승인 후 master에 반영.
+- 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간)을 채우고 사용자 승인 후 master에 반영.
 
 ## 장애 기록
-- 2026-10-20: 운영·테스트 Supabase가 무료 플랜 자동 일시정지(INACTIVE)로 로그인 전부 실패(화면엔 "비밀번호 틀림"으로 표시). 사용자가 대시보드에서 Restore로 복구. 운영 프로젝트(ref `evrg…`)는 현재 SUPABASE_PROD_ACCESS_TOKEN 계정 목록에 안 보임(다른 계정/조직). 재발 방지로 운영 Pro 플랜 전환 권장.
+- 2026-10-20: 운영·테스트 Supabase가 무료 플랜 자동 일시정지(INACTIVE)로 로그인 전부 실패(화면엔 "비밀번호 틀림"으로 표시). 사용자가 대시보드에서 Restore로 복구. 운영 프로젝트 = Supabase 대시보드의 "shinseongmin1-sketch's Project"(ref `evrg…`, ap-south-1 뭄바이). 테스트 = manion-crm-test(ref `gmnw…`, 서울). morelol은 무관. 현재 SUPABASE_PROD_ACCESS_TOKEN은 테스트 프로젝트만 보인다(운영 Management API 작업 시 운영 접근 토큰 별도 필요). 재발 방지로 운영 Pro 플랜 전환 권장.
 
 ## 정기결제 (브랜치 `billing/subscription-v1`, 운영 미적용)
 - master 미병합, 운영 DB에 migration 012~017 미적용.
