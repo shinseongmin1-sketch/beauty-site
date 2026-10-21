@@ -496,6 +496,7 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 
 .tile h3 { font-size: 16px; font-weight: 700; color: var(--navy); }
 .tile p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.tile-soon { display: inline-block; margin-left: 4px; padding: 2px 7px; border-radius: 999px; background: var(--amber-soft); color: var(--amber); font-size: 11px; font-weight: 700; vertical-align: 2px; }
 
 .tile-more {
   display: inline-flex;
