@@ -95,11 +95,8 @@ a { color: inherit; }
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 9px;
-  background: var(--blue);
-  color: white;
-  font-size: 17px;
 }
+.logo-mark svg { width: 32px; height: 32px; display: block; }
 
 .nav {
   display: flex;
@@ -383,13 +380,11 @@ section[id], main > section, #support, #top { scroll-margin-top: 88px; }
 
 .app-sidebar-logo {
   width: 28px; height: 28px;
-  border-radius: 8px;
-  background: var(--blue);
-  color: white;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px;
   margin-bottom: 8px;
 }
+.app-sidebar-logo { --logo-ring: #fff; }
+.app-sidebar-logo svg { width: 28px; height: 28px; display: block; }
 
 .app-sidebar-item {
   width: 32px; height: 32px;
@@ -972,6 +967,7 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 .footer { background: var(--navy); color: rgba(255,255,255,0.65); padding: 56px 0 28px; }
 
 .footer .logo { color: white; }
+.footer .logo-mark { --logo-ring: #fff; }
 
 .footer-top {
   display: grid;

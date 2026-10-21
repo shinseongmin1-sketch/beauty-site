@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>매니온 - 예약과 고객관리를 한곳에서</title>
   <meta name="description" content="애견샵, 미용실, 네일샵, 피부샵 등 예약을 받는 모든 매장을 위한 예약·고객관리 프로그램. 3개월 무료체험.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
@@ -14,6 +15,7 @@
 <!-- 아이콘 스프라이트 (화면에는 안 보이고 <use>로 재사용) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
+    <symbol id="logo-mark" viewBox="0 0 32 32"><rect x="1" y="4" width="30" height="27" rx="8" fill="#3B73E8"/><rect x="8.4" y="1.2" width="3.4" height="7.2" rx="1.7" style="fill:var(--logo-ring,#172A46)"/><rect x="20.2" y="1.2" width="3.4" height="7.2" rx="1.7" style="fill:var(--logo-ring,#172A46)"/><path d="M9.5 24.5v-8a3.25 3.25 0 0 1 6.5 0v8M16 16.5a3.25 3.25 0 0 1 6.5 0v8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4M16 3v4"/></symbol>
     <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.3a3 3 0 0 1 0 5.8"/><path d="M18.5 14.3c1.8.7 3 2.4 3 5.7"/></symbol>
     <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7"/><path d="M3 20h18"/></symbol>
@@ -50,7 +52,7 @@
 <header class="header" id="header">
   <div class="container">
     <a href="#top" class="logo">
-      <span class="logo-mark"><svg class="icon"><use href="#i-calendar"/></svg></span>
+      <span class="logo-mark"><svg aria-hidden="true"><use href="#logo-mark"/></svg></span>
       <span class="logo-text">매니온</span>
     </a>
     <nav class="nav">
@@ -110,7 +112,7 @@
         </div>
         <div class="app-window-body">
           <aside class="app-sidebar">
-            <div class="app-sidebar-logo"><svg class="icon"><use href="#i-calendar"/></svg></div>
+            <div class="app-sidebar-logo"><svg aria-hidden="true"><use href="#logo-mark"/></svg></div>
             <div class="app-sidebar-item active"><svg class="icon"><use href="#i-calendar"/></svg></div>
             <div class="app-sidebar-item"><svg class="icon"><use href="#i-users"/></svg></div>
             <div class="app-sidebar-item"><svg class="icon"><use href="#i-team"/></svg></div>
@@ -596,7 +598,7 @@
   <div class="container">
     <div class="footer-top">
       <div class="footer-logo">
-        <span class="logo"><span class="logo-mark"><svg class="icon"><use href="#i-calendar"/></svg></span><span class="logo-text">매니온</span></span>
+        <span class="logo"><span class="logo-mark"><svg aria-hidden="true"><use href="#logo-mark"/></svg></span><span class="logo-text">매니온</span></span>
         <p>예약과 고객관리를 한곳에서</p>
       </div>
       <div class="footer-links">
