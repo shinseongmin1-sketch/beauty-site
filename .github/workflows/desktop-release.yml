@@ -1,0 +1,47 @@
+# 예약관리 데스크톱 앱(desktop-app/) 윈도우 설치파일을 만들어 GitHub Release로 공개한다.
+# 수동 실행 전용. 실행 전에 desktop-app/package.json 의 version 을 올려 둘 것.
+name: Desktop release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-release
+  cancel-in-progress: false
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop-app/package-lock.json
+
+      - name: Stop if this version is already released
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="v$(node -p "require('./package.json').version")"
+          echo "version: $VERSION"
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $VERSION already exists. Bump desktop-app/package.json version first."
+            exit 1
+          fi
+
+      - run: npm ci
+
+      - name: Build installer and publish release
+        run: npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

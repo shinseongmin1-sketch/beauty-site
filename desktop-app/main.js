@@ -5,7 +5,20 @@ autoUpdater.logger = console;
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
-const APP_URL = "https://beauty-site-crm.vercel.app";
+const APP_URL = "https://app.manion.kr";
+
+// 앱 창 안에서 열어도 되는 주소. 옛 주소는 예전 링크·메일을 위해 함께 허용한다.
+const APP_ORIGINS = new Set([APP_URL, "https://beauty-site-crm.vercel.app"]);
+
+// 앞부분 글자 비교(startsWith)는 "https://app.manion.kr.evil.com" 같은 주소도
+// 통과시키므로, 주소의 origin(프로토콜+호스트+포트)이 정확히 같은지 본다.
+function isAppUrl(url) {
+  try {
+    return APP_ORIGINS.has(new URL(url).origin);
+  } catch {
+    return false;
+  }
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -28,7 +41,7 @@ function createWindow() {
   // 앱 도메인 밖으로 나가는 링크(외부 사이트 등)는 창 안이 아니라
   // 기본 브라우저에서 열리도록 한다.
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (!url.startsWith(APP_URL)) {
+    if (!isAppUrl(url)) {
       shell.openExternal(url);
       return { action: "deny" };
     }
@@ -36,7 +49,7 @@ function createWindow() {
   });
 
   win.webContents.on("will-navigate", (event, url) => {
-    if (!url.startsWith(APP_URL)) {
+    if (!isAppUrl(url)) {
       event.preventDefault();
       shell.openExternal(url);
     }

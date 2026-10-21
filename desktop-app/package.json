@@ -1,7 +1,7 @@
 {
   "name": "beauty-site-crm-desktop",
-  "version": "1.0.0",
-  "description": "예약관리 CRM 데스크톱 앱 (beauty-site-crm.vercel.app을 감싼 Electron 클라이언트)",
+  "version": "1.0.1",
+  "description": "예약관리 CRM 데스크톱 앱 (app.manion.kr을 감싼 Electron 클라이언트)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -31,7 +31,8 @@
     "publish": {
       "provider": "github",
       "owner": "shinseongmin1-sketch",
-      "repo": "beauty-site"
+      "repo": "beauty-site",
+      "releaseType": "release"
     }
   },
   "devDependencies": {

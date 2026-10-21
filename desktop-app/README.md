@@ -1,6 +1,6 @@
 # 예약관리 데스크톱 앱
 
-`crm/`에 있는 예약관리 웹앱(https://beauty-site-crm.vercel.app)을 감싸는
+`crm/`에 있는 예약관리 웹앱(https://app.manion.kr)을 감싸는
 Electron 데스크톱 클라이언트. 실제 데이터/로그인/기능은 전부 웹앱과 동일하고
 (같은 계정, 같은 DB), 브라우저 주소창 없이 바탕화면 아이콘으로 실행되는
 전용 창만 제공한다. 인터넷 연결이 필요하다 (오프라인 프로그램 아님).
@@ -30,18 +30,13 @@ SmartScreen이 "PC를 보호했습니다" 경고를 띄울 수 있다 — "추�
 앱 껍데기(main.js, 아이콘, 창 설정 등)를 고친 뒤 새 버전을 설치된 사용자
 전체에게 자동으로 내려보내려면:
 
-1. `package.json`의 `version`을 올린다 (예: 1.0.0 → 1.0.1)
-2. `npm run dist`로 다시 빌드 — `dist/`에 새 설치파일 + `latest.yml`이 생긴다
-3. GitHub Release로 올린다 (버전 태그는 `v` + package.json의 version과 동일해야 함):
-   ```bash
-   gh release create v1.0.1 \
-     "dist/yeyakgwanri-Setup-1.0.1.exe" \
-     "dist/yeyakgwanri-Setup-1.0.1.exe.blockmap" \
-     "dist/latest.yml" \
-     --repo shinseongmin1-sketch/beauty-site \
-     --title "예약관리 데스크톱 v1.0.1" \
-     --notes "변경 내용"
-   ```
+1. `package.json`(과 `package-lock.json`)의 `version`을 올린다 (예: 1.0.1 → 1.0.2)
+2. master에 반영한다.
+3. GitHub Actions의 **Desktop release** 워크플로를 수동 실행(Run workflow)한다.
+   윈도우 러너가 `npm ci` → `electron-builder --win --publish always`로 설치파일을
+   만들고, Release `v<버전>`(설치파일 + `.blockmap` + `latest.yml`)을 바로 공개한다.
+   같은 버전 Release가 이미 있으면 실패하므로 반드시 버전을 먼저 올린다.
+   - PC에서 직접 할 때: `npm run dist` 후 `gh release create v<버전>`으로 위 파일 3개를 올린다.
 4. 이미 설치되어 있는 프로그램들은 실행 중 자동으로(최대 4시간 안에) 새
    버전을 감지해서 백그라운드로 내려받고, 사용자가 프로그램을 재시작하면
    자동 적용된다. 별도로 재설치를 안내할 필요 없음.
@@ -58,5 +53,7 @@ SmartScreen이 "PC를 보호했습니다" 경고를 띄울 수 있다 — "추�
 
 ## 접속 주소 바꾸기
 
-`main.js` 상단의 `APP_URL` 상수만 바꾸면 다른 배포 주소를 가리키게 할 수
-있다.
+`main.js` 상단의 `APP_URL`(처음 여는 주소)과 `APP_ORIGINS`(창 안에서 열어도
+되는 주소 목록)를 바꾼다. 목록 밖 주소는 기본 브라우저로 열린다.
+v1.0.0은 `https://beauty-site-crm.vercel.app`만 열기 때문에, 그 주소는 옛 버전이
+남아 있는 동안 유지해야 한다.
