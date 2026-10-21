@@ -26,7 +26,7 @@ function createWindow() {
     height: 880,
     minWidth: 960,
     minHeight: 600,
-    title: "예약관리",
+    title: `예약관리 v${app.getVersion()}`,
     autoHideMenuBar: true,
     backgroundColor: "#faf9fb",
     webPreferences: {
@@ -37,6 +37,14 @@ function createWindow() {
   });
 
   win.setMenuBarVisibility(false);
+
+  // 창 제목줄에 앱 버전을 붙인다 (예: "매니온 | 예약관리프로그램  v1.0.2").
+  // 웹 페이지 제목이 바뀔 때마다 그대로 덮어쓰지 않고 버전을 덧붙여 설정한다.
+  win.on("page-title-updated", (event, title) => {
+    event.preventDefault();
+    const base = !title || title.startsWith("data:") ? "예약관리" : title;
+    win.setTitle(`${base}  v${app.getVersion()}`);
+  });
 
   // 앱 도메인 밖으로 나가는 링크(외부 사이트 등)는 창 안이 아니라
   // 기본 브라우저에서 열리도록 한다.

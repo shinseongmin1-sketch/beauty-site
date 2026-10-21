@@ -1,6 +1,6 @@
 {
   "name": "beauty-site-crm-desktop",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "예약관리 CRM 데스크톱 앱 (app.manion.kr을 감싼 Electron 클라이언트)",
   "main": "main.js",
   "scripts": {
