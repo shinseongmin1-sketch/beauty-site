@@ -73,3 +73,21 @@ document.querySelectorAll('.tile, .step, .pricing-card, .industry-item').forEach
   el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
   observer.observe(el);
 });
+
+// Windows 프로그램 다운로드: GitHub 최신 Release의 설치 파일(.exe)로 바로 연결한다.
+// 조회에 실패하면 버튼은 Release 페이지로 연결된 그대로 둔다.
+(function () {
+  const btn = document.querySelector('[data-win-download]');
+  if (!btn) return;
+  fetch('https://api.github.com/repos/shinseongmin1-sketch/beauty-site/releases/latest')
+    .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then(rel => {
+      const exe = (rel.assets || []).find(a => /\.exe$/i.test(a.name));
+      if (!exe) return;
+      btn.href = exe.browser_download_url;
+      const meta = document.querySelector('[data-win-meta]');
+      const mb = Math.round(exe.size / 1024 / 1024);
+      if (meta) meta.textContent = `${rel.tag_name} · 약 ${mb}MB · Windows 10 · 11 (64비트)`;
+    })
+    .catch(() => {});
+})();

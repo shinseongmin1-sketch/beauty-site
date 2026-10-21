@@ -718,6 +718,10 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 }
 .device-card h3 { font-size: 18px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
 .device-card p { font-size: 14px; color: var(--muted); }
+.btn-download { margin-top: 20px; padding: 13px 22px; font-size: 15px; }
+.btn-download .icon { width: 18px; height: 18px; }
+.device-card .download-meta { margin-top: 10px; font-size: 13px; }
+.device-card .download-note { margin-top: 6px; font-size: 12px; line-height: 1.6; }
 
 /* 요금 */
 .pricing { background: var(--card); }
