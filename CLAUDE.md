@@ -12,6 +12,7 @@
 - 사용자가 미리보기 확인 후 "운영 배포" 승인 → dev를 master에 합쳐 push = manion.kr 반영. master에 직접 수정 금지.
 - CRM은 GitHub 미연동이라 이 흐름에 해당 없음(별도 개발 미리보기 필요 시 따로 마련).
 - 홈페이지 구조(dev `226a7e0`부터, 운영 미배포): 메인 `index.html` + `features/pricing/review/faq/support.html`. 헤더·푸터·아이콘 스프라이트가 6개 파일에 **똑같이 복사**돼 있으므로 메뉴·푸터 수정 시 6개 모두 고친다. 현재 메뉴는 `class="active"`로 표시.
+- dev 운영 미배포분(2026-10-21): 홈페이지 메뉴별 페이지 분리, 새로고침 시 맨 위, 상단 원격지원 메뉴 삭제, **CRM 홈 화면 앱(PWA: manifest·아이콘·apple meta, `crm/` 변경 포함)** + 홈페이지 "스마트폰·태블릿 앱" 안내. 배포 순서(승인 후): dev→master push(홈페이지 반영) → **같은 master로 CRM API 배포**(앱 안내 문구가 CRM 배포 없이 나가면 안 됨) → manion.kr·app.manion.kr/manifest.webmanifest 확인. 결제 브랜치는 나중에 master를 병합해 PWA 변경을 받는다.
 - (2026-10-21 운영 배포 완료) dev에 쌓였던 것: 새 로고·파비콘, CRM 기준 문구 개편, Windows 다운로드 버튼(최신 Release .exe 자동 연결), 데스크톱 v1.0.3(이름 매니온·새 아이콘·`Manion-Setup-<버전>.exe`·userData는 `%APPDATA%\예약관리` 고정). 배포 순서(승인 후): dev→master 병합 push → Actions `Desktop release` 실행 → latest.yml·exe 확인 → 사용자 PC에서 업데이트 후 로그인 유지·바로가기 이름 확인.
 
 ## 작업 규칙 (사용자 지시)
