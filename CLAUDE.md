@@ -78,7 +78,7 @@
   - ✅ 2026-10-20 이름표 교체 확인: 운영 이름 URL·ANON·SERVICE_ROLE = `gmnw…`(서울), TEST 이름 = `evrg…`(뭄바이). 새 세션에서도 ref 앞 4글자만 비교해 재확인. 단 뭄바이는 ⑤ 전까지 운영 백업이므로 `db:reset:test`·`test:e2e`·`db:migrate:test` 등 테스트 DB를 쓰는 명령은 여전히 금지.
   - SUPABASE_TEST_ACCESS_TOKEN은 2026-10-20 기준 "Invalid access token"(만료/불량). 뭄바이 조회는 SUPABASE_MGMT_TOKEN_MUMBAI 사용.
   - Supabase 관리 토큰: SUPABASE_MGMT_TOKEN_SEOUL(서울=운영, 읽기+쓰기), SUPABASE_MGMT_TOKEN_MUMBAI(뭄바이, 읽기 전용)
-  - 기타: NEXT_PUBLIC_TOSS_CLIENT_KEY / TOSS_SECRET_KEY (test_ 키), BACKUP_ENCRYPTION_KEY (33바이트 불량값일 수 있음, 운영 백업 전 확인), BUSINESS_NUMBER_PEPPER, VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID (CRM 프로젝트)
+  - 기타: NEXT_PUBLIC_TOSS_CLIENT_KEY / TOSS_SECRET_KEY (test_ 키), BACKUP_ENCRYPTION_KEY (2026-10-21 정상 32바이트 확인), BUSINESS_NUMBER_PEPPER, VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID (CRM 프로젝트)
   - 없음: 정기결제 env 4개. SUPABASE_PROD_ACCESS_TOKEN은 서울(현 운영)만 보이는 토큰이라 이름이 맞게 됨(있다면 운영 migration에 사용 가능, 사용 전 대상 ref 확인)
 - crm/.env.local, crm/.env.test 파일은 없다. 필요하면 위 환경 변수로 세션 안에서만 만들고 절대 커밋하지 않는다.
 - 현재 VERCEL_TOKEN은 Vercel CLI에서 실패한다(User not found / Could not retrieve Project Settings). API는 정상 → CRM 배포는 `git archive origin/master crm | tar -x -C <dir>` 후 `node crm/scripts/vercel-api-deploy.mjs <dir>/crm` (production 배포, READY까지 대기). 배포 전 운영 배포 ID 기록. 네트워크는 Full.
@@ -91,6 +91,11 @@
 - 추천 우선순위:
   1. 도메인 5번 마무리: 사용자 PC 제목줄에 v1.0.2 표시 확인 (1~4번 완료)
   2. 저장소 비공개 전환 검토 (데스크톱 앱 EXE가 GitHub Release에 있어서, 다운로드 링크 영향부터 확인)
-  3. 정기결제 운영 적용 준비: 사용자 준비물(토스 빌링 계약·실키, 개인정보처리방침·약관·환불정책) 진행 확인 → 준비되면 테스트 DB 재검증 → 운영 백업 → 012~017 적용 → 배포
+  3. 정기결제 운영 적용 준비 — **2026-10-21 사용자 지시로 보류.** 지금은 홈페이지·CRM 수정을 먼저 한다. 사용자가 정기결제·유료화·실결제·정책 페이지 공개 이야기를 꺼내거나, 이 일이 필요한 작업(정기결제 배포, 정책 페이지 master 반영, 결제 관련 수정)을 할 때 **반드시 먼저 아래 준비물을 한 번 상기시킨다.**
+     - 토스 빌링 계약·실키 (계약 명의 = 약관 운영 회사와 같아야 함)
+     - 약관·개인정보처리방침·환불정책 빈칸: 운영 회사 = (주)넥스트정보기술(사용자 확인). 남은 것: 대표자명(사업자등록증의 대표이사), 사업자등록번호, 통신판매업 신고번호(미신고면 신고 필요), 사업장 주소, 문의 이메일, 개인정보 보호책임자 성명·직책(사용자 본인 가능), 시행일, 무료체험 기록 보관기간(예시 3년)
+     - Claude가 고칠 것: privacy.html 저장 위치 "인도(뭄바이)" → "대한민국(서울)", 서버 처리 지역도 서울로
+     - 이후 순서: 테스트 DB 재검증 → 당일 운영 백업 → 012~017 적용 → 배포
+  - 운영 백업: 2026-10-21 04:58 UTC 운영(서울) 백업 완료(CRM 테이블 + auth 비밀번호 해시 별도 파일, 암호화, 복호화 대조 일치), 파일은 사용자에게 전달(저장소엔 없음). BACKUP_ENCRYPTION_KEY는 현재 정상 32바이트.
   4. 미착수 제안: 체험 남용 방지(사업자번호 검증·이메일 인증), 홈페이지 다운로드 메뉴, review_required 관리자 화면
 - 사용자 준비물이 없어서 막힌 단계는 건너뛰고, 할 수 있는 다음 단계를 추천한다.
