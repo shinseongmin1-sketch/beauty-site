@@ -25,7 +25,7 @@
 2. ~~Supabase 운영 Auth Redirect URL·Site URL~~ (2026-10-20 완료. Site URL = `https://app.manion.kr`, 허용 목록 = `https://app.manion.kr/**`, `https://beauty-site-crm.vercel.app/**`)
 3. ~~CRM `NEXT_PUBLIC_APP_URL` → `https://app.manion.kr` 후 master 기준 재배포~~ (2026-10-20 완료. 사용자가 재설정 메일 → app.manion.kr/reset-password → 변경 → 로그인 확인). 앞으로도 CRM 운영 배포는 **반드시 master 기준**(git archive + API 배포 스크립트). 이 결제 브랜치에서 배포하면 미적용 결제 코드가 운영에 올라감.
 4. ~~홈페이지 `app.js`의 `CRM_APP_URL` → `https://app.manion.kr`~~ (2026-10-20 완료, master `c94c352`, 사용자 확인)
-5. 데스크톱 앱 새 버전 — 2026-10-21 v1.0.1 Release 공개(app.manion.kr 열기, 옛 주소도 창 안 허용, origin 정확 비교). 남은 것: 사용자 PC에서 자동 업데이트 적용·동작 확인. 옛 주소 `beauty-site-crm.vercel.app`은 v1.0.0이 남아 있는 동안 유지.
+5. 데스크톱 앱 새 버전 — 2026-10-21 v1.0.1 Release 공개(app.manion.kr 열기, 옛 주소도 창 안 허용, origin 정확 비교), 이어서 v1.0.2(창 제목줄에 "  v<버전>" 표시). 남은 것: 사용자 PC 제목줄에 v1.0.2가 보이는지 확인(= 자동 업데이트 동작 확인). 옛 주소 `beauty-site-crm.vercel.app`은 v1.0.0이 남아 있는 동안 유지.
    - 배포 방법: master에 버전 올린 뒤 GitHub Actions `Desktop release`(.github/workflows/desktop-release.yml, 수동 실행, windows-latest) 실행 → `--publish never` 빌드 후 gh로 exe·blockmap 업로드, latest.yml 마지막. electron-builder 자체 publish는 Release 중복 생성 422로 실패했었음.
    - 보류(사용자 지시): 업데이트 알림/"지금 재시작" 버튼, 업데이트 적용 시간대(새벽) 검토. 현재는 백그라운드 다운로드 → 앱 재시작 시 적용(업무 중 강제 재시작 없음).
 
@@ -35,6 +35,7 @@
 - 2026-10-20: 도메인 2·3번. Supabase 운영 Site URL·Vercel production `NEXT_PUBLIC_APP_URL`을 `beauty-site-crm.vercel.app` → `https://app.manion.kr`로 변경 후 같은 master `3d5dba6` 재배포 = CRM 운영 배포 `dpl_6KEpLn8RSFEgZ31u2pcJm51eu8Co` (icn1, app.manion.kr·옛 주소 모두 연결). 롤백: 두 값을 옛 주소로 되돌리고 `dpl_82kJZVrJRjfKMFAzcuyCGEAW96jJ` 승격. 재설정 메일(영어 기본 문구)로 비밀번호 변경·로그인 사용자 확인.
 - 2026-10-20: 도메인 4번. 홈페이지 master `c94c352` (`app.js` CRM_APP_URL → app.manion.kr), manion.kr 반영·사용자 확인.
 - 2026-10-21: 데스크톱 앱 v1.0.1. master `0b969f5`(코드)·`b30bd62`(워크플로 수정), GitHub Release v1.0.1(태그 → `0b969f5`, desktop-app 코드는 두 커밋 동일). latest.yml sha512·크기 = 실제 exe 확인. 롤백: Release v1.0.1 삭제 시 설치된 앱은 v1.0.0 유지(이미 업데이트된 앱은 되돌아가지 않음 → 고칠 땐 v1.0.2로).
+- 2026-10-21: 데스크톱 앱 v1.0.2 (master `b9c7e09`, 제목줄 버전 표시). Release v1.0.2 = latest, latest.yml sha512·크기 = 실제 exe 확인. 다음 버전은 v1.0.3.
 - 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간)을 채우고 사용자 승인 후 master에 반영.
 
 ## 장애 기록
@@ -88,7 +89,7 @@
 - 사용자는 비개발자다. 매 작업이 끝나면 "다음 추천 단계"를 1개 제안한다. 왜 필요한지, 사용자가 할 일(있다면)을 쉬운 한국어로 짧게 쓴다.
 - 운영에 영향이 있는 작업(운영 DB, 배포, master push, Vercel/Supabase 설정)은 실행 전에 무엇이 바뀌는지 알리고 "진행할까요?"로 승인을 받는다. 그 외(코드 수정, 테스트, 작업 브랜치 커밋·push)는 요청받으면 바로 한다.
 - 추천 우선순위:
-  1. 도메인 5번 마무리: 사용자 PC에서 데스크톱 앱 v1.0.1 적용 확인 (1~4번 완료)
+  1. 도메인 5번 마무리: 사용자 PC 제목줄에 v1.0.2 표시 확인 (1~4번 완료)
   2. 저장소 비공개 전환 검토 (데스크톱 앱 EXE가 GitHub Release에 있어서, 다운로드 링크 영향부터 확인)
   3. 정기결제 운영 적용 준비: 사용자 준비물(토스 빌링 계약·실키, 개인정보처리방침·약관·환불정책) 진행 확인 → 준비되면 테스트 DB 재검증 → 운영 백업 → 012~017 적용 → 배포
   4. 미착수 제안: 체험 남용 방지(사업자번호 검증·이메일 인증), 홈페이지 다운로드 메뉴, review_required 관리자 화면
