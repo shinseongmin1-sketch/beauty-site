@@ -7,6 +7,11 @@
 - `crm/`: 예약관리 CRM (Next.js 16 + Supabase + 토스페이먼츠). Vercel 프로젝트 `beauty-site-crm`, GitHub 미연동(CLI 배포만), 서버 리전 icn1(서울, 2026-10-20 bom1에서 변경).
 - `desktop-app/`: CRM 웹을 여는 Electron 앱. 주소가 `main.js`에 고정됨.
 
+## 홈페이지 개발 → 운영 흐름 (2026-10-21 사용자 지시)
+- 홈페이지 수정은 `dev` 브랜치(master에서 분기)에서만 한다. push하면 Vercel 미리보기 `https://beauty-site-git-dev-shinseongmin1-1180s-projects.vercel.app`(Vercel 로그인 필요)에 자동 반영. 같은 커밋만 있는 새 브랜치는 Vercel이 빌드하지 않음.
+- 사용자가 미리보기 확인 후 "운영 배포" 승인 → dev를 master에 합쳐 push = manion.kr 반영. master에 직접 수정 금지.
+- CRM은 GitHub 미연동이라 이 흐름에 해당 없음(별도 개발 미리보기 필요 시 따로 마련).
+
 ## 작업 규칙 (사용자 지시)
 - 수정·커밋·push·배포·운영 접근은 사용자가 단계별로 지시할 때만 한다.
 - 홈페이지는 사용자 승인 없이 수정하지 않는다. 기본 작업 범위는 `crm/`.
