@@ -33,9 +33,10 @@ SmartScreen이 "PC를 보호했습니다" 경고를 띄울 수 있다 — "추�
 1. `package.json`(과 `package-lock.json`)의 `version`을 올린다 (예: 1.0.1 → 1.0.2)
 2. master에 반영한다.
 3. GitHub Actions의 **Desktop release** 워크플로를 수동 실행(Run workflow)한다.
-   윈도우 러너가 `npm ci` → `electron-builder --win --publish always`로 설치파일을
-   만들고, Release `v<버전>`(설치파일 + `.blockmap` + `latest.yml`)을 바로 공개한다.
-   같은 버전 Release가 이미 있으면 실패하므로 반드시 버전을 먼저 올린다.
+   윈도우 러너가 `npm ci` → `electron-builder --win --publish never`로 설치파일을
+   만들고, `gh`로 Release `v<버전>`에 설치파일 + `.blockmap`을 올린 뒤 `latest.yml`을
+   마지막에 올린다. 같은 버전 Release에 `latest.yml`이 이미 있으면 실패하므로 버전을
+   먼저 올린다. (중간에 실패해 일부만 올라간 Release는 다시 실행하면 이어서 채운다.)
    - PC에서 직접 할 때: `npm run dist` 후 `gh release create v<버전>`으로 위 파일 3개를 올린다.
 4. 이미 설치되어 있는 프로그램들은 실행 중 자동으로(최대 4시간 안에) 새
    버전을 감지해서 백그라운드로 내려받고, 사용자가 프로그램을 재시작하면

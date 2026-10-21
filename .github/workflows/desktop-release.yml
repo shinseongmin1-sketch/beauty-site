@@ -27,21 +27,40 @@ jobs:
           cache: npm
           cache-dependency-path: desktop-app/package-lock.json
 
-      - name: Stop if this version is already released
+      - name: Stop if this version is already fully released
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="v$(node -p "require('./package.json').version")"
-          echo "version: $VERSION"
-          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "::error::Release $VERSION already exists. Bump desktop-app/package.json version first."
+          TAG="v$(node -p "require('./package.json').version")"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name' 2>/dev/null | grep -qx latest.yml; then
+            echo "::error::Release $TAG already has latest.yml. Bump desktop-app/package.json version first."
             exit 1
           fi
 
       - run: npm ci
 
-      - name: Build installer and publish release
-        run: npx electron-builder --win --publish always
+      # electron-builder의 자체 업로드는 파일들을 동시에 올리며 Release를 중복 생성하다
+      # 실패할 수 있어, 빌드만 하고 업로드는 아래에서 gh로 순서대로 한다.
+      - name: Build installer
+        run: npx electron-builder --win --publish never
+
+      - name: Publish release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          V="${TAG#v}"
+          EXE="dist/yeyakgwanri-Setup-$V.exe"
+          ls -l "$EXE" "$EXE.blockmap" dist/latest.yml
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "예약관리 데스크톱 $TAG" --notes "예약관리 데스크톱 앱 $TAG"
+          fi
+          # 설치파일을 먼저 올리고 latest.yml을 마지막에 올린다.
+          # (설치된 앱은 latest.yml을 보고 업데이트하므로, 파일이 다 올라간 뒤에 보이게 한다)
+          gh release upload "$TAG" "$EXE" "$EXE.blockmap" --clobber --repo "$GITHUB_REPOSITORY"
+          gh release upload "$TAG" dist/latest.yml --clobber --repo "$GITHUB_REPOSITORY"
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "예약관리 데스크톱 $TAG"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name'
