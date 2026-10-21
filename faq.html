@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자주 묻는 질문 - 매니온</title>
+  <meta name="description" content="무료체험, 요금, 직원 계정, 고객 정보 가져오기 등 매니온에 대해 자주 묻는 질문.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+</head>
+<body>
+
+<!-- 아이콘 스프라이트 (화면에는 안 보이고 <use>로 재사용) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logo-mark" viewBox="0 0 32 32"><rect x="1" y="4" width="30" height="27" rx="8" fill="#3B73E8"/><rect x="8.4" y="1.2" width="3.4" height="7.2" rx="1.7" style="fill:var(--logo-ring,#172A46)"/><rect x="20.2" y="1.2" width="3.4" height="7.2" rx="1.7" style="fill:var(--logo-ring,#172A46)"/><path d="M9.5 24.5v-8a3.25 3.25 0 0 1 6.5 0v8M16 16.5a3.25 3.25 0 0 1 6.5 0v8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.3a3 3 0 0 1 0 5.8"/><path d="M18.5 14.3c1.8.7 3 2.4 3 5.7"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7"/><path d="M3 20h18"/></symbol>
+    <symbol id="i-team" viewBox="0 0 24 24"><circle cx="8.5" cy="8" r="2.7"/><circle cx="16" cy="9" r="2.2"/><path d="M3 20c0-3 2.5-5.3 5.5-5.3S14 17 14 20"/><path d="M14.5 15.2c2.6.2 4.5 2.2 4.5 4.8"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 0 0 4v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-4V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/><path d="M14 5.5v13" stroke-dasharray="2 2"/></symbol>
+    <symbol id="i-notebook" viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.2h2"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16" rx="2"/><rect x="9" y="2.5" width="6" height="3.5" rx="1"/><path d="M8.5 12l2 2 4.5-4.5"/></symbol>
+    <symbol id="i-headset" viewBox="0 0 24 24"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/><path d="M19 19v1a2 2 0 0 1-2 2h-3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-phone-call" viewBox="0 0 24 24"><path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M9 20.5h6M12 16.5v4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v11M8 11l4 4 4-4"/><path d="M4.5 17v2.5A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V17"/></symbol>
+    <!-- 업종 아이콘 -->
+    <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="7" cy="9" r="1.6"/><circle cx="12" cy="6.5" r="1.6"/><circle cx="17" cy="9" r="1.6"/><path d="M8 15.5c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 3.5-4 3.5-4-1.3-4-3.5z"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.2"/><circle cx="6" cy="17.5" r="2.2"/><path d="M7.6 8L19 19M7.6 16L19 5"/></symbol>
+    <symbol id="i-nail" viewBox="0 0 24 24"><path d="M8 20c-.5-5 .5-9 4-15 3.5 6 4.5 10 4 15a4 4 0 0 1-8 0z"/></symbol>
+    <symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 3.5s6 6.8 6 11a6 6 0 0 1-12 0c0-4.2 6-11 6-11z"/></symbol>
+    <symbol id="i-massage" viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><path d="M6 20c0-4 2.5-6.5 6-6.5s6 2.5 6 6.5"/><path d="M8 13.5l-3-3M16 13.5l3-3"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M3 10v4M6 8v8M18 8v8M21 10v4"/><path d="M6 12h12"/></symbol>
+    <symbol id="i-razor" viewBox="0 0 24 24"><rect x="4" y="10" width="12" height="5" rx="1.5"/><path d="M16 12.5H21M8 15v4M12 15v4"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></symbol>
+  </defs>
+</svg>
+
+<!-- 헤더 -->
+<header class="header" id="header">
+  <div class="container">
+    <a href="./" class="logo">
+      <span class="logo-mark"><svg aria-hidden="true"><use href="#logo-mark"/></svg></span>
+      <span class="logo-text">매니온</span>
+    </a>
+    <nav class="nav">
+      <a href="features.html">기능소개</a>
+      <a href="pricing.html">요금안내</a>
+      <a href="review.html">이용후기</a>
+      <a href="faq.html" class="active" aria-current="page">자주묻는질문</a>
+      <a href="support.html#support">고객센터</a>
+      <a href="support.html#remote">원격지원</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="#" class="btn-text" data-crm-link="login">로그인</a>
+      <a href="#" class="btn-outline" data-crm-link="signup">회원가입</a>
+      <a href="#" class="btn-primary-sm" data-crm-link="signup">3개월 무료체험</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="메뉴 열기">
+      <svg class="icon"><use href="#i-menu"/></svg>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="features.html">기능소개</a>
+    <a href="pricing.html">요금안내</a>
+    <a href="review.html">이용후기</a>
+    <a href="faq.html" class="active" aria-current="page">자주묻는질문</a>
+    <a href="support.html#support">고객센터</a>
+    <a href="support.html#remote">원격지원</a>
+    <div class="mobile-menu-actions">
+      <a href="#" class="btn-outline" data-crm-link="login">로그인</a>
+      <a href="#" class="btn-primary-sm" data-crm-link="signup">3개월 무료체험</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<!-- FAQ -->
+<section class="faq page-top" id="faq">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">자주 묻는 질문</span>
+      <h2>궁금한 점이 있으신가요?</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>무료체험은 어떻게 시작하나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">홈페이지에서 회원가입 후 매장 정보를 입력하시면 바로 3개월 무료체험이 시작됩니다. 카드 등록 없이 바로 시작할 수 있습니다. 무료체험은 사업장(사업자등록번호)당 최초 1회 제공됩니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>무료체험 기간은 얼마인가요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">가입일로부터 3개월간 모든 기능을 무료로 이용하실 수 있습니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>월간 결제와 연간 결제의 차이는 무엇인가요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">월간 이용권은 10,000원(1개월), 연간 이용권은 110,000원(12개월)이며 모두 부가세 포함 금액입니다. 연간 이용권은 월 환산 약 9,167원으로, 월간 이용권을 12개월 이용하실 때(120,000원)보다 10,000원 저렴합니다. 결제 주기만 다를 뿐 이용 가능한 기능은 동일합니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>무료체험이 끝나면 자동으로 결제되나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">자동으로 결제되지 않습니다. 카드 등록 없이 시작하기 때문에 체험이 끝나도 결제가 발생하지 않으며, 등록된 데이터 조회와 내보내기는 계속 이용하실 수 있습니다. 유료 이용을 원하시면 고객센터로 문의해주세요.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>예약프로그램은 어떤 업종에서 사용할 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">애견샵, 미용실, 네일샵, 피부샵, 마사지샵, 속눈썹샵, PT샵, 왁싱샵 등 예약을 받는 모든 매장에서 사용하실 수 있습니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>여러 명의 직원이 함께 사용할 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">네, 직원을 담당자로 등록해 예약을 배정할 수 있고, 초대 링크를 보내 직원 계정을 만들면 함께 로그인해 사용할 수 있습니다. 대표·관리자·직원으로 권한을 나눌 수 있어, 직원에게는 업무에 필요한 메뉴만 보이게 할 수 있습니다. 월간·연간 이용권 모두 동일하게 제공됩니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>기존 고객 정보를 옮길 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">네, 기존에 쓰던 고객 명단을 CSV 파일(엑셀에서 저장 가능)로 한 번에 가져올 수 있습니다. 가져오기 전에 신규 등록·기존 고객 업데이트 내역을 미리 확인할 수 있고, 어려우시면 고객센터로 문의해주세요.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>고객에게 예약 안내 문자를 보낼 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">문자·카카오 알림톡 발송 기능은 준비 중입니다. 지금은 알림 문구와 발송 대상을 미리 등록해 둘 수 있고, 발송 기능이 연결되면 안내해드리겠습니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>프로그램 사용 중 문제가 생기면 어떻게 하나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">고객센터 문의 또는 원격지원 신청을 통해 도움을 받으실 수 있습니다. <a href="support.html#remote">원격지원 안내</a>를 참고해주세요.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>원격지원은 어떻게 받을 수 있나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a"><a href="support.html#remote">원격지원 페이지</a>에서 신청하시면 담당자 안내에 따라 원격지원 프로그램으로 빠르게 문제를 해결해드립니다.</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q"><span>유료 이용 해지와 환불은 어떻게 하나요?</span><svg class="icon faq-arrow"><use href="#i-chevron"/></svg></div>
+        <div class="faq-a">해지 및 환불 기준은 유료 결제 방식과 함께 별도 정책으로 안내해드릴 예정입니다. 현재는 고객센터로 문의해주세요.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 마지막 CTA -->
+<section class="final-cta">
+  <div class="container">
+    <h2>대표님의 매장 운영, 이제 더 편리하게 시작해보세요</h2>
+    <p>예약과 고객관리를 한곳에서 관리하고 매장 운영에 더 집중해보세요.</p>
+    <div class="hero-buttons final-cta-buttons">
+      <a href="#" class="btn-primary" data-crm-link="signup">3개월 무료로 시작하기</a>
+      <a href="pricing.html" class="btn-secondary btn-secondary-dark">요금제 확인하기</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- 푸터 -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-logo">
+        <span class="logo"><span class="logo-mark"><svg aria-hidden="true"><use href="#logo-mark"/></svg></span><span class="logo-text">매니온</span></span>
+        <p>예약과 고객관리를 한곳에서</p>
+      </div>
+      <div class="footer-links">
+        <div>
+          <strong>서비스</strong>
+          <a href="features.html">기능소개</a>
+          <a href="pricing.html">요금안내</a>
+          <a href="review.html">이용후기</a>
+          <a href="faq.html">자주 묻는 질문</a>
+          <a href="./#devices">Windows 프로그램 다운로드</a>
+        </div>
+        <div>
+          <strong>지원</strong>
+          <a href="support.html#remote">원격지원</a>
+          <a href="support.html#support">고객센터</a>
+        </div>
+        <div>
+          <strong>정책</strong>
+          <a href="#">이용약관</a>
+          <a href="#">개인정보처리방침</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 매니온. All rights reserved.</p>
+      <div>
+        <a href="#">개인정보처리방침</a>
+        <a href="#">이용약관</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

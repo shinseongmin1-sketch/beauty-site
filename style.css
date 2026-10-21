@@ -116,6 +116,7 @@ a { color: inherit; }
 }
 
 .nav a:hover { color: var(--blue); }
+.nav a.active, .mobile-menu a.active { color: var(--blue); }
 
 .nav-actions {
   display: flex;
@@ -241,6 +242,9 @@ a { color: inherit; }
 /* 섹션 공통 */
 section { padding: 96px 0; }
 section[id], main > section, #support, #top { scroll-margin-top: 88px; }
+section.page-top { padding-top: 150px; }
+.tiles-more { text-align: center; margin-top: 36px; }
+.tiles-more .icon { width: 18px; height: 18px; }
 
 .section-header {
   text-align: center;

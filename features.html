@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기능소개 - 매니온</title>
+  <meta name="description" content="예약관리, 고객관리, 매출·통계, 직원·권한 관리 등 매니온의 기능을 자세히 소개합니다.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+</head>
+<body>
+
+<!-- 아이콘 스프라이트 (화면에는 안 보이고 <use>로 재사용) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logo-mark" viewBox="0 0 32 32"><rect x="1" y="4" width="30" height="27" rx="8" fill="#3B73E8"/><rect x="8.4" y="1.2" width="3.4" height="7.2" rx="1.7" style="fill:var(--logo-ring,#172A46)"/><rect x="20.2" y="1.2" width="3.4" height="7.2" rx="1.7" style="fill:var(--logo-ring,#172A46)"/><path d="M9.5 24.5v-8a3.25 3.25 0 0 1 6.5 0v8M16 16.5a3.25 3.25 0 0 1 6.5 0v8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.3a3 3 0 0 1 0 5.8"/><path d="M18.5 14.3c1.8.7 3 2.4 3 5.7"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7"/><path d="M3 20h18"/></symbol>
+    <symbol id="i-team" viewBox="0 0 24 24"><circle cx="8.5" cy="8" r="2.7"/><circle cx="16" cy="9" r="2.2"/><path d="M3 20c0-3 2.5-5.3 5.5-5.3S14 17 14 20"/><path d="M14.5 15.2c2.6.2 4.5 2.2 4.5 4.8"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 0 0 4v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-4V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/><path d="M14 5.5v13" stroke-dasharray="2 2"/></symbol>
+    <symbol id="i-notebook" viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.2h2"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16" rx="2"/><rect x="9" y="2.5" width="6" height="3.5" rx="1"/><path d="M8.5 12l2 2 4.5-4.5"/></symbol>
+    <symbol id="i-headset" viewBox="0 0 24 24"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/><path d="M19 19v1a2 2 0 0 1-2 2h-3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-phone-call" viewBox="0 0 24 24"><path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4.5 6.2 2 2 0 0 1 6.5 4z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M9 20.5h6M12 16.5v4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v11M8 11l4 4 4-4"/><path d="M4.5 17v2.5A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V17"/></symbol>
+    <!-- 업종 아이콘 -->
+    <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="7" cy="9" r="1.6"/><circle cx="12" cy="6.5" r="1.6"/><circle cx="17" cy="9" r="1.6"/><path d="M8 15.5c0-2.2 1.8-4 4-4s4 1.8 4 4-1.8 3.5-4 3.5-4-1.3-4-3.5z"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.2"/><circle cx="6" cy="17.5" r="2.2"/><path d="M7.6 8L19 19M7.6 16L19 5"/></symbol>
+    <symbol id="i-nail" viewBox="0 0 24 24"><path d="M8 20c-.5-5 .5-9 4-15 3.5 6 4.5 10 4 15a4 4 0 0 1-8 0z"/></symbol>
+    <symbol id="i-droplet" viewBox="0 0 24 24"><path d="M12 3.5s6 6.8 6 11a6 6 0 0 1-12 0c0-4.2 6-11 6-11z"/></symbol>
+    <symbol id="i-massage" viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><path d="M6 20c0-4 2.5-6.5 6-6.5s6 2.5 6 6.5"/><path d="M8 13.5l-3-3M16 13.5l3-3"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M3 10v4M6 8v8M18 8v8M21 10v4"/><path d="M6 12h12"/></symbol>
+    <symbol id="i-razor" viewBox="0 0 24 24"><rect x="4" y="10" width="12" height="5" rx="1.5"/><path d="M16 12.5H21M8 15v4M12 15v4"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></symbol>
+  </defs>
+</svg>
+
+<!-- 헤더 -->
+<header class="header" id="header">
+  <div class="container">
+    <a href="./" class="logo">
+      <span class="logo-mark"><svg aria-hidden="true"><use href="#logo-mark"/></svg></span>
+      <span class="logo-text">매니온</span>
+    </a>
+    <nav class="nav">
+      <a href="features.html" class="active" aria-current="page">기능소개</a>
+      <a href="pricing.html">요금안내</a>
+      <a href="review.html">이용후기</a>
+      <a href="faq.html">자주묻는질문</a>
+      <a href="support.html#support">고객센터</a>
+      <a href="support.html#remote">원격지원</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="#" class="btn-text" data-crm-link="login">로그인</a>
+      <a href="#" class="btn-outline" data-crm-link="signup">회원가입</a>
+      <a href="#" class="btn-primary-sm" data-crm-link="signup">3개월 무료체험</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="메뉴 열기">
+      <svg class="icon"><use href="#i-menu"/></svg>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="features.html" class="active" aria-current="page">기능소개</a>
+    <a href="pricing.html">요금안내</a>
+    <a href="review.html">이용후기</a>
+    <a href="faq.html">자주묻는질문</a>
+    <a href="support.html#support">고객센터</a>
+    <a href="support.html#remote">원격지원</a>
+    <div class="mobile-menu-actions">
+      <a href="#" class="btn-outline" data-crm-link="login">로그인</a>
+      <a href="#" class="btn-primary-sm" data-crm-link="signup">3개월 무료체험</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+<!-- 주요 기능 상세 소개 -->
+<section class="feature-details page-top">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">기능 자세히 보기</span>
+      <h2>대표님의 매장 운영을 더 편리하게</h2>
+    </div>
+
+    <div class="feature-detail" id="feat-reservation">
+      <div class="feature-detail-text">
+        <span class="feature-detail-tag tile-blue">예약관리</span>
+        <h3>예약 현황을 한눈에 확인하세요</h3>
+        <p>월간 달력과 날짜별 일정표로 예약을 한눈에 보고,<br>담당자와 메뉴를 지정해 편리하게 등록·변경할 수 있습니다.</p>
+        <ul class="feature-detail-list">
+          <li><svg class="icon"><use href="#i-check"/></svg>월간 달력 · 날짜별 일정표</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>담당자·메뉴 지정, 소요시간 자동 계산</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>예약대기 · 방문완료 · 노쇼 · 취소 상태 관리</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>예약고객 검색 · 예약그룹·예약경로 구분</li>
+        </ul>
+      </div>
+      <div class="feature-detail-visual">
+        <div class="mini-app mini-calendar">
+          <div class="mini-app-head">📅 2026년 9월 <span>예약 캘린더</span></div>
+          <div class="mini-cal-grid">
+            <span></span><span></span><span></span><span class="today">17</span><span class="dot-day">18</span><span class="dot-day">19</span><span></span>
+          </div>
+          <div class="mini-list">
+            <div><b>09:00</b> 김지훈 <em class="chip chip-blue">완료</em></div>
+            <div><b>10:30</b> 이서연 <em class="chip chip-mint">진행중</em></div>
+            <div><b>13:30</b> 최지은 <em class="chip chip-orange">대기</em></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-detail reverse" id="feat-customer">
+      <div class="feature-detail-text">
+        <span class="feature-detail-tag tile-rose">고객관리</span>
+        <h3>고객 정보를 체계적으로 관리하세요</h3>
+        <p>고객 정보와 방문·상담 이력을 한곳에서 확인하고,<br>등급과 태그로 단골 고객을 체계적으로 관리할 수 있습니다.</p>
+        <ul class="feature-detail-list">
+          <li><svg class="icon"><use href="#i-check"/></svg>고객 정보 · 메모 등록</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>방문 · 예약 · 상담 이력</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>고객 등급 · 태그</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>재방문 관리 (30·60·90일 미방문 고객)</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>고객 명단 가져오기(CSV) · 내보내기</li>
+        </ul>
+      </div>
+      <div class="feature-detail-visual">
+        <div class="mini-app mini-customer">
+          <div class="mini-app-head">👤 고객관리</div>
+          <div class="mini-customer-row"><span class="avatar">김</span><div><b>김지훈</b><small>010-1234-5678 · 방문 8회</small></div></div>
+          <div class="mini-customer-row"><span class="avatar">이</span><div><b>이서연</b><small>010-2222-3333 · 방문 3회</small></div></div>
+          <div class="mini-customer-row"><span class="avatar">박</span><div><b>박민수</b><small>010-4444-5555 · 방문 12회</small></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-detail" id="feat-sales">
+      <div class="feature-detail-text">
+        <span class="feature-detail-tag tile-teal">매출·통계</span>
+        <h3>매장 운영 현황을 데이터로 확인하세요</h3>
+        <p>매출을 등록하면 기간별·결제방법별·담당자별·메뉴별로<br>자동으로 정리돼 매장 운영 현황을 한눈에 볼 수 있습니다.</p>
+        <ul class="feature-detail-list">
+          <li><svg class="icon"><use href="#i-check"/></svg>오늘 · 이번 주 · 이번 달 매출</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>일자별 매출 추이</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>결제방법별 · 담당자별 · 메뉴별 매출</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>매출 등록 · 매출 내역 조회</li>
+        </ul>
+      </div>
+      <div class="feature-detail-visual">
+        <div class="mini-app mini-stats">
+          <div class="mini-app-head">📊 매출·통계</div>
+          <div class="mini-stat-row"><span>오늘 매출</span><b>1,240,000원</b></div>
+          <div class="mini-stat-row"><span>이번 달 매출</span><b>28,400,000원</b></div>
+          <div class="mini-bars">
+            <span style="height:40%"></span><span style="height:65%"></span><span style="height:50%"></span>
+            <span style="height:80%"></span><span style="height:60%"></span><span style="height:90%"></span><span style="height:70%"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-detail reverse" id="feat-staff">
+      <div class="feature-detail-text">
+        <span class="feature-detail-tag tile-green">직원·권한 관리</span>
+        <h3>직원과 함께, 권한은 역할에 맞게</h3>
+        <p>직원을 담당자로 등록해 예약을 배정하고, 초대 링크로 직원 계정을 만들어<br>대표·관리자·직원 권한에 맞게 함께 사용할 수 있습니다.</p>
+        <ul class="feature-detail-list">
+          <li><svg class="icon"><use href="#i-check"/></svg>담당자별 예약 배정 · 일정 확인</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>초대 링크로 직원 계정 연결</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>대표 · 관리자 · 직원 권한 구분</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>담당자별 매출 현황</li>
+        </ul>
+      </div>
+      <div class="feature-detail-visual">
+        <div class="mini-app mini-staff">
+          <div class="mini-app-head">🧑‍💼 담당자 / 권한 관리</div>
+          <div class="mini-customer-row"><span class="avatar" style="background:#3B73E8">대</span><div><b>대표</b><small>오늘 예약 5건</small></div></div>
+          <div class="mini-customer-row"><span class="avatar" style="background:#0D9488">박</span><div><b>박수진 디자이너</b><small>오늘 예약 4건</small></div></div>
+          <div class="mini-customer-row"><span class="avatar" style="background:#8B5CF6">최</span><div><b>최유진 디자이너</b><small>오늘 예약 3건</small></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 마지막 CTA -->
+<section class="final-cta">
+  <div class="container">
+    <h2>대표님의 매장 운영, 이제 더 편리하게 시작해보세요</h2>
+    <p>예약과 고객관리를 한곳에서 관리하고 매장 운영에 더 집중해보세요.</p>
+    <div class="hero-buttons final-cta-buttons">
+      <a href="#" class="btn-primary" data-crm-link="signup">3개월 무료로 시작하기</a>
+      <a href="pricing.html" class="btn-secondary btn-secondary-dark">요금제 확인하기</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- 푸터 -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-logo">
+        <span class="logo"><span class="logo-mark"><svg aria-hidden="true"><use href="#logo-mark"/></svg></span><span class="logo-text">매니온</span></span>
+        <p>예약과 고객관리를 한곳에서</p>
+      </div>
+      <div class="footer-links">
+        <div>
+          <strong>서비스</strong>
+          <a href="features.html">기능소개</a>
+          <a href="pricing.html">요금안내</a>
+          <a href="review.html">이용후기</a>
+          <a href="faq.html">자주 묻는 질문</a>
+          <a href="./#devices">Windows 프로그램 다운로드</a>
+        </div>
+        <div>
+          <strong>지원</strong>
+          <a href="support.html#remote">원격지원</a>
+          <a href="support.html#support">고객센터</a>
+        </div>
+        <div>
+          <strong>정책</strong>
+          <a href="#">이용약관</a>
+          <a href="#">개인정보처리방침</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 매니온. All rights reserved.</p>
+      <div>
+        <a href="#">개인정보처리방침</a>
+        <a href="#">이용약관</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
