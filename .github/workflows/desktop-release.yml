@@ -1,4 +1,4 @@
-# 예약관리 데스크톱 앱(desktop-app/) 윈도우 설치파일을 만들어 GitHub Release로 공개한다.
+# 매니온 데스크톱 앱(desktop-app/) 윈도우 설치파일을 만들어 GitHub Release로 공개한다.
 # 수동 실행 전용. 실행 전에 desktop-app/package.json 의 version 을 올려 둘 것.
 name: Desktop release
 
@@ -52,15 +52,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           V="${TAG#v}"
-          EXE="dist/yeyakgwanri-Setup-$V.exe"
+          EXE="dist/Manion-Setup-$V.exe"
           ls -l "$EXE" "$EXE.blockmap" dist/latest.yml
           if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-              --title "예약관리 데스크톱 $TAG" --notes "예약관리 데스크톱 앱 $TAG"
+              --title "매니온 데스크톱 $TAG" --notes "매니온 데스크톱 앱 $TAG"
           fi
           # 설치파일을 먼저 올리고 latest.yml을 마지막에 올린다.
           # (설치된 앱은 latest.yml을 보고 업데이트하므로, 파일이 다 올라간 뒤에 보이게 한다)
           gh release upload "$TAG" "$EXE" "$EXE.blockmap" --clobber --repo "$GITHUB_REPOSITORY"
           gh release upload "$TAG" dist/latest.yml --clobber --repo "$GITHUB_REPOSITORY"
-          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "예약관리 데스크톱 $TAG"
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "매니온 데스크톱 $TAG"
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name'

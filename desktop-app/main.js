@@ -1,9 +1,15 @@
+const path = require("path");
 const { app, BrowserWindow, shell } = require("electron");
 const { autoUpdater } = require("electron-updater");
 
 autoUpdater.logger = console;
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
+
+// v1.0.3에서 프로그램 이름을 "예약관리" → "매니온"으로 바꿨다. Electron은 이름을 따라
+// 저장 폴더(%APPDATA%\<이름>)를 정하므로, 그대로 두면 업데이트 후 로그인이 풀린다.
+// 기존 폴더를 계속 쓰도록 고정한다. (app ready 전에 설정해야 함)
+app.setPath("userData", path.join(app.getPath("appData"), "예약관리"));
 
 const APP_URL = "https://app.manion.kr";
 
@@ -26,7 +32,7 @@ function createWindow() {
     height: 880,
     minWidth: 960,
     minHeight: 600,
-    title: `예약관리 v${app.getVersion()}`,
+    title: `매니온  v${app.getVersion()}`,
     autoHideMenuBar: true,
     backgroundColor: "#faf9fb",
     webPreferences: {
@@ -38,11 +44,11 @@ function createWindow() {
 
   win.setMenuBarVisibility(false);
 
-  // 창 제목줄에 앱 버전을 붙인다 (예: "매니온 | 예약관리프로그램  v1.0.2").
+  // 창 제목줄에 앱 버전을 붙인다 (예: "매니온 | 예약관리프로그램  v1.0.3").
   // 웹 페이지 제목이 바뀔 때마다 그대로 덮어쓰지 않고 버전을 덧붙여 설정한다.
   win.on("page-title-updated", (event, title) => {
     event.preventDefault();
-    const base = !title || title.startsWith("data:") ? "예약관리" : title;
+    const base = !title || title.startsWith("data:") ? "매니온" : title;
     win.setTitle(`${base}  v${app.getVersion()}`);
   });
 
