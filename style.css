@@ -703,7 +703,7 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 .devices { background: var(--card); }
 .devices-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 380px));
+  grid-template-columns: repeat(3, minmax(0, 360px));
   gap: 24px;
   justify-content: center;
 }
@@ -726,6 +726,9 @@ a.tile:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 .btn-download .icon { width: 18px; height: 18px; }
 .device-card .download-meta { margin-top: 10px; font-size: 13px; }
 .device-card .download-note { margin-top: 6px; font-size: 12px; line-height: 1.6; }
+.app-install-steps { list-style: none; margin: 16px 0 0; padding: 0; text-align: left; display: grid; gap: 8px; }
+.app-install-steps li { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.app-install-steps b { display: block; color: var(--navy); font-size: 13px; margin-bottom: 2px; }
 
 /* 요금 */
 .pricing { background: var(--card); }
