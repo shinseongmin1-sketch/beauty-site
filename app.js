@@ -8,6 +8,16 @@ document.querySelectorAll('[data-crm-link="signup"]').forEach(a => {
   a.href = `${CRM_APP_URL}/signup`;
 });
 
+// 새로고침하면 항상 맨 위에서 시작한다. (브라우저가 보던 위치를 기억해 중간으로 가는 것을 막음)
+// 다른 페이지에서 "#위치" 링크로 들어온 경우(새로고침이 아닌 경우)는 그 위치로 이동하는 기본 동작을 그대로 둔다.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+const navEntry = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+if (navEntry && navEntry.type === 'reload') {
+  const toTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  toTop();
+  window.addEventListener('load', toTop);
+}
+
 // 스크롤 시 헤더 그림자
 window.addEventListener('scroll', () => {
   document.getElementById('header').classList.toggle('scrolled', window.scrollY > 10);
