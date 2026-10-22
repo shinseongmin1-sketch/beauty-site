@@ -11,8 +11,8 @@
 - 홈페이지 수정은 `dev` 브랜치(master에서 분기)에서만 한다. push하면 Vercel 미리보기 `https://beauty-site-git-dev-shinseongmin1-1180s-projects.vercel.app`(Vercel 로그인 필요)에 자동 반영. 같은 커밋만 있는 새 브랜치는 Vercel이 빌드하지 않음.
 - 사용자가 미리보기 확인 후 "운영 배포" 승인 → dev를 master에 합쳐 push = manion.kr 반영. master에 직접 수정 금지.
 - CRM은 GitHub 미연동이라 이 흐름에 해당 없음(별도 개발 미리보기 필요 시 따로 마련).
-- 홈페이지 구조(dev `226a7e0`부터, 운영 미배포): 메인 `index.html` + `features/pricing/review/faq/support.html`. 헤더·푸터·아이콘 스프라이트가 6개 파일에 **똑같이 복사**돼 있으므로 메뉴·푸터 수정 시 6개 모두 고친다. 현재 메뉴는 `class="active"`로 표시.
-- dev 운영 미배포분(2026-10-21): 홈페이지 메뉴별 페이지 분리, 새로고침 시 맨 위, 상단 원격지원 메뉴 삭제, **CRM 홈 화면 앱(PWA: manifest·아이콘·apple meta, `crm/` 변경 포함)** + 홈페이지 "스마트폰·태블릿 앱" 안내. 배포 순서(승인 후): dev→master push(홈페이지 반영) → **같은 master로 CRM API 배포**(앱 안내 문구가 CRM 배포 없이 나가면 안 됨) → manion.kr·app.manion.kr/manifest.webmanifest 확인. 결제 브랜치는 나중에 master를 병합해 PWA 변경을 받는다.
+- 홈페이지 구조(2026-10-22 운영 반영): 메인 `index.html` + `features/pricing/review/faq/support.html`. 헤더·푸터·아이콘 스프라이트가 6개 파일에 **똑같이 복사**돼 있으므로 메뉴·푸터 수정 시 6개 모두 고친다. 현재 메뉴는 `class="active"`로 표시.
+- (2026-10-22 운영 배포 완료) 홈페이지 메뉴별 페이지 분리, 새로고침 시 맨 위, 상단 원격지원 메뉴 삭제, **CRM 홈 화면 앱(PWA: manifest·아이콘·apple meta, `crm/` 변경 포함)** + 홈페이지 "스마트폰·태블릿 앱" 안내. 배포 순서(승인 후): dev→master push(홈페이지 반영) → **같은 master로 CRM API 배포**(앱 안내 문구가 CRM 배포 없이 나가면 안 됨) → manion.kr·app.manion.kr/manifest.webmanifest 확인. 결제 브랜치는 나중에 master를 병합해 PWA 변경을 받는다.
 - (2026-10-21 운영 배포 완료) dev에 쌓였던 것: 새 로고·파비콘, CRM 기준 문구 개편, Windows 다운로드 버튼(최신 Release .exe 자동 연결), 데스크톱 v1.0.3(이름 매니온·새 아이콘·`Manion-Setup-<버전>.exe`·userData는 `%APPDATA%\예약관리` 고정). 배포 순서(승인 후): dev→master 병합 push → Actions `Desktop release` 실행 → latest.yml·exe 확인 → 사용자 PC에서 업데이트 후 로그인 유지·바로가기 이름 확인.
 
 ## 작업 규칙 (사용자 지시)
@@ -45,6 +45,7 @@
 - 2026-10-21: 데스크톱 앱 v1.0.1. master `0b969f5`(코드)·`b30bd62`(워크플로 수정), GitHub Release v1.0.1(태그 → `0b969f5`, desktop-app 코드는 두 커밋 동일). latest.yml sha512·크기 = 실제 exe 확인. 롤백: Release v1.0.1 삭제 시 설치된 앱은 v1.0.0 유지(이미 업데이트된 앱은 되돌아가지 않음 → 고칠 땐 v1.0.2로).
 - 2026-10-21: 데스크톱 앱 v1.0.2 (master `b9c7e09`, 제목줄 버전 표시). Release v1.0.2 = latest, latest.yml sha512·크기 = 실제 exe 확인. 다음 버전은 v1.0.3.
 - 2026-10-21: 홈페이지 묶음 배포 = dev(`18d8102`)를 master로 fast-forward (직전 master `b9c7e09` = 롤백 기준). 새 로고·파비콘, CRM 기준 문구, Windows 다운로드 버튼. manion.kr 반영 확인. 같은 커밋으로 Actions `Desktop release` 실행 → 데스크톱 v1.0.3(이름 매니온, 새 아이콘, `Manion-Setup-1.0.3.exe`).
+- 2026-10-22: master `8d1daf5`(dev fast-forward, 직전 `18d8102` = 홈페이지 롤백 기준) = 메뉴별 페이지·새로고침 맨 위·원격지원 메뉴 삭제·홈 화면 앱 안내. 같은 master로 CRM 운영 배포 `dpl_GUBHPyA2TzQDRU58kqww3X18Z5h6`(PWA manifest·아이콘·파비콘, 롤백: `dpl_6KEpLn8RSFEgZ31u2pcJm51eu8Co` 승격). app.manion.kr·옛 주소 manifest 200, Chrome 설치 가능 판정 오류 없음. 참고: `crm/scripts/vercel-api-deploy.mjs`는 master에 없고 결제 브랜치에만 있음(결제 브랜치 체크아웃에서 실행).
 - 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간)을 채우고 사용자 승인 후 master에 반영.
 
 ## 장애 기록
