@@ -81,6 +81,24 @@ export async function cancelAutoRenewal() {
   back((data as { already_canceled?: boolean } | null)?.already_canceled ? "error=already_canceled" : "canceled=1");
 }
 
+/**
+ * 구독 연장 = 자동결제 해지 취소. 대표만, 이용기간이 남은 해지 상태에서만 (DB 함수가 확인).
+ * 지금 결제하지 않고, 원래 결제일에 등록된 결제수단으로 자동결제된다. 자동결제 동의를 다시 기록한다.
+ */
+export async function resumeAutoRenewal(formData: FormData) {
+  const { supabase, profile } = await requireBusinessContext();
+  if (profile.role !== "owner") back("error=forbidden");
+  if (formData.get("consent") !== "on") back("error=consent_required");
+  const { error } = await supabase.rpc("billing_resume_auto_renewal", { p_consent_version: AUTO_RENEW_CONSENT_VERSION });
+  if (error) {
+    const known = ["not_resumable", "payment_method_required", "forbidden"].find((k) => error.message?.includes(k));
+    if (!known) console.error("[billing] resume failed", error.code);
+    back(`error=${known ?? "resume_failed"}`);
+  }
+  revalidatePath("/dashboard", "layout");
+  back("resumed=1");
+}
+
 /** 결과를 모르는 직접 결제를 다시 확인 (대표 본인 매장만). 토스 주문번호 조회로 확정하며 새 결제는 만들지 않는다. */
 export async function recheckPendingPayment() {
   const { business, profile } = await requireBusinessContext();

@@ -95,7 +95,7 @@ export default async function DashboardLayout({
               <SubNavLink href="/dashboard/staff">직원/권한 관리</SubNavLink>
               <SubNavLink href="/dashboard/settings">기본 설정</SubNavLink>
               <SubNavLink href="/dashboard/settings/items">항목 관리</SubNavLink>
-              {role === "owner" && <SubNavLink href="/dashboard/billing">구독·결제</SubNavLink>}
+              {role === "owner" && <SubNavLink href="/dashboard/billing">구독 설정</SubNavLink>}
             </NavGroup>
           )}
         </nav>

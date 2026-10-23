@@ -5,6 +5,7 @@ import { CardRegisterForm } from "./card-form";
 import { PayNowForm } from "./pay-now-form";
 import { CancelAutoRenewalButton } from "./cancel-button";
 import { recheckPendingPayment } from "./actions";
+import { ResumeAutoRenewalForm } from "./resume-form";
 
 const fmt = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy.MM.dd HH:mm") : "-");
 const fmtDate = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy.MM.dd") : "-");
@@ -27,6 +28,9 @@ const MESSAGES: Record<string, { ok: boolean; text: string }> = {
   not_cancellable: { ok: false, text: "해지할 자동결제가 없습니다." },
   cancel_failed: { ok: false, text: "자동결제 해지에 실패했습니다. 잠시 후 다시 시도해주세요." },
   rechecked: { ok: true, text: "확인이 끝났습니다. 진행 중인 결제가 없으니 다시 결제할 수 있습니다." },
+  resumed: { ok: true, text: "구독이 연장되었습니다. 결제일에 등록된 결제수단으로 자동결제됩니다." },
+  not_resumable: { ok: false, text: "이용기간이 끝나 연장할 수 없습니다. 아래 결제하기로 다시 이용해주세요." },
+  resume_failed: { ok: false, text: "구독 연장에 실패했습니다. 잠시 후 다시 시도해주세요." },
 };
 
 function labelOf(status: string, reason: string | null, awaiting: boolean) {
@@ -45,7 +49,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const q = await searchParams;
 
   if (profile.role !== "owner") {
-    return <p className="rounded-xl bg-card p-6 text-sm text-muted">구독·결제는 대표 계정만 관리할 수 있습니다.</p>;
+    return <p className="rounded-xl bg-card p-6 text-sm text-muted">구독 설정은 대표 계정만 관리할 수 있습니다.</p>;
   }
 
   const { data: row } = await supabase
@@ -77,7 +81,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       : `${card.card_company ?? "카드"} ${card.card_number_masked ?? ""}`.trim();
   const nextCharge =
     card && row?.status === "trial" ? row.trial_ends_at : card && row?.status === "active" ? row.current_period_end : null;
-  const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.canceled ? "canceled" : q.rechecked ? "rechecked" : q.error;
+  const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.canceled ? "canceled" : q.rechecked ? "rechecked" : q.resumed ? "resumed" : q.error;
   const showRecheck = msgKey === "payment_pending" || msgKey === "payment_in_progress";
   // 자동결제 해지: 이용 중(active) 또는 카드를 등록한 체험 중이면 가능. 해지해도 이 종료 시각까지 이용한다.
   // 결제일이 지나 자동결제 결과를 확인 중(awaitingPayment)일 때도 해지는 접수한다 (S-3, 017).
@@ -89,7 +93,10 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="max-w-3xl space-y-6">
-      <h1 className="text-[26px] font-bold text-foreground">구독·결제</h1>
+      <div>
+        <h1 className="text-[26px] font-bold text-foreground">구독 설정</h1>
+        <p className="mt-1.5 text-[15px] text-muted">매니온 이용 요금제, 결제수단, 구독 연장·해지를 관리합니다.</p>
+      </div>
 
       {msg && (
         <p className={`rounded-xl px-4 py-3 text-sm ${msg.ok ? "bg-status-mint-bg text-status-mint-text" : "bg-red-50 text-red-600"}`} data-billing-message={msgKey}>
@@ -152,12 +159,26 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           <p className="text-foreground">현재 이용기간: {fmt(row?.current_period_end)}까지</p>
           <p className="text-foreground">다음 자동결제 없음</p>
           <p className="pt-1 text-muted">이용기간이 끝나면 등록·수정·삭제가 제한됩니다. 기존 데이터는 그대로 유지되며, 이후 결제하기로 다시 이용할 수 있습니다.</p>
+          {cardLabel && (
+            <div className="mt-3 border-t border-border pt-4">
+              <h3 className="mb-1 text-sm font-bold text-foreground">구독 연장</h3>
+              <p className="mb-3 text-muted">
+                자동결제를 다시 켜면 지금 결제되지 않고, {fmtDate(row?.current_period_end)}에 {cardLabel}로{" "}
+                {formatWon(BILLING_PLANS[cycle].amount)}이 자동결제되어 이어서 이용할 수 있습니다.
+              </p>
+              <ResumeAutoRenewalForm cycle={cycle} />
+            </div>
+          )}
         </section>
       )}
 
       {cancellable && (
         <section className="space-y-3 rounded-2xl border border-border bg-card p-5 sm:p-6" data-auto-renewal>
-          <h2 className="text-base font-bold text-foreground">자동결제</h2>
+          <h2 className="text-base font-bold text-foreground">구독 연장·해지</h2>
+          <p className="text-sm text-muted">
+            지금은 <b className="text-foreground">자동 연장</b> 상태입니다. 결제일마다 등록된 결제수단으로 자동결제되어 구독이 연장됩니다.
+            더 이용하지 않으려면 아래에서 해지할 수 있습니다.
+          </p>
           <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-[120px_1fr]">
             <dt className="text-muted">현재 요금제</dt>
             <dd className="text-foreground">{BILLING_PLANS[cycle].label} {formatWon(BILLING_PLANS[cycle].amount)} (VAT 포함)</dd>
