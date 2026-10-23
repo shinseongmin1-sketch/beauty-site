@@ -6,6 +6,7 @@ import { PayNowForm } from "./pay-now-form";
 import { CancelAutoRenewalButton } from "./cancel-button";
 import { recheckPendingPayment } from "./actions";
 import { ResumeAutoRenewalForm } from "./resume-form";
+import { WidgetPayForm } from "./widget-pay-form";
 
 const fmt = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy.MM.dd HH:mm") : "-");
 const fmtDate = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy.MM.dd") : "-");
@@ -31,10 +32,18 @@ const MESSAGES: Record<string, { ok: boolean; text: string }> = {
   resumed: { ok: true, text: "구독이 연장되었습니다. 결제일에 등록된 결제수단으로 자동결제됩니다." },
   not_resumable: { ok: false, text: "이용기간이 끝나 연장할 수 없습니다. 아래 결제하기로 다시 이용해주세요." },
   resume_failed: { ok: false, text: "구독 연장에 실패했습니다. 잠시 후 다시 시도해주세요." },
+  widget_canceled: { ok: false, text: "결제가 취소되었습니다." },
+  invalid_request: { ok: false, text: "잘못된 결제 요청입니다. 다시 시도해주세요." },
 };
 
-function labelOf(status: string, reason: string | null, awaiting: boolean) {
+/** 지금부터 그 시각까지 남은 일수 (요청마다 서버에서 한 번 계산) */
+function daysUntil(iso: string | null | undefined): number {
+  return iso ? (new Date(iso).getTime() - Date.now()) / 86_400_000 : 0;
+}
+
+function labelOf(status: string, reason: string | null, awaiting: boolean, prepaid: boolean) {
   if (awaiting) return "자동결제 처리 중";
+  if (prepaid) return "이용 중 (직접 결제)";
   if (status === "trial") return "무료체험 중";
   if (status === "active") return "이용 중";
   if (status === "canceled") return "해지 예정";
@@ -79,15 +88,21 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
     : card.method === "transfer"
       ? `${card.bank_name ?? "계좌"} ${card.account_number_masked ?? ""}`.trim() + " (계좌 자동이체)"
       : `${card.card_company ?? "카드"} ${card.card_number_masked ?? ""}`.trim();
-  const nextCharge =
-    card && row?.status === "trial" ? row.trial_ends_at : card && row?.status === "active" ? row.current_period_end : null;
+  // 자동결제 켜짐 = 결제수단 + 자동결제 동의 (체험/이용 중). 직접 결제(결제위젯)로 이용 중이면 동의 기록이 없다.
+  const autoRenew = !!card && !!row?.auto_renew_consented_at && (row?.status === "trial" || row?.status === "active");
+  const prepaid = row?.status === "active" && !autoRenew && subscription.writable;
+  const nextCharge = !autoRenew ? null : row?.status === "trial" ? row.trial_ends_at : row?.current_period_end ?? null;
   const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.canceled ? "canceled" : q.rechecked ? "rechecked" : q.resumed ? "resumed" : q.error;
   const showRecheck = msgKey === "payment_pending" || msgKey === "payment_in_progress";
   // 자동결제 해지: 이용 중(active) 또는 카드를 등록한 체험 중이면 가능. 해지해도 이 종료 시각까지 이용한다.
   // 결제일이 지나 자동결제 결과를 확인 중(awaitingPayment)일 때도 해지는 접수한다 (S-3, 017).
   const usableUntil = row?.status === "trial" ? row.trial_ends_at : row?.current_period_end ?? null;
-  const cancellable =
-    (subscription.writable || subscription.awaitingPayment) && ((row?.status === "active") || (row?.status === "trial" && !!card));
+  const cancellable = (subscription.writable || subscription.awaitingPayment) && autoRenew;
+  // 직접 결제를 미리 할 수 있는지 (남은 기간 31일 이내) — 최종 판단은 DB(billing_start_widget)가 한다
+  const paidUntil = row?.status === "trial" ? row.trial_ends_at : row?.current_period_end ?? null;
+  const daysLeft = daysUntil(paidUntil);
+  const widgetTooEarly = subscription.writable && daysLeft > 31;
+  const widgetNote = "카드·퀵계좌이체·토스페이·카카오페이·네이버페이·페이코 등으로 1회 결제합니다. 결제한 기간만 이용하며 자동결제되지 않습니다.";
   const canceledActive = row?.status === "canceled" && subscription.writable;
   const msg = msgKey ? (MESSAGES[msgKey] ?? { ok: false, text: "요청을 처리하지 못했습니다." }) : null;
 
@@ -116,7 +131,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-[120px_1fr]">
           <dt className="text-muted">상태</dt>
           <dd className="font-semibold text-foreground" data-billing-status>
-            {labelOf(row?.status ?? "expired", row?.expired_reason ?? null, subscription.awaitingPayment)}
+            {labelOf(row?.status ?? "expired", row?.expired_reason ?? null, subscription.awaitingPayment, prepaid)}
           </dd>
           <dt className="text-muted">요금제</dt>
           <dd className="text-foreground">
@@ -169,6 +184,14 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
               <ResumeAutoRenewalForm cycle={cycle} />
             </div>
           )}
+          <div className="mt-3 border-t border-border pt-4">
+            <h3 className="mb-1 text-sm font-bold text-foreground">직접 결제로 연장</h3>
+            {widgetTooEarly ? (
+              <p className="text-muted">남은 이용기간이 31일 이내가 되면 간편결제 등으로 다음 기간을 미리 결제할 수 있습니다.</p>
+            ) : (
+              <WidgetPayForm defaultCycle={cycle} note={widgetNote} />
+            )}
+          </div>
         </section>
       )}
 
@@ -177,7 +200,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           <h2 className="text-base font-bold text-foreground">구독 연장·해지</h2>
           <p className="text-sm text-muted">
             지금은 <b className="text-foreground">자동 연장</b> 상태입니다. 결제일마다 등록된 결제수단으로 자동결제되어 구독이 연장됩니다.
-            더 이용하지 않으려면 아래에서 해지할 수 있습니다.
+            더 이용하지 않으려면 아래에서 해지할 수 있습니다. 간편결제(카카오페이 등)로 직접 결제하려면 먼저 자동결제를 해지해주세요.
           </p>
           <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-[120px_1fr]">
             <dt className="text-muted">현재 요금제</dt>
@@ -192,28 +215,70 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       )}
 
       {blocked ? (
-        <section className="space-y-4 rounded-2xl border border-red-200 bg-card p-5 sm:p-6">
+        <section className="space-y-4 rounded-2xl border border-red-200 bg-card p-5 sm:p-6" data-pay-section>
           <div>
             <h2 className="text-base font-bold text-foreground">결제하기</h2>
             <p className="mt-1 text-sm text-muted">
               결제가 완료되면 바로 CRM 을 다시 이용할 수 있습니다. 새 이용기간은 결제가 완료된 시각부터 시작됩니다. 기존 데이터는 그대로 유지됩니다.
+              결제 방법은 두 가지 중 편한 쪽을 고르세요.
             </p>
           </div>
-          {cardLabel && <PayNowForm defaultCycle={cycle} cardLabel={cardLabel} />}
-          <div className={cardLabel ? "border-t border-border pt-4" : ""}>
-            {cardLabel && <p className="mb-3 text-sm font-semibold text-foreground">다른 결제수단으로 결제</p>}
-            <CardRegisterForm
-              intent="pay"
-              defaultCycle={cycle}
-              submitLabel={cardLabel ? "새 결제수단 등록 후 결제하기" : "결제수단 등록 후 결제하기"}
-              autoPayNotice="등록한 결제수단으로 지금 {amount}이 결제되며,"
-            />
+          <div className="rounded-xl border border-border p-4" data-pay-auto>
+            <p className="text-sm font-bold text-foreground">① 자동결제 (카드·계좌)</p>
+            <p className="mb-3 text-xs text-muted">지금 결제하고, 이후 결제일마다 자동으로 결제·연장됩니다.</p>
+            {cardLabel && <PayNowForm defaultCycle={cycle} cardLabel={cardLabel} />}
+            <div className={cardLabel ? "mt-4 border-t border-border pt-4" : ""}>
+              {cardLabel && <p className="mb-3 text-sm font-semibold text-foreground">다른 결제수단으로 결제</p>}
+              <CardRegisterForm
+                intent="pay"
+                defaultCycle={cycle}
+                submitLabel={cardLabel ? "새 결제수단 등록 후 결제하기" : "결제수단 등록 후 결제하기"}
+                autoPayNotice="등록한 결제수단으로 지금 {amount}이 결제되며,"
+              />
+            </div>
+          </div>
+          <div className="rounded-xl border border-border p-4" data-pay-widget>
+            <p className="text-sm font-bold text-foreground">② 직접 결제 (간편결제 포함)</p>
+            <p className="mb-3 text-xs text-muted">{widgetNote}</p>
+            <WidgetPayForm defaultCycle={cycle} />
           </div>
         </section>
-      ) : canceledActive ? null : (
+      ) : canceledActive ? null : prepaid ? (
+        <section className="space-y-4 rounded-2xl border border-border bg-card p-5 sm:p-6" data-prepaid>
+          <div>
+            <h2 className="text-base font-bold text-foreground">직접 결제로 이용 중</h2>
+            <p className="mt-1 text-sm text-muted">
+              {fmt(row?.current_period_end)}까지 이용할 수 있으며 자동결제되지 않습니다. 계속 이용하려면 기간이 끝나기 전에 다시 결제하거나,
+              자동결제로 바꿔주세요.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border p-4">
+            <p className="mb-3 text-sm font-bold text-foreground">다음 기간 미리 결제 (간편결제 포함)</p>
+            {widgetTooEarly ? (
+              <p className="text-sm text-muted">남은 이용기간이 31일 이내가 되면 미리 결제할 수 있습니다.</p>
+            ) : (
+              <WidgetPayForm defaultCycle={cycle} note={widgetNote} />
+            )}
+          </div>
+          <div className="rounded-xl border border-border p-4">
+            <p className="mb-1 text-sm font-bold text-foreground">자동결제로 바꾸기 (카드·계좌)</p>
+            <p className="mb-3 text-xs text-muted">지금 결제되지 않고, 이용기간이 끝나는 {fmtDate(row?.current_period_end)}부터 자동결제됩니다.</p>
+            {cardLabel ? (
+              <ResumeAutoRenewalForm cycle={cycle} />
+            ) : (
+              <CardRegisterForm
+                intent="register"
+                defaultCycle={cycle}
+                submitLabel="결제수단 등록하고 자동결제 켜기"
+                autoPayNotice="이용기간이 끝나는 날부터 {amount}이 결제되며,"
+              />
+            )}
+          </div>
+        </section>
+      ) : (
         <section className="space-y-4 rounded-2xl border border-border bg-card p-5 sm:p-6">
           <div>
-            <h2 className="text-base font-bold text-foreground">{cardLabel ? "결제수단 변경" : "결제수단 등록"}</h2>
+            <h2 className="text-base font-bold text-foreground">{cardLabel ? "결제수단 변경" : "① 자동결제 — 결제수단 등록 (카드·계좌)"}</h2>
             <p className="mt-1 text-sm text-muted">
               {row?.status === "trial"
                 ? `무료체험 기간에는 결제되지 않습니다. 체험 종료일(${fmtDate(row.trial_ends_at)})에 선택한 요금제로 자동결제되며, 결제에 실패하면 결제일부터 이용이 제한됩니다.`
@@ -226,6 +291,17 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             submitLabel={cardLabel ? "결제수단 변경하기" : "결제수단 등록하기"}
             autoPayNotice={row?.status === "trial" ? "무료체험 종료 후 {amount}이 결제되며," : "다음 결제일부터 {amount}이 결제되며,"}
           />
+          {!autoRenew && (
+            <div className="border-t border-border pt-4" data-pay-widget>
+              <p className="text-sm font-bold text-foreground">② 직접 결제 (간편결제 포함)</p>
+              <p className="mb-3 text-xs text-muted">{widgetNote}</p>
+              {widgetTooEarly ? (
+                <p className="text-sm text-muted">무료체험 종료 31일 전부터 미리 결제할 수 있습니다.</p>
+              ) : (
+                <WidgetPayForm defaultCycle={cycle} />
+              )}
+            </div>
+          )}
         </section>
       )}
 
@@ -249,7 +325,9 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 {history.map((h) => (
                   <tr key={h.id} className="border-t border-border" data-payment-status={h.status}>
                     <td className="py-2">{fmt(h.requested_at)}</td>
-                    <td className="py-2">{h.kind === "auto" ? "자동결제" : "직접 결제"} · {BILLING_PLANS[h.billing_cycle as BillingCycle]?.label}</td>
+                    <td className="py-2">
+                      {h.kind === "auto" ? "자동결제" : h.kind === "widget" ? "직접 결제(간편결제)" : "직접 결제"} · {BILLING_PLANS[h.billing_cycle as BillingCycle]?.label}
+                    </td>
                     <td className="py-2">
                       {formatWon(h.amount)} <span className="text-xs text-muted">({formatWon(h.supply_amount)} + {formatWon(h.vat_amount)})</span>
                     </td>

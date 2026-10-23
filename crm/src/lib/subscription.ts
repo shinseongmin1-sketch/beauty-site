@@ -16,10 +16,11 @@ export interface SubscriptionRow {
   expired_reason?: ExpiredReason | null;
   payment_method_id?: string | null;
   billing_cycle?: string | null;
+  auto_renew_consented_at?: string | null;
 }
 
-/** expired 가 된 이유: 체험 종료 / 자동결제 실패 / 해지 */
-export type ExpiredReason = "trial_expired" | "payment_failed" | "cancelled";
+/** expired 가 된 이유: 체험 종료 / 자동결제 실패 / 해지 / 직접 결제 기간 종료 */
+export type ExpiredReason = "trial_expired" | "payment_failed" | "cancelled" | "period_ended";
 
 export interface SubscriptionState {
   /** 저장된 값이 trial 이어도 종료 시각이 지났으면 expired 로 계산한 "실효 상태" */
@@ -60,8 +61,10 @@ export function computeSubscriptionState(row: SubscriptionRow | null | undefined
     (row.status === "canceled" && !!periodEnd && periodEnd.getTime() > now.getTime());
   const hasPaymentMethod = !!row.payment_method_id;
   // 결제일이 지났는데 아직 결과가 반영되지 않음: 카드가 있는 체험이 끝났거나, active 기간이 끝남 (스케줄러가 곧 처리)
+  // 직접 결제(결제위젯)로 이용 중인 구독은 자동결제 동의가 없다 → 기간이 끝나도 "자동결제 처리 중"이 아니다
+  const autoRenew = hasPaymentMethod && !!row.auto_renew_consented_at;
   const awaitingPayment =
-    !writable && hasPaymentMethod && ((row.status === "trial" && status === "expired") || row.status === "active");
+    !writable && autoRenew && ((row.status === "trial" && status === "expired") || row.status === "active");
   if (row.status === "active" && !activeInPeriod) status = "expired";
   // 해지(canceled)는 이용기간 종료 시각까지만 이용. 종료 후에는 expired(cancelled) 로 본다 (저장 상태는 sync/스케줄러가 맞춘다)
   const canceledEnded = row.status === "canceled" && !writable;

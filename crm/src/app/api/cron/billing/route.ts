@@ -6,6 +6,7 @@ import crypto from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { processAutoPending, reconcilePendingManual } from "@/lib/billing/charge";
+import { reconcilePendingWidget } from "@/lib/billing/widget";
 import type { AutoPendingRow } from "@/lib/billing/auto-pending";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,9 @@ export async function GET(request: NextRequest) {
   // 해지(canceled) 후 이용기간이 끝난 구독을 먼저 expired(cancelled) 로 정리한다. 해지 구독은 결제 대상(trial/active)이 아니다.
   const { error: expireError } = await admin.rpc("expire_ended_cancellations", {});
   if (expireError) console.error("[cron/billing] expire cancellations failed", expireError.code);
+  // 직접 결제(결제위젯)로 이용하던 구독의 기간이 끝났으면 expired(period_ended) — 자동결제 대상이 아니다
+  const { error: prepaidError } = await admin.rpc("expire_ended_prepaid", {});
+  if (prepaidError) console.error("[cron/billing] expire prepaid failed", prepaidError.code);
   const { data, error } = await admin.rpc("billing_claim_due", { p_limit: 50 });
   if (error) {
     console.error("[cron/billing] claim failed", error.code);
@@ -39,5 +43,7 @@ export async function GET(request: NextRequest) {
   }
   // 결과를 모르는 직접 결제(pending)를 주문번호 조회로 확정 (재결제 요청 없음)
   const manual = await reconcilePendingManual(admin, null);
-  return NextResponse.json({ ok: true, ...summary, manualResolved: manual.resolved, manualPending: manual.pending });
+  // 끝나지 않은 직접 결제(결제위젯)도 주문 조회로 확정 (승인 응답 유실·입금 대기 대비)
+  const widget = await reconcilePendingWidget(admin, null);
+  return NextResponse.json({ ok: true, ...summary, manualResolved: manual.resolved, manualPending: manual.pending, widgetResolved: widget.resolved, widgetWaiting: widget.waiting });
 }

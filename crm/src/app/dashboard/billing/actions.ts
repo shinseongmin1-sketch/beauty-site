@@ -8,6 +8,7 @@ import { billingClientKey } from "@/lib/billing/toss";
 import { chargeManual, reconcilePendingManual } from "@/lib/billing/charge";
 import { AUTO_RENEW_CONSENT_VERSION } from "@/lib/billing/consent";
 import { createAdminClient } from "@/lib/supabase/server";
+import { reconcilePendingWidget, subWidgetClientKey } from "@/lib/billing/widget";
 
 /**
  * 결제수단 등록(토스 자동결제 인증창: 카드 또는 계좌 자동이체) 준비. 대표만.
@@ -99,14 +100,55 @@ export async function resumeAutoRenewal(formData: FormData) {
   back("resumed=1");
 }
 
+/**
+ * 직접 결제(토스 결제위젯, 1회 결제) 준비. 대표만.
+ * 금액·주문번호·연장 기준 시각은 DB 함수(billing_start_widget)가 정한다. 브라우저에는 client key 와 주문 정보만 준다.
+ * 시작 전에 이 매장의 끝나지 않은 직접 결제를 토스 주문 조회로 먼저 확정한다 (이미 결제됐는데 다시 결제하는 일 방지).
+ */
+export async function prepareWidgetPayment(
+  cycle: string
+): Promise<{ ok: true; clientKey: string; orderId: string; orderName: string; amount: number; customerName: string | null; customerEmail: string | null } | { ok: false; error: string }> {
+  const { supabase, user, profile, business } = await requireBusinessContext();
+  if (profile.role !== "owner") return { ok: false, error: "대표 계정만 결제할 수 있습니다." };
+  if (!isBillingCycle(cycle)) return { ok: false, error: "요금제를 선택해주세요." };
+  let clientKey: string;
+  try {
+    clientKey = subWidgetClientKey();
+  } catch (e) {
+    console.error("[billing] widget key missing", e instanceof Error ? e.message : e);
+    return { ok: false, error: "결제 설정이 완료되지 않았습니다. 고객센터에 문의해주세요." };
+  }
+  const admin = await createAdminClient();
+  const rec = await reconcilePendingWidget(admin, business.id);
+  if (rec.waiting !== 0) return { ok: false, error: "확인 중인 결제가 있습니다. 잠시 후 다시 시도해주세요." };
+  if (rec.resolved > 0) revalidatePath("/dashboard", "layout");
+
+  const { data, error } = await supabase.rpc("billing_start_widget", { p_cycle: cycle });
+  if (error || !data?.[0]) {
+    const msg: Record<string, string> = {
+      auto_renew_active: "자동결제가 켜져 있어 결제일에 자동으로 결제됩니다. 직접 결제하려면 먼저 자동결제를 해지해주세요.",
+      too_early: "남은 이용기간이 31일 이내일 때부터 미리 결제할 수 있습니다.",
+      payment_in_progress: "확인 중인 결제가 있습니다. 잠시 후 다시 시도해주세요.",
+      suspended: "이용이 정지된 사업장입니다. 고객센터에 문의해주세요.",
+      forbidden: "대표 계정만 결제할 수 있습니다.",
+    };
+    const known = Object.keys(msg).find((k) => error?.message?.includes(k));
+    if (!known) console.error("[billing] start widget failed", error?.code);
+    return { ok: false, error: known ? msg[known] : "결제 준비에 실패했습니다. 잠시 후 다시 시도해주세요." };
+  }
+  const row = data[0] as { order_id: string; order_name: string; amount: number };
+  return { ok: true, clientKey, orderId: row.order_id, orderName: row.order_name, amount: row.amount, customerName: business.name ?? null, customerEmail: user.email ?? null };
+}
+
 /** 결과를 모르는 직접 결제를 다시 확인 (대표 본인 매장만). 토스 주문번호 조회로 확정하며 새 결제는 만들지 않는다. */
 export async function recheckPendingPayment() {
   const { business, profile } = await requireBusinessContext();
   if (profile.role !== "owner") back("error=forbidden");
   const admin = await createAdminClient();
   const r = await reconcilePendingManual(admin, business.id);
+  const w = await reconcilePendingWidget(admin, business.id);
   revalidatePath("/dashboard", "layout");
   const { data: sub } = await admin.from("subscriptions").select("status").eq("business_id", business.id).maybeSingle();
-  if (r.pending > 0) back("error=payment_pending");
-  back(sub?.status === "active" ? "paid=1" : r.resolved > 0 ? "error=payment_failed" : "rechecked=1");
+  if (r.pending > 0 || w.waiting > 0) back("error=payment_pending");
+  back(sub?.status === "active" ? "paid=1" : r.resolved + w.resolved > 0 ? "error=payment_failed" : "rechecked=1");
 }
