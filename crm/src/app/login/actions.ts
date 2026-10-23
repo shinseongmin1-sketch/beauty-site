@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { REMEMBER_COOKIE, REMEMBER_MAX_AGE } from "@/lib/remember";
 import { createClient } from "@/lib/supabase/server";
 import { actorTypeFromRole, logAudit, safeErrorCode } from "@/lib/audit";
 import { safeNextPath } from "@/lib/safe-redirect";
@@ -15,7 +17,8 @@ export async function signIn(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
   }
 
-  const supabase = await createClient();
+  const remember = formData.get("remember") === "on";
+  const supabase = await createClient({ remember });
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error || !data.user) {
@@ -29,6 +32,16 @@ export async function signIn(formData: FormData) {
     });
     redirect(`/login?error=${encodeURIComponent("이메일 또는 비밀번호가 올바르지 않습니다.")}`);
   }
+
+  // 자동로그인 선택을 기억한다. 체크 안 함이면 이 쿠키도 세션 쿠키라 창을 닫으면 함께 사라진다.
+  const cookieStore = await cookies();
+  cookieStore.set(REMEMBER_COOKIE, remember ? "1" : "0", {
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
+    ...(remember ? { maxAge: REMEMBER_MAX_AGE } : {}),
+  });
 
   const { data: isPlatformAdmin, error: adminCheckError } = await supabase.rpc("is_platform_admin");
   if (adminCheckError) console.error("[login] is_platform_admin check failed", adminCheckError.code);

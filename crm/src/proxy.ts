@@ -2,6 +2,7 @@
 // 여기서 Supabase 세션을 갱신하고, 로그인이 필요한 구간을 보호한다.
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { REMEMBER_COOKIE, cookieOptionsFor, isRemembered } from "@/lib/remember";
 
 const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password"];
 // /auth/callback, /auth/confirm 도 일부러 PUBLIC_PATHS 에 넣지 않는다: 이미 로그인된 브라우저에서 재설정 링크를 누르면
@@ -15,6 +16,8 @@ const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+  // 자동로그인을 선택하지 않았으면, 세션을 갱신할 때도 세션 쿠키(창 닫으면 만료)로 유지한다.
+  const remember = isRemembered(request.cookies.get(REMEMBER_COOKIE)?.value);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,7 +33,7 @@ export async function proxy(request: NextRequest) {
           );
           response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, cookieOptionsFor(options, remember))
           );
         },
       },

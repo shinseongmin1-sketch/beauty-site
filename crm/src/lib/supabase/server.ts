@@ -2,9 +2,12 @@
 // 요청마다 새로 생성해야 하며(캐시/재사용 금지), 쿠키를 통해 세션을 읽고 쓴다.
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { REMEMBER_COOKIE, cookieOptionsFor, isRemembered } from "@/lib/remember";
 
-export async function createClient() {
+/** remember: 로그인 직후처럼 자동로그인 여부를 직접 정할 때만 넘긴다. 없으면 저장된 선택(쿠키)을 따른다. */
+export async function createClient(opts?: { remember?: boolean }) {
   const cookieStore = await cookies();
+  const remember = opts?.remember ?? isRemembered(cookieStore.get(REMEMBER_COOKIE)?.value);
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,7 +20,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, cookieOptionsFor(options, remember))
             );
           } catch {
             // Server Component에서는 쿠키를 쓸 수 없다. proxy.ts에서
