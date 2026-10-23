@@ -60,7 +60,6 @@ export default async function LoginPage({
           <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input type="checkbox" name="remember" className="h-4 w-4 rounded border-border accent-accent" />
             <span>자동로그인</span>
-            <span className="text-xs text-muted">(공용 PC에서는 체크하지 마세요)</span>
           </label>
           <SubmitButton pendingText="로그인 중…">로그인</SubmitButton>
         </form>
