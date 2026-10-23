@@ -47,10 +47,11 @@
 - 2026-10-21: 홈페이지 묶음 배포 = dev(`18d8102`)를 master로 fast-forward (직전 master `b9c7e09` = 롤백 기준). 새 로고·파비콘, CRM 기준 문구, Windows 다운로드 버튼. manion.kr 반영 확인. 같은 커밋으로 Actions `Desktop release` 실행 → 데스크톱 v1.0.3(이름 매니온, 새 아이콘, `Manion-Setup-1.0.3.exe`).
 - 2026-10-22: master `8d1daf5`(dev fast-forward, 직전 `18d8102` = 홈페이지 롤백 기준) = 메뉴별 페이지·새로고침 맨 위·원격지원 메뉴 삭제·홈 화면 앱 안내. 같은 master로 CRM 운영 배포 `dpl_GUBHPyA2TzQDRU58kqww3X18Z5h6`(PWA manifest·아이콘·파비콘, 롤백: `dpl_6KEpLn8RSFEgZ31u2pcJm51eu8Co` 승격). app.manion.kr·옛 주소 manifest 200, Chrome 설치 가능 판정 오류 없음. 참고: `crm/scripts/vercel-api-deploy.mjs`는 master에 없고 결제 브랜치에만 있음(결제 브랜치 체크아웃에서 실행).
 - 2026-10-22: master `cf55296` = 예약 등록/수정 폼에 날짜 입력칸(수정 시 예약 자신의 날짜 기본값). CRM 운영 배포 `dpl_AxrzRV532kL4ApqkeyTHPaAUVJWS` (롤백: `dpl_GUBHPyA2TzQDRU58kqww3X18Z5h6` 승격).
+- 2026-10-23: master `fcb5598` = 시간대 버그 수정. CRM 운영 배포 `dpl_CYfS8wj2CxuFEwaNZipD37pP7mHw` (롤백: `dpl_AxrzRV532kL4ApqkeyTHPaAUVJWS` 승격).
 - 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간)을 채우고 사용자 승인 후 master에 반영.
 
 ## 장애 기록
-- 2026-10-22 발견(미수정, 사용자 승인 대기): **시간대 버그.** Vercel 서버 TZ=UTC라 서버 액션 `new Date(`${date}T${time}:00`)`가 입력 시각을 UTC로 저장(10:00 입력 → KST 19:00). 서버 컴포넌트(대시보드·일정)는 UTC로 표시(10:00), 클라이언트(예약관리 목록·수정폼)는 KST로 표시(19:00) → 화면마다 다르고, 수정 저장 시 +9시간 밀림, 하루 경계(startOfDay)도 UTC 기준. 운영 예약 7건 모두 해당. 수정안: 서버 TZ를 Asia/Seoul로 고정(instrumentation 등) + 기존 예약 시각 보정 여부 사용자 결정.
+- 2026-10-22 발견 → 2026-10-23 수정·배포: **시간대 버그.** Vercel 서버 TZ=UTC라 서버 액션 `new Date(`${date}T${time}:00`)`가 입력 시각을 UTC로 저장(10:00 입력 → KST 19:00). 서버 컴포넌트(대시보드·일정)는 UTC로 표시(10:00), 클라이언트(예약관리 목록·수정폼)는 KST로 표시(19:00) → 화면마다 다르고, 수정 저장 시 +9시간 밀림, 하루 경계(startOfDay)도 UTC 기준. 운영 예약 7건 모두 해당. 수정: `crm/src/instrumentation.ts`에서 서버 TZ=Asia/Seoul 고정 + 예약·매출 저장은 `lib/kst.ts`(+09:00 명시). 로컬 next start로 10:00→01:00Z·KST 자정 경계 확인. 기존 7건은 사용자 테스트 예약이라 보정 안 함(이제 모든 화면에서 19:00으로 보임). 새 Date를 문자열로 만들 땐 kstDateTime 사용.
 - 2026-10-20: 운영·테스트 Supabase가 무료 플랜 자동 일시정지(INACTIVE)로 로그인 전부 실패(화면엔 "비밀번호 틀림"으로 표시). 사용자가 대시보드에서 Restore로 복구. (당시 운영 = 뭄바이, 테스트 = 서울. 같은 날 서울 이사로 역할이 바뀜 → 아래 참고.) morelol은 무관. 재발 방지로 운영 Pro 플랜 전환 권장.
 - 2026-10-20: 서울 이사 리허설 중 미리보기 로그인 실패. 원인 = 클라우드 env `SUPABASE_TEST_URL` 값 끝에 `/rest/v1/` 경로가 붙어 있어 Auth 호출이 PostgREST로 감(화면엔 "비밀번호 틀림"). Supabase URL은 항상 origin(`new URL(x).origin`)만 쓴다.
 
