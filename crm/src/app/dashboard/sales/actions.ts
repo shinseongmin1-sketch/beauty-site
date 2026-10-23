@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireBusinessContext } from "@/lib/business";
 import { requireWritable } from "@/lib/subscription";
 import { requireAccess } from "@/lib/permissions";
+import { kstDateTime } from "@/lib/kst";
 
 export async function createSale(formData: FormData) {
   const { supabase, business, profile, subscription } = await requireBusinessContext();
@@ -53,7 +54,7 @@ export async function createSale(formData: FormData) {
     amount: finalAmount,
     method_id: methodId,
     status: "paid",
-    paid_at: new Date(`${paidAt}T00:00:00`).toISOString(),
+    paid_at: kstDateTime(paidAt).toISOString(),
     memo,
   });
 

@@ -7,6 +7,7 @@ import { requireBusinessContext } from "@/lib/business";
 import { requireWritable } from "@/lib/subscription";
 import { requireAccess } from "@/lib/permissions";
 import { reservationCode } from "@/lib/phone";
+import { kstDateTime } from "@/lib/kst";
 import type { ReservationStatus, ReservationWithRelations } from "@/lib/types";
 
 const RESERVATION_SELECT =
@@ -55,11 +56,11 @@ export async function createReservation(formData: FormData) {
     customerId = newCustomer!.id;
   }
 
-  const startTime = new Date(`${date}T${startTimeStr}:00`);
+  const startTime = kstDateTime(date, startTimeStr);
   let endTime: Date;
 
   if (endTimeStr) {
-    endTime = new Date(`${date}T${endTimeStr}:00`);
+    endTime = kstDateTime(date, endTimeStr);
   } else {
     let durationMinutes = 60;
     if (serviceId) {
@@ -111,8 +112,8 @@ export async function updateReservation(reservationId: string, formData: FormDat
     );
   }
 
-  const startTime = new Date(`${date}T${startTimeStr}:00`);
-  const endTime = new Date(`${date}T${endTimeStr}:00`);
+  const startTime = kstDateTime(date, startTimeStr);
+  const endTime = kstDateTime(date, endTimeStr);
 
   await supabase
     .from("reservations")
