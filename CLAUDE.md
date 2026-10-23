@@ -48,6 +48,7 @@
 - 2026-10-22: master `8d1daf5`(dev fast-forward, 직전 `18d8102` = 홈페이지 롤백 기준) = 메뉴별 페이지·새로고침 맨 위·원격지원 메뉴 삭제·홈 화면 앱 안내. 같은 master로 CRM 운영 배포 `dpl_GUBHPyA2TzQDRU58kqww3X18Z5h6`(PWA manifest·아이콘·파비콘, 롤백: `dpl_6KEpLn8RSFEgZ31u2pcJm51eu8Co` 승격). app.manion.kr·옛 주소 manifest 200, Chrome 설치 가능 판정 오류 없음. 참고: `crm/scripts/vercel-api-deploy.mjs`는 master에 없고 결제 브랜치에만 있음(결제 브랜치 체크아웃에서 실행).
 - 2026-10-22: master `cf55296` = 예약 등록/수정 폼에 날짜 입력칸(수정 시 예약 자신의 날짜 기본값). CRM 운영 배포 `dpl_AxrzRV532kL4ApqkeyTHPaAUVJWS` (롤백: `dpl_GUBHPyA2TzQDRU58kqww3X18Z5h6` 승격).
 - 2026-10-23: master `fcb5598` = 시간대 버그 수정. CRM 운영 배포 `dpl_CYfS8wj2CxuFEwaNZipD37pP7mHw` (롤백: `dpl_AxrzRV532kL4ApqkeyTHPaAUVJWS` 승격).
+- 2026-10-23: master `97c182e` = 로그인 화면 [자동로그인] 체크박스(체크 안 하면 Supabase 인증 쿠키를 세션 쿠키로, `manion_remember` 쿠키로 선택 기억, 쿠키 없는 기존 로그인은 유지). CRM 운영 배포 `dpl_6sb9dgN5N5uFQ4kSLqt3tFHpUjXG` (롤백: `dpl_CYfS8wj2CxuFEwaNZipD37pP7mHw` 승격).
 - 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간)을 채우고 사용자 승인 후 master에 반영.
 
 ## 장애 기록
