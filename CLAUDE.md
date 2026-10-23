@@ -49,6 +49,7 @@
 - 2026-10-22: master `cf55296` = 예약 등록/수정 폼에 날짜 입력칸(수정 시 예약 자신의 날짜 기본값). CRM 운영 배포 `dpl_AxrzRV532kL4ApqkeyTHPaAUVJWS` (롤백: `dpl_GUBHPyA2TzQDRU58kqww3X18Z5h6` 승격).
 - 2026-10-23: master `fcb5598` = 시간대 버그 수정. CRM 운영 배포 `dpl_CYfS8wj2CxuFEwaNZipD37pP7mHw` (롤백: `dpl_AxrzRV532kL4ApqkeyTHPaAUVJWS` 승격).
 - 2026-10-23: master `97c182e` = 로그인 화면 [자동로그인] 체크박스(체크 안 하면 Supabase 인증 쿠키를 세션 쿠키로, `manion_remember` 쿠키로 선택 기억, 쿠키 없는 기존 로그인은 유지). CRM 운영 배포 `dpl_6sb9dgN5N5uFQ4kSLqt3tFHpUjXG` (롤백: `dpl_CYfS8wj2CxuFEwaNZipD37pP7mHw` 승격).
+- 2026-10-23: master `9d7243a` = 자동로그인 옆 "공용 PC" 안내 문구 삭제(사용자 지시). CRM 운영 배포 `dpl_DJknC8YnzwdPEVZJ8UFfUXTZUazM` (롤백: `dpl_6sb9dgN5N5uFQ4kSLqt3tFHpUjXG` 승격).
 - 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간)을 채우고 사용자 승인 후 master에 반영.
 
 ## 장애 기록
