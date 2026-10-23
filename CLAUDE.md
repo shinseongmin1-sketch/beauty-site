@@ -72,7 +72,7 @@
 - 2026-10-21 운영 Auth 설정 확인(읽기): mailer_autoconfirm=true(가입 시 메일 인증 없음), 커스텀 SMTP 없음, 메일 발송 한도 2통/시간. 기본 발송기는 조직 멤버 주소로만 보내는 제한이 있어 **실제 손님의 비밀번호 찾기 메일이 안 갈 가능성** → 실사용 전 커스텀 SMTP(Resend 등) 권장. 유료 전환 권장: Supabase Pro(자동정지·백업), Vercel Pro(Hobby는 상업적 이용 불가).
 - 무료 운영 보완: 하루 1회 DB 깨우기(Vercel cron) 제안, 이사 시 자체 암호화 백업 필수(무료는 자동 백업 없음). 정기결제 시작 전 Pro 재검토.
 - 정기결제 migration 012~019은 이제 새 운영(서울)에 적용한다. 단 테스트 DB(⑤ 이후 뭄바이)에서 먼저 검증.
-- 토스 예약결제: 이사 전후 모두 결제가 `ready`에서 멈춤(토스 위젯 "결제 UI가 아직 렌더링되지 않았습니다"). 이사와 무관. 실결제 전 토스 키 종류(결제위젯 키인지)·토스 설정 점검 필요.
+- 토스 예약결제 `ready` 멈춤 **원인 확인(2026-10-23)**: 예약결제는 결제위젯(payment-widget-sdk)인데 키가 API 개별 연동 키(`test_ck_`) → 토스 401, 결제창 미렌더 → "결제 UI가 아직 렌더링되지 않았습니다"(공개 키로 재현). 또한 저장된 `TOSS_SECRET_KEY`(test_sk_)는 토스가 UNAUTHORIZED_KEY로 거부. 코드 수정은 dev `f59685c`(ready 후 버튼 활성, gck 아니면 안내, 기본값을 토스 공개 결제위젯 키 test_gck_docs_/test_gsk_docs_로) — 운영 미배포. 남은 일: Vercel production `NEXT_PUBLIC_TOSS_CLIENT_KEY`/`TOSS_SECRET_KEY`를 결제위젯 연동 키 쌍(gck/gsk)으로 교체(사용자 토스 개발자센터 키 또는 공개 테스트 키) + master 배포. `businesses.toss_client_key`는 6곳 모두 비어 있음.
 
 ## 정기결제 (브랜치 `billing/subscription-v1`, 운영 미적용)
 - master 미병합, 운영 DB에 migration 012~019 미적용.
