@@ -1,4 +1,4 @@
-// 토스 자동결제 카드 등록 성공 콜백: ?customerKey=...&authKey=...&cycle=...&intent=register|pay
+// 토스 자동결제 결제수단(카드·계좌 자동이체) 등록 성공 콜백: ?customerKey=...&authKey=...&cycle=...&intent=register|pay
 // 1) 세션의 매장/대표 확인 → 2) customerKey 가 이 매장에 발급한 값인지 확인 → 3) 서버가 토스에 빌링키 발급 요청
 // → 4) 암호화해서 저장(이전 카드는 토스에서 삭제) → 5) intent=pay 이고 차단 상태면 곧바로 직접 결제.
 // authKey/customerKey/빌링키는 로그에 남기지 않는다.
@@ -48,6 +48,9 @@ export async function GET(request: NextRequest) {
     p_card_type: issued.cardType,
     p_billing_cycle: cycle,
     p_consent_version: AUTO_RENEW_CONSENT_VERSION,
+    p_method: issued.method,
+    p_bank_name: issued.bankName,
+    p_account_number_masked: issued.accountNumberMasked,
   });
   if (error) {
     console.error("[billing] attach failed", error.code);

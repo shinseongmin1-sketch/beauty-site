@@ -10,16 +10,17 @@ import { AUTO_RENEW_CONSENT_VERSION } from "@/lib/billing/consent";
 import { createAdminClient } from "@/lib/supabase/server";
 
 /**
- * 카드 등록(토스 자동결제 인증창) 준비. 대표만.
+ * 결제수단 등록(토스 자동결제 인증창: 카드 또는 계좌 자동이체) 준비. 대표만.
  * 브라우저에는 client key 와 이 매장의 customerKey 만 준다 (빌링키/시크릿 키는 서버에만).
  */
 export async function prepareCardRegistration(
   cycle: string,
   consent: boolean
 ): Promise<
-  { ok: true; clientKey: string; customerKey: string; customerEmail: string | null; consentVersion: string } | { ok: false; error: string }
+  | { ok: true; clientKey: string; customerKey: string; customerEmail: string | null; customerName: string | null; consentVersion: string }
+  | { ok: false; error: string }
 > {
-  const { supabase, user, profile } = await requireBusinessContext();
+  const { supabase, user, profile, business } = await requireBusinessContext();
   if (profile.role !== "owner") return { ok: false, error: "대표 계정만 결제수단을 관리할 수 있습니다." };
   if (!isBillingCycle(cycle)) return { ok: false, error: "요금제를 선택해주세요." };
   // 자동결제 동의 없이는 카드 등록(자동결제 설정)을 시작하지 않는다. 동의 기록은 카드 연결이 성공할 때 서버가 저장한다.
@@ -30,7 +31,14 @@ export async function prepareCardRegistration(
     return { ok: false, error: "결제 준비에 실패했습니다. 잠시 후 다시 시도해주세요." };
   }
   try {
-    return { ok: true, clientKey: billingClientKey(), customerKey, customerEmail: user.email ?? null, consentVersion: AUTO_RENEW_CONSENT_VERSION };
+    return {
+      ok: true,
+      clientKey: billingClientKey(),
+      customerKey,
+      customerEmail: user.email ?? null,
+      customerName: business.name ?? null, // 계좌 자동이체 인증창에 표시
+      consentVersion: AUTO_RENEW_CONSENT_VERSION,
+    };
   } catch (e) {
     console.error("[billing] client key missing", e instanceof Error ? e.message : e);
     return { ok: false, error: "결제 설정이 완료되지 않았습니다. 고객센터에 문의해주세요." };

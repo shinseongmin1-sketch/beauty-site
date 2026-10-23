@@ -5,7 +5,7 @@ import { payNow } from "./actions";
 import { CycleChoice } from "./card-form";
 import type { BillingCycle } from "@/lib/billing/plans";
 
-/** 차단 상태: 등록된 카드로 바로 결제 (서버 액션). 금액은 서버/DB 가 정한다. */
+/** 차단 상태: 등록된 결제수단(카드·계좌)으로 바로 결제 (서버 액션). 금액은 서버/DB 가 정한다. */
 export function PayNowForm({ defaultCycle, cardLabel }: { defaultCycle: BillingCycle; cardLabel: string }) {
   const [cycle, setCycle] = useState<BillingCycle>(defaultCycle);
   const [pending, setPending] = useState(false);

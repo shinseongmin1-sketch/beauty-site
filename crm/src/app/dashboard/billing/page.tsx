@@ -12,14 +12,14 @@ const fmtDate = (v: string | null | undefined) => (v ? format(new Date(v), "yyyy
 const MESSAGES: Record<string, { ok: boolean; text: string }> = {
   paid: { ok: true, text: "결제가 완료되었습니다. 지금부터 바로 이용할 수 있습니다." },
   registered: { ok: true, text: "결제수단이 등록되었습니다." },
-  payment_failed: { ok: false, text: "결제에 실패했습니다. 카드 상태를 확인하거나 다른 카드로 결제해주세요." },
+  payment_failed: { ok: false, text: "결제에 실패했습니다. 카드·계좌 상태를 확인하거나 다른 결제수단으로 결제해주세요." },
   payment_pending: { ok: false, text: "결제 결과를 확인하고 있습니다. 잠시 후 이 화면을 새로고침해주세요." },
   payment_in_progress: { ok: false, text: "이미 진행 중인 결제가 있습니다. 잠시 후 새로고침해주세요." },
   already_active: { ok: false, text: "현재 이용 중이라 지금 결제할 필요가 없습니다." },
-  payment_method_required: { ok: false, text: "먼저 결제수단(카드)을 등록해주세요." },
+  payment_method_required: { ok: false, text: "먼저 결제수단(카드 또는 계좌)을 등록해주세요." },
   consent_required: { ok: false, text: "자동결제 안내에 동의해주세요." },
-  card_register_failed: { ok: false, text: "카드 등록에 실패했습니다. 다시 시도해주세요." },
-  card_register_canceled: { ok: false, text: "카드 등록이 취소되었습니다." },
+  card_register_failed: { ok: false, text: "결제수단 등록에 실패했습니다. 다시 시도해주세요." },
+  card_register_canceled: { ok: false, text: "결제수단 등록이 취소되었습니다." },
   customer_mismatch: { ok: false, text: "잘못된 결제 요청입니다. 다시 시도해주세요." },
   forbidden: { ok: false, text: "대표 계정만 결제를 관리할 수 있습니다." },
   canceled: { ok: true, text: "자동결제가 해지되었습니다." },
@@ -53,7 +53,14 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
     .select("status, billing_cycle, trial_ends_at, current_period_start, current_period_end, expired_reason, auto_renew_consented_at, auto_renew_consent_version")
     .maybeSingle();
   const { data: cardRows } = await supabase.rpc("billing_my_payment_method");
-  const card = (cardRows as { card_company: string | null; card_number_masked: string | null }[] | null)?.[0] ?? null;
+  type MethodRow = {
+    method: "card" | "transfer" | null;
+    card_company: string | null;
+    card_number_masked: string | null;
+    bank_name: string | null;
+    account_number_masked: string | null;
+  };
+  const card = (cardRows as MethodRow[] | null)?.[0] ?? null;
   const { data: history } = await supabase
     .from("subscription_payments")
     .select("id, kind, billing_cycle, amount, supply_amount, vat_amount, status, period_start, period_end, requested_at, paid_at")
@@ -62,7 +69,12 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
   const cycle: BillingCycle = isBillingCycle(row?.billing_cycle) ? row.billing_cycle : "monthly";
   const blocked = !subscription.writable && !subscription.awaitingPayment;
-  const cardLabel = card ? `${card.card_company ?? "카드"} ${card.card_number_masked ?? ""}`.trim() : null;
+  // 화면 표시용 결제수단 이름 (카드: "국민 5585****0000", 계좌: "국민은행 123-***-456 (계좌 자동이체)")
+  const cardLabel = !card
+    ? null
+    : card.method === "transfer"
+      ? `${card.bank_name ?? "계좌"} ${card.account_number_masked ?? ""}`.trim() + " (계좌 자동이체)"
+      : `${card.card_company ?? "카드"} ${card.card_number_masked ?? ""}`.trim();
   const nextCharge =
     card && row?.status === "trial" ? row.trial_ends_at : card && row?.status === "active" ? row.current_period_end : null;
   const msgKey = q.paid ? "paid" : q.registered ? "registered" : q.canceled ? "canceled" : q.rechecked ? "rechecked" : q.error;
@@ -122,7 +134,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             {nextCharge ? `${fmtDate(nextCharge)} · ${formatWon(BILLING_PLANS[cycle].amount)}` : row?.status === "canceled" ? "없음 (자동결제 해지됨)" : "-"}
           </dd>
           <dt className="text-muted">결제수단</dt>
-          <dd className="text-foreground">{cardLabel ?? "등록된 카드 없음"}</dd>
+          <dd className="text-foreground" data-payment-method>{cardLabel ?? "등록된 결제수단 없음"}</dd>
           {row?.auto_renew_consented_at && (
             <>
               <dt className="text-muted">자동결제 동의</dt>
@@ -168,12 +180,12 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           </div>
           {cardLabel && <PayNowForm defaultCycle={cycle} cardLabel={cardLabel} />}
           <div className={cardLabel ? "border-t border-border pt-4" : ""}>
-            {cardLabel && <p className="mb-3 text-sm font-semibold text-foreground">다른 카드로 결제</p>}
+            {cardLabel && <p className="mb-3 text-sm font-semibold text-foreground">다른 결제수단으로 결제</p>}
             <CardRegisterForm
               intent="pay"
               defaultCycle={cycle}
-              submitLabel={cardLabel ? "새 카드 등록 후 결제하기" : "카드 등록 후 결제하기"}
-              autoPayNotice="등록한 카드로 지금 {amount}이 결제되며,"
+              submitLabel={cardLabel ? "새 결제수단 등록 후 결제하기" : "결제수단 등록 후 결제하기"}
+              autoPayNotice="등록한 결제수단으로 지금 {amount}이 결제되며,"
             />
           </div>
         </section>
@@ -190,7 +202,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           <CardRegisterForm
             intent="register"
             defaultCycle={cycle}
-            submitLabel={cardLabel ? "카드 변경하기" : "카드 등록하기"}
+            submitLabel={cardLabel ? "결제수단 변경하기" : "결제수단 등록하기"}
             autoPayNotice={row?.status === "trial" ? "무료체험 종료 후 {amount}이 결제되며," : "다음 결제일부터 {amount}이 결제되며,"}
           />
         </section>

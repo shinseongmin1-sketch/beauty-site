@@ -24,7 +24,7 @@ export function SubscriptionBanner({ state, canManageBilling }: { state: Subscri
     const ends = state.trialEndsAt ? format(new Date(state.trialEndsAt), "yyyy.MM.dd") : "";
     message = `무료체험이 ${state.daysLeft}일 남았습니다${ends ? ` (${ends}까지)` : ""}. ` +
       (state.hasPaymentMethod
-        ? "체험 종료일에 등록된 카드로 자동결제되어 이어서 이용할 수 있어요."
+        ? "체험 종료일에 등록된 결제수단으로 자동결제되어 이어서 이용할 수 있어요."
         : "종료 후에도 기존 데이터 조회와 내보내기는 계속 사용할 수 있어요.");
     if (canManageBilling && !state.hasPaymentMethod) action = { href: "/dashboard/billing", label: "결제수단 등록" };
   } else if (state.status === "expired") {

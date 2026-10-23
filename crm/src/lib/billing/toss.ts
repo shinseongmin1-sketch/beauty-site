@@ -2,6 +2,8 @@
 // 예약 결제(lib/toss.ts, 결제위젯)와 완전히 분리: 키도 따로(TOSS_BILLING_*), 공개 테스트 키 대체값도 두지 않는다.
 // 빌링키·customerKey·authKey·paymentKey 는 로그에 남기지 않는다 (오류 코드만).
 import { usablePaymentKey } from "@/lib/payment-env";
+import { parseIssuedBillingKey, type IssuedBillingKey } from "./issued";
+export type { BillingMethod, IssuedBillingKey } from "./issued";
 
 const API = "https://api.tosspayments.com/v1";
 
@@ -39,21 +41,17 @@ async function call(method: "GET" | "POST" | "DELETE", path: string, body?: unkn
   return { status: res.status, ok: res.ok, json };
 }
 
-export type IssuedBillingKey = { billingKey: string; cardCompany: string | null; cardNumberMasked: string | null; cardType: string | null };
 
-/** 카드 등록 인증(authKey) → 빌링키 발급. customerKey 가 일치하지 않으면 토스가 거부한다. */
+/**
+ * 결제수단 등록 인증(authKey) → 빌링키 발급. customerKey 가 일치하지 않으면 토스가 거부한다.
+ * 카드·계좌 자동이체 모두 같은 API. 응답 해석은 lib/billing/issued.ts.
+ */
 export async function issueBillingKey(authKey: string, customerKey: string): Promise<IssuedBillingKey> {
   const r = await call("POST", "/billing/authorizations/issue", { authKey, customerKey });
   if (!r.ok || typeof r.json.billingKey !== "string") {
     throw new Error(`billing_issue_failed:${String(r.json.code ?? r.status)}`);
   }
-  const card = (r.json.card ?? {}) as Record<string, unknown>;
-  return {
-    billingKey: r.json.billingKey,
-    cardCompany: typeof r.json.cardCompany === "string" ? r.json.cardCompany : null,
-    cardNumberMasked: typeof r.json.cardNumber === "string" ? r.json.cardNumber : typeof card.number === "string" ? card.number : null,
-    cardType: typeof card.cardType === "string" ? card.cardType : null,
-  };
+  return parseIssuedBillingKey(r.json);
 }
 
 export type ChargeResult =

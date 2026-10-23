@@ -5,9 +5,15 @@ import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import { prepareCardRegistration } from "./actions";
 import { BILLING_PLANS, formatWon, type BillingCycle } from "@/lib/billing/plans";
 
+type PayMethod = "CARD" | "TRANSFER";
+const PAY_METHODS: { value: PayMethod; label: string; desc: string }[] = [
+  { value: "CARD", label: "신용·체크카드", desc: "국내 발급 카드" },
+  { value: "TRANSFER", label: "계좌 자동이체", desc: "토스 퀵계좌이체로 은행 계좌 등록" },
+];
+
 /**
- * 요금제 선택 + 자동결제 동의 + 토스 카드 등록창 열기.
- * intent=register: 카드만 등록(체험 중/카드 변경) / intent=pay: 등록 후 바로 직접 결제(차단 상태).
+ * 요금제 선택 + 결제수단 선택(카드/계좌 자동이체) + 자동결제 동의 + 토스 등록창 열기.
+ * intent=register: 결제수단만 등록(체험 중/변경) / intent=pay: 등록 후 바로 직접 결제(차단 상태).
  * 금액은 화면 표시용일 뿐, 실제 결제 금액은 서버/DB 가 정한다.
  */
 export function CardRegisterForm({
@@ -22,6 +28,7 @@ export function CardRegisterForm({
   autoPayNotice: string;
 }) {
   const [cycle, setCycle] = useState<BillingCycle>(defaultCycle);
+  const [method, setMethod] = useState<PayMethod>("CARD");
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -39,13 +46,14 @@ export function CardRegisterForm({
       const toss = await loadTossPayments(prep.clientKey);
       const payment = toss.payment({ customerKey: prep.customerKey });
       await payment.requestBillingAuth({
-        method: "CARD",
+        method,
         successUrl: `${window.location.origin}/dashboard/billing/card/success?cycle=${cycle}&intent=${intent}&consent=${encodeURIComponent(prep.consentVersion)}`,
         failUrl: `${window.location.origin}/dashboard/billing?error=card_register_canceled`,
         ...(prep.customerEmail ? { customerEmail: prep.customerEmail } : {}),
+        ...(prep.customerName ? { customerName: prep.customerName } : {}),
       });
     } catch {
-      setError("카드 등록 창을 열지 못했습니다. 잠시 후 다시 시도해주세요.");
+      setError("결제수단 등록 창을 열지 못했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setBusy(false);
     }
@@ -54,6 +62,28 @@ export function CardRegisterForm({
   return (
     <div className="space-y-4">
       <CycleChoice value={cycle} onChange={setCycle} />
+      <div>
+        <p className="mb-2 text-sm font-semibold text-foreground">결제수단</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-pay-method-choice>
+          {PAY_METHODS.map((m) => (
+            <label
+              key={m.value}
+              className={`cursor-pointer rounded-xl border p-4 ${method === m.value ? "border-accent bg-accent-soft" : "border-border bg-card"}`}
+            >
+              <input
+                type="radio"
+                name={`pay-method-${intent}`}
+                value={m.value}
+                checked={method === m.value}
+                onChange={() => setMethod(m.value)}
+                className="sr-only"
+              />
+              <p className="text-sm font-semibold text-foreground">{m.label}</p>
+              <p className="text-xs text-muted">{m.desc}</p>
+            </label>
+          ))}
+        </div>
+      </div>
       <label className="flex items-start gap-2 text-sm text-foreground">
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1" />
         <span>
@@ -68,7 +98,7 @@ export function CardRegisterForm({
         disabled={busy}
         className="w-full rounded-xl bg-accent py-3 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
       >
-        {busy ? "카드 등록 창을 여는 중…" : submitLabel}
+        {busy ? "결제수단 등록 창을 여는 중…" : submitLabel}
       </button>
     </div>
   );
