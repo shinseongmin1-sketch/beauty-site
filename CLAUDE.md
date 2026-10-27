@@ -54,6 +54,7 @@
 - 2026-10-23: master `070f8c3` = 시술/메뉴 입력칸 이름표(시술/메뉴 이름·소요시간 (분)·가격 (원))·단위 표시·가격 100원 단위. CRM 운영 배포 `dpl_3GhBhNLCrYtwPXBJSXq2ZdWqW6zB` (롤백: `dpl_5oF5tiQkkLTfVNyUj2GTDCU9W1S6` 승격).
 - 2026-10-23: master `47353f8` = 설정 > "구독 설정"(대표만) 안내 화면(이용 상태·요금제·결제 준비 중·고객센터), 결제 기능 없음. CRM 운영 배포 `dpl_8rGopzr3t5hUf4nC8xMoyCtuhFj1` (롤백: `dpl_3GhBhNLCrYtwPXBJSXq2ZdWqW6zB` 승격). ⚠️ 결제 브랜치에 master 병합 시 `crm/src/app/dashboard/billing/page.tsx`·`layout.tsx`의 "구독 설정" 줄은 **결제 브랜치 쪽을 남긴다**(같은 경로에 결제 화면이 있음).
 - 2026-10-27: 홈페이지 master `cf15013`(dev fast-forward, 직전 `47353f8`) = manion.kr 홈 화면 아이콘(`icons/` PNG 192·512·maskable·apple-touch-icon + `manifest.webmanifest`, display browser) 6개 페이지 head에 추가. 운영 반영·파일 200 확인. CRM 변경 없음.
+- 2026-10-27: 홈페이지 master `c29dbbb` = 휴대폰 설치 안내 문구를 최신 메뉴 이름으로(갤럭시 Chrome ⋮ → [설치 및 바로가기 만들기] → [설치], 아이폰 공유(iOS 26은 ⋯ → 공유) → [홈 화면에 추가]). index·faq 반영 확인. 사용자 갤럭시에서 이 순서로 설치 확인.
 - 홈페이지 정책 페이지(terms/privacy/refund.html)는 이 브랜치에만 있음. "확인 필요" 칸(사업자 정보·보호책임자·시행일·보관기간)을 채우고 사용자 승인 후 master에 반영.
 
 ## 장애 기록
