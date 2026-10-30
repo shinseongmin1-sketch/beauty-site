@@ -115,7 +115,7 @@
 - 사용자가 "○월 ○일 오픈" 같이 날짜를 정하면, 아래를 **급한 순서로 번호 매겨 "꼭 해야 한다"고 먼저 알린다.** 그 전에도 오픈·실사용·손님 가입 이야기가 나오면 상기시킨다.
   0. 개인정보처리방침 공개(개인정보보호법 공개 의무. 운영 홈페이지 하단 링크가 현재 `#`) + 유료 판매 전 사업자 정보 표시(전자상거래법). 빈칸 정보는 사용자 준비 필요.
   1. Supabase Pro 전환(자동 정지 방지·매일 백업). 업그레이드 자체는 코드 수정 불필요. 같은 조직에 뭄바이 프로젝트가 있으면 추가 컴퓨트 비용(~$10/월) 확인, Spend Cap 유지.
-  2. ✅ 2026-10-30 완료: 메일 발송 Resend 연결(사용자가 Supabase 대시보드에 SMTP 직접 입력: smtp.resend.com:465, user resend, 보내는 주소 `noreply@send.manion.kr`, 이름 매니온, 한도 30통/시간). 가비아 DNS에 send.manion.kr용 DKIM TXT·CNAME 2·_dmarc TXT 추가(Resend Verified, Tokyo). 메일 문구 한국어로 변경(Management API, 비밀번호 재설정·이메일 확인/변경·로그인 링크·초대·인증 코드·비밀번호/이메일 변경 알림, 링크 변수 그대로). 이전 영어 문구는 세션 작업공간에만 백업. app.manion.kr 비밀번호 찾기로 smshin@clict.co.kr 시험 발송(recovery_sent_at 갱신 확인), 수신은 사용자 확인 대기.
+  2. ✅ 2026-10-30 완료: 메일 발송 Resend 연결(사용자가 Supabase 대시보드에 SMTP 직접 입력: smtp.resend.com:465, user resend, 보내는 주소 `noreply@send.manion.kr`, 이름 매니온, 한도 30통/시간). 가비아 DNS에 send.manion.kr용 DKIM TXT·CNAME 2·_dmarc TXT 추가(Resend Verified, Tokyo). 메일 문구 한국어로 변경(Management API, 비밀번호 재설정·이메일 확인/변경·로그인 링크·초대·인증 코드·비밀번호/이메일 변경 알림, 링크 변수 그대로). 이전 영어 문구는 세션 작업공간에만 백업. 시험 메일 수신 확인(사용자). 단 Claude 쪽 브라우저에서 요청한 메일을 사용자 브라우저에서 열어 PKCE 링크 실패("만료되었거나 이미 사용") → 비밀번호 재설정 템플릿 링크를 `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password`(앱의 verifyOtp 경로, 다른 기기에서도 동작, 유효 1시간)로 변경. 사용자 재시험 대기.
   3. Vercel Pro 전환(Hobby는 상업적 이용 불가) — 유료 손님 받기 전.
   4. 토스 예약결제 `ready` 멈춤 원인 점검(키 종류·설정) — 예약결제를 쓸 거면.
   5. 정기결제 시작 시: 위 "정기결제 운영 적용 준비"의 준비물(토스 빌링·정책 빈칸) 전부.
